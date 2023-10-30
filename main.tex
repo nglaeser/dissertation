@@ -1,0 +1,69 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+\usepackage{xcolor}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,
+    urlcolor=blue,
+    citecolor=blue,
+}
+\newcommand{\copied}[1]{\textcolor{red}{[copied] #1}}
+\newcommand{\noemi}[1]{\textcolor{magenta}{Noemi: #1}}
+
+\title{Privacy-Enhancing Technologies on Blockchains}
+% \title{Improving Privacy and Security of Blockchain with Cryptography}
+% \title{Private and Responsible Decentralized Payments} % from MPI contract
+\author{Noemi Glaeser}
+\date{}
+
+\begin{document}
+
+\maketitle
+\begin{abstract}
+Blockchains are inherently public, [but sometimes we want privacy. We need to use crypto to do this. And so on and so forth\dots] \noemi{actually probably need to expand to also include ``security'', since the threshold sigs project isn't really about privacy}
+% A key challenge in [my area of research] is [problem I halfway figured out how to solve]. (And so on and so forth\dots)
+\end{abstract}
+
+\tableofcontents
+
+\section{Introduction}
+\subsection{Model and Preliminaries}
+\subsection{Definitions}
+
+\section{Privacy in Cryptocurrencies}\label{main}
+
+\subsection{Introduction}
+\subsection{Related Work}
+
+\subsection{Anonymous Atomic Locks for coin mixing and cross-chain payments}
+\subsubsection{Overview}
+\copied{In this section, we summarize the contributions and constructions of~\cite{CCS:GMMMTT22}, including...}
+
+\subsection{Circuit-Succinct Universally Composable NIZKs with Updatable CRS}
+\subsubsection{Overview}
+\copied{In this section, we summarize the contributions and constructions of~\cite{CSF:AGRS24}, including...}
+
+\subsection{Cicada: A framework for private non-interactive on-chain auctions and voting}
+\subsubsection{Overview}
+\copied{In this section, we summarize the contributions and constructions of~\cite{EPRINT:GSZB23}, including...}
+
+\section{Proposed Work}
+
+\subsection{Registration-Based Encryption as a Web3 service}
+\noemi{Unclear if this can be included}
+
+\subsection{Threshold cryptocurrency wallets in the hot-cold paradigm}
+
+% \subsection{Formalizing Bolt}
+
+{\small
+\bibliographystyle{alpha}
+\bibliography{
+    cryptobib/abbrev3,
+    cryptobib/crypto_crossref,
+    extrarefs
+}
+}
+\end{document}

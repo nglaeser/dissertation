@@ -1,0 +1,16 @@
+proposal-Erica/
+proposal-Noel/
+
+# LaTeX
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+*.toc
+
+# MacOS
+.DS_Store
