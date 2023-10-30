@@ -1,7 +1,10 @@
 \documentclass{article}
 \usepackage{graphicx} % Required for inserting images
 \usepackage{xcolor}
+\usepackage{xspace}
+\usepackage{booktabs,multicol}
 \usepackage{hyperref}
+\usepackage{amsmath}
 \hypersetup{
     colorlinks=true,
     linkcolor=blue,
@@ -9,10 +12,13 @@
     urlcolor=blue,
     citecolor=blue,
 }
+\input{macros}
 \newcommand{\copied}[1]{\textcolor{red}{[copied] #1}}
 \newcommand{\noemi}[1]{\textcolor{magenta}{Noemi: #1}}
+\newcommand{\todo}[1]{\textcolor{red}{todo: #1}}
 
-\title{Privacy-Enhancing Technologies on Blockchains}
+\title{Cryptography for Blockchain Applications}
+% \title{Privacy-Enhancing Technologies for Blockchains}
 % \title{Improving Privacy and Security of Blockchain with Cryptography}
 % \title{Private and Responsible Decentralized Payments} % from MPI contract
 \author{Noemi Glaeser}
@@ -22,34 +28,79 @@
 
 \maketitle
 \begin{abstract}
-Blockchains are inherently public, [but sometimes we want privacy. We need to use crypto to do this. And so on and so forth\dots] \noemi{actually probably need to expand to also include ``security'', since the threshold sigs project isn't really about privacy}
+Blockchains were introduced in 2008 by Satoshi Nakamoto as a way to implement a trusted but decentralized append-only ledger. This simple functionality has given rise to a plethora of decentralized applications utilizing the blockchain as a public bulleting board. In recent years, it has become clear that this basic functionality is not enough to prevent widespread attacks on both the privacy and security of blockchain users, as evidenced by the blockchain analytics industry and the billions of dollars stolen via cryptocurrency exploits to date. This work explores the role cryptography has to play in the blockchain ecosystem to both enhance user privacy and secure user funds.
+
+% Blockchains are inherently public, [but sometimes we want privacy. We need to use crypto to do this. And so on and so forth\dots] \noemi{actually probably need to expand to also include ``security'', since the threshold sigs project isn't really about privacy}
 % A key challenge in [my area of research] is [problem I halfway figured out how to solve]. (And so on and so forth\dots)
 \end{abstract}
 
 \tableofcontents
 
 \section{Introduction}
+
+Bitcoin~\cite{bitcoin} was the first digital currency to successfully implement a fully trustless and decentralized payment system. \todo{...} Ethereum~\cite{ethereum} introduced programmability via \emph{smart contracts} \todo{...}
+
 \subsection{Model and Preliminaries}
 \subsection{Definitions}
 
-\section{Privacy in Cryptocurrencies}\label{main}
+\section{Privacy-Enhancing Building Blocks}\label{sec:building-blocks}
 
-\subsection{Introduction}
-\subsection{Related Work}
+% \subsection{Introduction}
+
+Although cryptocurrencies are often treated as fully anonymous digital currencies, numerous works have shown how to link transactions or even fully deanonymize users in many popular cryptocurrencies \cite{CCS:BirKhoPus14,EuroSP:BirTik19,FC:KosKosMcD14,PoPETS:MSHLHSHHMNC18,USENIX:KYMM18}. Numerous mitigations have been suggested, including cryptocurrency mixers (described below) and privacy-first cryptocurrencies like Zcash~\cite{zcash} and Monero~\cite{monero}. 
+
+% \subsection{Related Work}
 
 \subsection{Anonymous Atomic Locks for coin mixing and cross-chain payments}
-\subsubsection{Overview}
-\copied{In this section, we summarize the contributions and constructions of~\cite{CCS:GMMMTT22}, including...}
 
-\subsection{Circuit-Succinct Universally Composable NIZKs with Updatable CRS}
-\subsubsection{Overview}
-\copied{In this section, we summarize the contributions and constructions of~\cite{CSF:AGRS24}, including...}
+The idea behind cryptocurrency mixers is to overlay a measure of $k$-anonymity by routing multiple payments through a central party, or mixer, so that any given sender (depositing currency to the mixer) cannot be tied to a particular recipient (retrieving money from the mixer): each of the $k$ senders is equally likely to be the source of a given recipient's payment. For security, a mixer must offer \emph{atomicity}, i.e., the sender pays $c$ coins if and only if the recipient is paid $c-\epsilon$ coins (where $\epsilon$ is a parameter which represents the mixer and transaction fees).
 
-\subsection{Cicada: A framework for private non-interactive on-chain auctions and voting}
-\subsubsection{Overview}
-\copied{In this section, we summarize the contributions and constructions of~\cite{EPRINT:GSZB23}, including...}
+Mixers come in two flavors: on- and off-chain mixers. The former is simply an account into which users can deposit coins and later retrieve them (or allow another party to retrieve them) by redeeming some token, with atomicty enforced via an on-chain script.\noemi{check this} The latter requires more complicated protocols to enforce the atomicity requirement without the scripting functionality offered by the underlying blockchain. One line of work, initiated by TumbleBit~\cite{NDSS:HABSG17} and extended by Anonymous Atomic Locks (\AAL)~\cite{SP:TaiMorMaf21}, relies on \emph{payment channels} and so-called \emph{adaptor signatures} to atomically complete payments on both the sender and recipient payment channels.
 
-\section{Proposed Work}
+\subsubsection{Foundations of Coin Mixing Services~\texorpdfstring{\cite{CCS:GMMMTT22}}{[GMM+22]}}
+In this section, we summarize the contributions and constructions of~\cite{CCS:GMMMTT22}. In this paper, we analyzed the \AAL protocol~\cite{SP:TaiMorMaf21} and found that, in contrast to its claims, it is not secure. Although \AAL was proven secure in the universal composability (UC)~\cite{FOCS:Canetti01} framework, we show that a gap in their formal model allows two constructions which are completely insecure despite meeting their definitions: one admits a key recovery attack and the other allows a colluding sender and recipient to steal coins from the mixer. To close this gap, we introduce a new primitive called blind conditional signtaures (BCS) which captures the core coin mixing functionality. We give game-based security definitions for BCS and show how to modify \AAL to obtain a new protocol, \AALplus, which meets these definitions. We also give a UC-secure construction of BCS, dubbed \AALUC, which requires much more complex machinery. 
+
+In more detail, \todo{...}
+
+\subsection{Zero-Knowledge Proofs and their trust assumptions}
+
+Non-interactive zero-knowledge proofs (NIZKs) are ubiquitous building blocks in many blockchains. Zcash~\cite{zcash}, as indicated by the letter ``Z'' in its name, relies heavily on a type of NIZK called zkSNARK (zero-knowledge succinct argument of knowledge) to achieve private payments: zkSNARKs are used to prove a party has sufficient funds to make a payment without revealing anything more about those funds~\cite{SP:BCGGMT14}. On Ethereum, (zk-)rollups enhance scalability by leveraging the succinctness of (zk)SNARKs, though they may or may not offer the zero-knowledge property.
+
+To achieve such a high level of succinctness, SNARKs rely on a trusted setup to generate a \emph{common reference string (CRS)}. In keeping with the primary innovation of the blockchain, which is the elimination of a trusted third party (TTP), practitioners use various approaches to minimize the trust in the CRS generation. Zcash uses a multi-party computation ceremony~\cite{zcash-ceremony} with many independent participants to distribute the trust among several parties. Another trust-minimizing approach consists of using SNARKs with universal and updatable CRS~\cite{C:GKMMM18,CCS:MBKM19,EC:CHMMVW20,EPRINT:GabWilCio19}. A universal CRS can be reused across applications, avoiding a new complicated setup ceremony for every use. Updatable CRSs allow any participant in a system to contribute randomness to the CRS at any point, including once the CRS is in production use, to enable a ``one-out-of-many'' trust scenario in which the user must only trust themselves to contribute (and then delete) good randomness to the CRS in order for the whole system to be secure.
+
+An orthogonal concern is maintaining the security of SNARKs when they are composed with other protocols in the complex blockchain ecosystem. Formally, this is modeled by universally composable security via the UC framework~\cite{FOCS:Canetti01}. Unfortunately, most SNARKs in deployment today are not provably UC-secure. Although compilers to transform any SNARK or NIZK into a UC variant exist~\cite{EPRINT:KZMQCP15,EC:GKOPTT23}, these are not compatible with the aforementioned trust-minimizing properties like updatability. A generic compiler which adds UC-security while maintaining updatability would help ensure confidence in both the trusted setup and the operational security of deployed NIZKs.
+
+\subsubsection{Circuit-Succinct Universally Composable NIZKs with Updatable CRS~\texorpdfstring{\cite{CSF:AGRS24}}{[AGRS24]}}
+
+In this section, we summarize the contributions and constructions of~\cite{CSF:AGRS24}. \todo{...}
+
+\begin{table}[htb]
+    \centering
+    \begin{tabular}{l@{\hspace{1em}} cc cc c}
+        \toprule
+        & \multicolumn{2}{c}{UC} & \multicolumn{2}{c}{succinctness-preserving}    & \\ \cmidrule(r{3pt}){2-3} \cmidrule(l{3pt}){4-5}
+        & SE     & BBE    & in $\lvert C \rvert$ & in $\lvert w \rvert$ & upd. CRS \\
+        \midrule
+        \COCO~\cite{EPRINT:KZMQCP15}    & \cmark & \cmark & \cmark           & \xmark           & \xmark\\
+        DS~\cite{DCC:DerSla19}          & \cmark & \xmark & \cmark           & \cmark           & \xmark\\
+        \textsc{Lamassu}~\cite{CCS:AbdRamSla20} & \cmark & \xmark & \cmark           & \cmark           & \cmark\\
+        \midrule
+        This work \cite{CSF:AGRS24}     & \cmark & \cmark & \cmark           & \xmark           & \cmark\\
+        Concurr. work~\cite{EC:GKOPTT23} & \cmark & \cmark & \cmark           & \cmark           & \xmark\\
+        \bottomrule
+    \end{tabular}
+    \caption{Comparison with concurrent and previous work.}\label{tab:comparison}
+\end{table}
+
+\section{Privacy-Enhancing Applications}\label{sec:applications}
+
+\subsection{On-chain private voting}
+
+\subsubsection{Cicada: A framework for private non-interactive on-chain auctions and voting~\texorpdfstring{\cite{EPRINT:GSZB23}}{[GSZB23]}}
+
+In this section, we summarize the contributions and constructions of~\cite{EPRINT:GSZB23}. \todo{...}
+
+\section{Proposed Work}\label{sec:proposed}
 
 \subsection{Registration-Based Encryption as a Web3 service}
 \noemi{Unclear if this can be included}
@@ -58,11 +109,13 @@ Blockchains are inherently public, [but sometimes we want privacy. We need to us
 
 % \subsection{Formalizing Bolt}
 
+\section{Timeline}
+
 {\small
 \bibliographystyle{alpha}
 \bibliography{
     cryptobib/abbrev3,
-    cryptobib/crypto_crossref,
+    cryptobib/crypto,
     extrarefs
 }
 }
