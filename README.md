@@ -1,6 +1,6 @@
 # Proposal
 
-This repo is synced with both GitHub and Overleaf. Workflow
+<!-- This repo is synced with both GitHub and Overleaf. Workflow
 ```
 # pull from GitHub
 git pull github
@@ -9,4 +9,4 @@ git pull github
 git push
 ```
 
-Overleaf seems not to support submodules, so [CryptoBib](https://cryptobib.di.ens.fr/) will be updated manually.
+Overleaf seems not to support submodules, so [CryptoBib](https://cryptobib.di.ens.fr/) will be updated manually. -->
