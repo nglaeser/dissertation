@@ -1,0 +1,29 @@
+\subsection{Zero-Knowledge Proofs and their trust assumptions}
+
+Non-interactive zero-knowledge proofs (NIZKs) are ubiquitous building blocks in many blockchains. Zcash~\cite{zcash}, as indicated by the letter ``Z'' in its name, relies heavily on a type of NIZK called zkSNARK (zero-knowledge succinct argument of knowledge) to achieve private payments: zkSNARKs are used to prove a party has sufficient funds to make a payment without revealing anything more about those funds~\cite{SP:BCGGMT14}. On Ethereum, (zk-)rollups enhance scalability by leveraging the succinctness of (zk)SNARKs, though they may or may not offer the zero-knowledge property.
+
+To achieve such a high level of succinctness, SNARKs rely on a trusted setup to generate a \emph{common reference string (CRS)}. In keeping with the primary innovation of the blockchain, which is the elimination of a trusted third party (TTP), practitioners use various approaches to minimize the trust in the CRS generation. Zcash uses a multi-party computation ceremony~\cite{zcash-ceremony} with many independent participants to distribute the trust among several parties. Another trust-minimizing approach consists of using SNARKs with universal and updatable CRS~\cite{C:GKMMM18,CCS:MBKM19,EC:CHMMVW20,EPRINT:GabWilCio19}. A universal CRS can be reused across applications, avoiding a new complicated setup ceremony for every use. Updatable CRSs allow any participant in a system to contribute randomness to the CRS at any point, including once the CRS is in production use, to enable a ``one-out-of-many'' trust scenario in which the user must only trust themselves to contribute (and then delete) good randomness to the CRS in order for the whole system to be secure.
+
+An orthogonal concern is maintaining the security of SNARKs when they are composed with other protocols in the complex blockchain ecosystem. Formally, this is modeled by universally composable security via the UC framework~\cite{FOCS:Canetti01}. Unfortunately, most SNARKs in deployment today are not provably UC-secure. Although compilers to transform any SNARK or NIZK into a UC variant exist~\cite{EPRINT:KZMQCP15,EC:GKOPTT23}, these are not compatible with the aforementioned trust-minimizing properties like updatability. A generic compiler which adds UC-security while maintaining updatability would help ensure confidence in both the trusted setup and the operational security of deployed NIZKs.
+
+\subsubsection{Circuit-Succinct Universally Composable NIZKs with Updatable CRS~\texorpdfstring{\cite{CSF:AGRS24}}{[AGRS24]}}
+
+In this section, we summarize the contributions and constructions of~\cite{CSF:AGRS24}. \todo{...}
+
+\begin{table}[htb]
+    \centering
+    \begin{tabular}{l@{\hspace{1em}} cc cc c}
+        \toprule
+        & \multicolumn{2}{c}{UC} & \multicolumn{2}{c}{succinctness-preserving}    & \\ \cmidrule(r{3pt}){2-3} \cmidrule(l{3pt}){4-5}
+        & SE     & BBE    & in $\lvert C \rvert$ & in $\lvert w \rvert$ & upd. CRS \\
+        \midrule
+        \COCO~\cite{EPRINT:KZMQCP15}    & \cmark & \cmark & \cmark           & \xmark           & \xmark\\
+        DS~\cite{DCC:DerSla19}          & \cmark & \xmark & \cmark           & \cmark           & \xmark\\
+        \textsc{Lamassu}~\cite{CCS:AbdRamSla20} & \cmark & \xmark & \cmark           & \cmark           & \cmark\\
+        \midrule
+        This work \cite{CSF:AGRS24}     & \cmark & \cmark & \cmark           & \xmark           & \cmark\\
+        Concurr. work~\cite{EC:GKOPTT23} & \cmark & \cmark & \cmark           & \cmark           & \xmark\\
+        \bottomrule
+    \end{tabular}
+    \caption{Comparison with concurrent and previous work.}\label{tab:comparison}
+\end{table}

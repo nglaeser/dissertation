@@ -1,0 +1,21 @@
+% \subsection{Anonymous Atomic Locks for coin mixing and cross-chain payments}
+\subsection{Cryptocurrency Mixers}
+
+\todo{citations \cite{ESORICS:RufMorKat14,EPRINT:SNBB19,ACSAC:TLKBS18,FC:BNMCKF14}, Bitcoin (CoinJoin, CoinShuffle)}
+Cryptocurrency mixers add a measure of $k$-anonymity to cryptocurrency tokens by employing a central party, or \emph{mixer}, to shuffle the tokens among users of the service. Users deposit their coins into the service, and later retrieve them again (using a different address, otherwise anonymity is trivially broken).
+Any particular token (retrieved from the mixer) cannot be tied to a particular source (user who deposited money from the mixer): each of the $k$ users is equally likely to be the source of a given token. For security, a mixer must offer \emph{atomicity}, i.e., a user pays $c$ coins if and only if the ``recipient'' (normally the same user, but under a new address) is paid $c-\epsilon$ coins (where $\epsilon$ is a parameter which represents the mixer and transaction fees). \todo{exit scams}
+
+Mixers come in two flavors: on- and off-chain mixers. On-chain mixers~\cite{} are simply accounts into which users can deposit coins and later retrieve them (or allow another party to retrieve them) by redeeming some token, with atomicty enforced via an on-chain script.\noemi{check this} 
+
+Off-chain mixers normally require more complicated protocols to enforce the atomicity requirement without the scripting functionality offered by the underlying blockchain. One line of work, initiated by TumbleBit~\cite{NDSS:HABSG17} and extended by Anonymous Atomic Locks (\AAL)~\cite{SP:TaiMorMaf21}, relies on \emph{payment channels} and so-called \emph{adaptor signatures} to atomically complete payments on both the sender and recipient payment channels. \todo{Talk about how these also solve scalability and interoperability?}
+
+\todo{TumbleBit...}
+
+\subsubsection{Blind Conditional Signatures}
+In this section, we summarize the contributions and constructions of~\cite{CCS:GMMMTT22}. In this paper, we analyzed the \AAL protocol~\cite{SP:TaiMorMaf21} and found that, in contrast to its claims, it is not secure. Although \AAL was proven secure in the universal composability (UC)~\cite{FOCS:Canetti01} framework, we show that a gap in their formal model allows two constructions which are completely insecure despite meeting their definitions: one admits a key recovery attack and the other allows a colluding sender and recipient to steal coins from the mixer. To close this gap, we introduce a new primitive called blind conditional signtaures (BCS) which captures the core coin mixing functionality. We give game-based security definitions for BCS and show how to modify \AAL to obtain a new protocol, \AALplus, which meets these definitions. We also give a UC-secure construction of BCS, dubbed \AALUC, which requires much more complex machinery. 
+
+\paragraph{Counterexamples to \AAL.} We show that there exist cryptographic primitives which satisfy the prerequisites of \AAL's main theorem, but allow (a) a \emph{key recovery attack}, in which a malicious user is able to learn the long-term secret of the hub or (b) a \emph{one-more signature attack}, in which a sender and recipient can collude to obtain $n$ tokens from the hub while only sending $n-1$ tokens. Both attacks run in polynomial time and succeed with overwhelming probability. \todo{write intuitive explanation of the attacks, refer to full paper for details}
+
+\paragraph{Definitions.} \todo{Write game-based defs, refer reader to A2L and our paper for UC ideal functionality}
+
+\paragraph{Constructions.} \todo{Write both constructions?}
