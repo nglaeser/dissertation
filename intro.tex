@@ -2,7 +2,13 @@
 
 Bitcoin~\cite{bitcoin} was the first digital currency to successfully implement a fully trustless and decentralized payment system. \todo{...} Ethereum~\cite{ethereum} introduced programmability via \emph{smart contracts} \todo{...}
 
-\subsection{Model and Preliminaries}
+\subsection{Model} 
+
+\subsection{Universal Composability (UC) Framework}
+
+\subsection{Notation and preliminaries}
+
+We use $x \sample \mathcal{S}$ to denote sampling an element $x$ uniformly at random from a set $\mathcal{S}$.
 
 \begin{definition}[NP Relation]
     An NP relation $\Rel$ is \todo{...}
@@ -10,4 +16,14 @@ Bitcoin~\cite{bitcoin} was the first digital currency to successfully implement 
     The language corresponding to $\Rel$ is defined as $\Lang_\Rel := \{ Y : \exists y \text{ such that } (Y, y) \in \Rel \}$.
 \end{definition}
 
-\subsection{Definitions}
+\begin{definition}[CPA-security]
+    An encryption scheme $\Pi_\ENC$ is said to be CPA-secure if \todo{...}
+\end{definition}
+
+\begin{definition}[Rerandomizable encryption]
+    An rerandomizable encryption scheme $\Pi_\ENC$ has an additional algorithm $\sf Rand$ \todo{...}
+\end{definition}
+
+\begin{definition}[existential unforgeability]
+    A digital signature scheme $\Pi_\DS$ is said to be existentially unforgeable (or EUF-CMA-secure) if \todo{...}
+\end{definition}

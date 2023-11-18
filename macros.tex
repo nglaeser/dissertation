@@ -12,25 +12,39 @@
 % variables
 % \renewcommand{\epsilon}{\varepsilon}
 
+% math
+\newcommand{\ZZ}{\ensuremath{\mathbb{Z}}}
+
 % primitives
 \newcommand{\ENC}{\ensuremath{\mathsf{E}}}
 \newcommand{\ADP}{\ensuremath{\mathsf{ADP}}}
 \newcommand{\DS}{\ensuremath{\mathsf{ADP}}}
+\newcommand{\NIZK}{\ensuremath{\mathsf{NIZK}}}
+\newcommand{\BCS}{\ensuremath{\mathsf{BCS}}}
 
 %%% cryptography
 \newcommand{\secpar}{\ensuremath{\lambda}}
 \newcommand{\secparam}{\ensuremath{1^\secpar}}
-\newcommand{\oracle}{\ensuremath{\mathcal{O}}}
+\newcommand{\sample}{\ensuremath{\stackrel{\$}{\gets}}}
 \newcommand{\Rel}{\ensuremath{\mathcal{R}}}
 \newcommand{\Lang}{\ensuremath{\mathcal{L}}}
-% algorithms
+\newcommand{\F}{\ensuremath{\mathcal{F}}}
+% oracles
+\newcommand{\oracle}{\ensuremath{\mathcal{O}}}
+\newcommand{\oaal}{\ensuremath{\oracle^{\sf A^2L}}}
+% common algorithms
 \newcommand{\kgen}{\ensuremath{\mathsf{KGen}}}
+\newcommand{\enc}{\ensuremath{\mathsf{Enc}}}
+\newcommand{\dec}{\ensuremath{\mathsf{Dec}}}
 \newcommand{\ext}{\ensuremath{\mathsf{Ext}}}
 \newcommand{\vrfy}{\ensuremath{\mathsf{Vrfy}}}
 % keys
 \newcommand{\vk}{\ensuremath{\mathsf{vk}}}
 \newcommand{\sk}{\ensuremath{\mathsf{sk}}}
+\newcommand{\ek}{\ensuremath{\mathsf{ek}}}
+\newcommand{\dk}{\ensuremath{\mathsf{dk}}}
 % adaptor sigs
-\newcommand{\presig}{\ensuremath{\mathsf{PreSig}}}
+\newcommand{\presign}{\ensuremath{\mathsf{PreSig}}}
 \newcommand{\prevrfy}{\ensuremath{\mathsf{PreVrfy}}}
 \newcommand{\adapt}{\ensuremath{\mathsf{Adapt}}}
+\newcommand{\presig}{\ensuremath{\tilde{\sigma}}}

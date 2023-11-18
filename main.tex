@@ -4,9 +4,6 @@
 \usepackage{xspace}
 \usepackage{booktabs,multicol}
 \usepackage{hyperref}
-\usepackage{amsmath}
-\usepackage{amsthm}
-\newtheorem{definition}{Definition}
 \hypersetup{
     colorlinks=true,
     linkcolor=blue,
@@ -14,6 +11,12 @@
     urlcolor=blue,
     citecolor=blue,
 }
+\usepackage{amsthm}
+\newtheorem{definition}{Definition}
+\newtheorem{theorem}{Theorem}
+\usepackage{amsmath,amsfonts}
+\usepackage{cleveref}
+
 \input{macros}
 \newcommand{\copied}[1]{\textcolor{red}{[copied] #1}}
 \newcommand{\noemi}[1]{\textcolor{magenta}{Noemi: #1}}
