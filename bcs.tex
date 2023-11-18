@@ -1,15 +1,28 @@
 % \subsection{Anonymous Atomic Locks for coin mixing and cross-chain payments}
 \subsection{Cryptocurrency Mixers}
 
-\todo{citations \cite{ESORICS:RufMorKat14,EPRINT:SNBB19,ACSAC:TLKBS18,FC:BNMCKF14}, Bitcoin (CoinJoin, CoinShuffle)}
+\noemi{How to position this? Our focus will be on \emph{off-chain} mixers, whose focus is on enabling \emph{scalability} and \emph{interoperability} rather than privacy...}
+\todo{Talk about how these also solve scalability and interoperability?}
+
+\todo{citations \cite{ESORICS:RufMorKat14,EPRINT:SNBB19,ACSAC:TLKBS18,FC:BNMCKF14}, Bitcoin (CoinJoin, CoinShuffle), Bolt, Blindcoin, Mixcoin}
 Cryptocurrency mixers add a measure of $k$-anonymity to cryptocurrency tokens by employing a central party, or \emph{mixer}, to shuffle the tokens among users of the service. Users deposit their coins into the service, and later retrieve them again (using a different address, otherwise anonymity is trivially broken).
-Any particular token (retrieved from the mixer) cannot be tied to a particular source (user who deposited money from the mixer): each of the $k$ users is equally likely to be the source of a given token. For security, a mixer must offer \emph{atomicity}, i.e., a user pays $c$ coins if and only if the ``recipient'' (normally the same user, but under a new address) is paid $c-\epsilon$ coins (where $\epsilon$ is a parameter which represents the mixer and transaction fees). \todo{exit scams}
+Any particular token (retrieved from the mixer) cannot be tied to a particular source (user who deposited money from the mixer): each of the $k$ users is equally likely to be the source of a given token. For security, a mixer must offer \emph{atomicity}, i.e., a user pays $c+\epsilon$ coins if and only if the ``recipient'' (normally the same user, but under a new address) is paid $c$ coins ($\epsilon$ is a parameter which represents the mixer and transaction fees). \todo{exit scams}
 
-Mixers come in two flavors: on- and off-chain mixers. On-chain mixers~\cite{} are simply accounts into which users can deposit coins and later retrieve them (or allow another party to retrieve them) by redeeming some token, with atomicty enforced via an on-chain script.\noemi{check this} 
+Mixers come in two flavors: on- and off-chain mixers. On-chain mixers~\todo{\cite{}} are simply accounts into which users can deposit coins and later retrieve them (or allow another party to retrieve them) by redeeming some token, with atomicty enforced via an on-chain script.\noemi{check this} 
 
-Off-chain mixers normally require more complicated protocols to enforce the atomicity requirement without the scripting functionality offered by the underlying blockchain. One line of work, initiated by TumbleBit~\cite{NDSS:HABSG17} and extended by Anonymous Atomic Locks (\AAL)~\cite{SP:TaiMorMaf21}, relies on \emph{payment channels} and so-called \emph{adaptor signatures} to atomically complete payments on both the sender and recipient payment channels. \todo{Talk about how these also solve scalability and interoperability?}
+Off-chain mixers normally require more complicated protocols to enforce the atomicity requirement without the scripting functionality offered by the underlying blockchain. One line of work, initiated by TumbleBit~\cite{NDSS:HABSG17}, uses a protocol paradigm which we refer to as a \emph{synchronization puzzle}. A synchronization puzzle is a three-party protocol between a sender (Alice), a mixer (Hub), and a recipient (Bob) \todo{insert figure}. Synchronization puzzle protocols consist of four steps: (1) Hub and Bob execute \emph{puzzle promise} phase with respect to some message $m_{HB}$, which outputs a puzzle $\tau$ containing a hidden signature $s$ on $m_{HB}$. (2) Bob sends $\tau$ to Alice via a private channel, who (3) uses it to execute the \emph{puzzle solver} phase with Hub with respect to another message $m_{AH}$. At the end of this phase, Alice obtains the signature $s$ on $m_{HB}$ and Hub learns $s'$ on $m_{AH}$. To conclude, (4) Alice sends $s$ to Bob. A synchronization puzzle protocol should satisfy the following properties:
+\begin{itemize}
+    \item \textbf{Blindness}: In the puzzle solver phase, Hub \emph{blindly} helps solve $\tau$, i.e., the phase should not reveal anything about $\tau$ to Hub. (This keeps Alice and Bob unlinkable from the point of view of Hub.)
+    \item \textbf{Unlockability}: If the puzzle solver phase completes successfully, $s$ must be a valid secret for $\tau$. (This ensures that the Hub cannot learn $s'$ without revealing $s$.)
+    \item \textbf{Unforgeability}: Bob cannot output a valid signature $s$ on $m_{HB}$ before the puzzle solver phase completes. (This ensures Bob cannot learn $s$ without Hub learning $s'$.)
+\end{itemize}
+To use a synchronization puzzle to realize an atomic payment, the parties set $m_{AH} : (A \xrightarrow{c+\epsilon} H)$ and $m_{HB} : (H \xrightarrow{c} B)$, where $(U_i \xrightarrow{c} U_j)$ denotes a payment of $c$ coins from user $U_i$ to $U_j$. Then $s'$ and $s$ are set to the signatures authorizing $m_{AH}$ and $m_{HB}$, respectively. Thus, at the completion of the protocol Alice will have sent $c$ coins to Bob (and paid a fee of $\epsilon$ to Hub).
 
-\todo{TumbleBit...}
+Tumblebit realizes a synchronization puzzle via \todo{???}. 
+% TumbleBit is an off-chain Bitcoin mixer with strong unlinkability and security properties even against a malicious mixer. Underpinning their protocol is the new notion of a \emph{synchronization puzzle}, 
+
+\todo{describe \AAL sync puzzles (rerand enc + adaptor signatures)}
+Anonymous Atomic Locks (\AAL)~\cite{SP:TaiMorMaf21} uses so-called \emph{adaptor signatures} to atomically complete payments on both the sender and recipient payment channels.
 
 \subsubsection{Blind Conditional Signatures}
 In this section, we summarize the contributions and constructions of~\cite{CCS:GMMMTT22}. In this paper, we analyzed the \AAL protocol~\cite{SP:TaiMorMaf21} and found that, in contrast to its claims, it is not secure. Although \AAL was proven secure in the universal composability (UC)~\cite{FOCS:Canetti01} framework, we show that a gap in their formal model allows two constructions which are completely insecure despite meeting their definitions: one admits a key recovery attack and the other allows a colluding sender and recipient to steal coins from the mixer. To close this gap, we introduce a new primitive called blind conditional signtaures (BCS) which captures the core coin mixing functionality. We give game-based security definitions for BCS and show how to modify \AAL to obtain a new protocol, \AALplus, which meets these definitions. We also give a UC-secure construction of BCS, dubbed \AALUC, which requires much more complex machinery. 
