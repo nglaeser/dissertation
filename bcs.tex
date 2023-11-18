@@ -21,13 +21,35 @@ To use a synchronization puzzle to realize an atomic payment, the parties set $m
 Tumblebit realizes a synchronization puzzle via \todo{???}. 
 % TumbleBit is an off-chain Bitcoin mixer with strong unlinkability and security properties even against a malicious mixer. Underpinning their protocol is the new notion of a \emph{synchronization puzzle}, 
 
-\todo{describe \AAL sync puzzles (rerand enc + adaptor signatures)}
-Anonymous Atomic Locks (\AAL)~\cite{SP:TaiMorMaf21} uses so-called \emph{adaptor signatures} to atomically complete payments on both the sender and recipient payment channels.
+Before we describe the approach to instantiating synchronization puzzles taken by follow-up work~\cite{SP:TaiMorMaf21}, we introduce the notion of \emph{adaptor signatures}.
+
+\begin{definition}[adaptor signature~\cite{AC:AEEFHM21}]
+    An adaptor signature scheme $\Pi_\ADP := (\kgen, \presig, \prevrfy, \adapt, \vrfy, \ext)$ is defined with respect to a digital signature scheme $\Pi_\DS$ and an NP relation $\Rel$:
+    \begin{description}
+        \item[$\kgen(\secparam) \to (\vk, \sk)$:] The key generation algorithm is the same as in the underlying digital signature scheme, i.e., $\Pi_\DS.\kgen$.
+        \item[$\presig(\sk, m, Y) \to \tilde{\sigma}$:] The pre-signing algorithm takes as input a signing key $\sk$, message $m$, and instance $Y$ of the relation $\Rel$ and returns a pre-signature $\tilde{\sigma}$.
+        \item[$\prevrfy(\vk, m, Y, \tilde{\sigma}) \to \{0, 1\}$:] The pre-verification algorithm checks that a pre-signature is well-formed.
+        \item[$\adapt(\tilde{\sigma}, y) \to \sigma$:] Given a witness $y$ for the instance $Y$, this algorithm adapts the pre-signature $\tilde{\sigma}$ into a valid signature $\sigma$.
+        \item[$\vrfy(\vk, m, \sigma) \to \{0, 1\}$:] The verification algorithm is the same as in the underlying digital signature scheme, i.e., $\Pi_\DS.\vrfy$.
+        \item[$\ext(\tilde{\sigma}, \sigma, Y) \to y$:] Given a pre-signature $\tilde{sigma}$ and a signature $\sigma$ generated with respect to some instance $Y$, the extract algorithm outputs the corresponding witness $y$ such that $(Y, y) \in \Rel$.
+    \end{description}
+\end{definition}
+
+An adaptor signature scheme should satisfy the following properties: \emph{pre-signature correctness}, which guarantees that for all instances $Y \in \Lang_Rel$ and honestly generated $\tilde{\sigma}, \sigma$, the pre-signature and signature pass (pre-)verification and the extracted witness $y' \gets \ext(\tilde{\sigma}, \sigma, Y)$ should satisfy $(Y, y') \in \Rel$; \emph{unforgeability}, which is a straightforward extension of the standard existential unforgeability notion (EUF-CMA) for digital signatures; \emph{pre-signature adaptability}, which states that for any $Y \in \Lang_\Rel$ and corresponding pre-signature $\tilde{\sigma}$, pre-verification implies that $\tilde{\sigma}$ can be adapted to a verifying signature $\sigma$; and \emph{witness extractability}, which says that it is difficult for an adversary to adapt an honestly-generated pre-signature $\tilde{\sigma}$ into a signature $\sigma$ which verifies but where $y' \gets \ext(\tilde{\sigma}, \sigma, Y)$ such that $(Y, y') \notin \Lang_\Rel$. We refer the reader to \cite{CCS:GMMMTT22} for formal definitions.
+
+Anonymous Atomic Locks (\AAL)~\cite{SP:TaiMorMaf21} uses a rerandomizable CPA-secure encryption scheme $\Pi_\ENC$ and an \emph{adaptor signature} scheme $\Pi_\ADP$ to realize a synchronization puzzle which is compatible with a wider range of cryptocurrencies. \todo{...}
+
 
 \subsubsection{Blind Conditional Signatures}
 In this section, we summarize the contributions and constructions of~\cite{CCS:GMMMTT22}. In this paper, we analyzed the \AAL protocol~\cite{SP:TaiMorMaf21} and found that, in contrast to its claims, it is not secure. Although \AAL was proven secure in the universal composability (UC)~\cite{FOCS:Canetti01} framework, we show that a gap in their formal model allows two constructions which are completely insecure despite meeting their definitions: one admits a key recovery attack and the other allows a colluding sender and recipient to steal coins from the mixer. To close this gap, we introduce a new primitive called blind conditional signtaures (BCS) which captures the core coin mixing functionality. We give game-based security definitions for BCS and show how to modify \AAL to obtain a new protocol, \AALplus, which meets these definitions. We also give a UC-secure construction of BCS, dubbed \AALUC, which requires much more complex machinery. 
 
-\paragraph{Counterexamples to \AAL.} We show that there exist cryptographic primitives which satisfy the prerequisites of \AAL's main theorem, but allow (a) a \emph{key recovery attack}, in which a malicious user is able to learn the long-term secret of the hub or (b) a \emph{one-more signature attack}, in which a sender and recipient can collude to obtain $n$ tokens from the hub while only sending $n-1$ tokens. Both attacks run in polynomial time and succeed with overwhelming probability. \todo{write intuitive explanation of the attacks, refer to full paper for details}
+\paragraph{Counterexamples to \AAL.} We show that there exist cryptographic primitives which satisfy the prerequisites of \AAL's main theorem, but allow \textit{(a)} a \emph{key recovery attack}, in which a malicious user is able to learn the long-term secret of the hub or \textit{(b)} a \emph{one-more signature attack}, in which a sender and recipient can collude to obtain $n$ tokens from the hub while only sending $n-1$ tokens. Both attacks run in polynomial time and succeed with overwhelming probability. These instantiations of \AAL are specifically crafted allow an attack and do not imply that all instantiations of \AAL are broken; however, we cannot prove the security of \AAL either. This gap is discussed further below.
+
+Below we give informal descriptions of both attacks below. We refer the reader to \cite{CCS:GMMMTT22} for detailed descriptions and analysis. Both attacks rely on the fact that the \AAL protocol offers a malicious Alice what amounts to a decryption oracle. This oracle, which we refer to as $\oracle^\text{\AAL}$, takes as input a verification key $\vk$, message $m$, group element $h$, ciphertext $c$, and pre-signature $\tilde{\sigma}$. It computes \todo{...}
+
+\textit{Key recovery attack.} 
+
+\todo{write intuitive explanation of the attacks, refer to full paper for details}
 
 \paragraph{Definitions.} \todo{Write game-based defs, refer reader to A2L and our paper for UC ideal functionality}
 
