@@ -14,6 +14,9 @@
 
 % math
 \newcommand{\ZZ}{\ensuremath{\mathbb{Z}}}
+\newcommand{\NN}{\ensuremath{\mathbb{N}}}
+\newcommand{\prob}[1]{\ensuremath{\Pr\left[#1\right]}}
+\newcommand{\suchthat}{\ensuremath{\mathrm{~s.t.~}}}
 
 % primitives
 \newcommand{\ENC}{\ensuremath{\mathsf{E}}}
@@ -23,8 +26,12 @@
 \newcommand{\BCS}{\ensuremath{\mathsf{BCS}}}
 
 %%% cryptography
-\newcommand{\secpar}{\ensuremath{\lambda}}
-\newcommand{\secparam}{\ensuremath{1^\secpar}}
+\newcommand{\negln}[1]{\ensuremath{\mathsf{negl}_{#1}}}
+\newcommand{\neglnf}[1]{\ensuremath{\mathsf{negl}_{#1}(\secpar)}}
+\newcommand{\negl}{\ensuremath{\mathsf{negl}(\secpar)}}
+\newcommand{\adv}{\ensuremath{\mathcal{A}}}
+% \newcommand{\secpar}{\ensuremath{\lambda}}
+% \newcommand{\secparam}{\ensuremath{1^\secpar}}
 \newcommand{\sample}{\ensuremath{\stackrel{\$}{\gets}}}
 \newcommand{\Rel}{\ensuremath{\mathcal{R}}}
 \newcommand{\Lang}{\ensuremath{\mathcal{L}}}
@@ -33,18 +40,32 @@
 \newcommand{\oracle}{\ensuremath{\mathcal{O}}}
 \newcommand{\oaal}{\ensuremath{\oracle^{\sf A^2L}}}
 % common algorithms
+\newcommand{\setup}{\ensuremath{\mathsf{Setup}}}
 \newcommand{\kgen}{\ensuremath{\mathsf{KGen}}}
 \newcommand{\enc}{\ensuremath{\mathsf{Enc}}}
 \newcommand{\dec}{\ensuremath{\mathsf{Dec}}}
 \newcommand{\ext}{\ensuremath{\mathsf{Ext}}}
+\newcommand{\sign}{\ensuremath{\mathsf{Sign}}}
 \newcommand{\vrfy}{\ensuremath{\mathsf{Vrfy}}}
 % keys
 \newcommand{\vk}{\ensuremath{\mathsf{vk}}}
 \newcommand{\sk}{\ensuremath{\mathsf{sk}}}
 \newcommand{\ek}{\ensuremath{\mathsf{ek}}}
 \newcommand{\dk}{\ensuremath{\mathsf{dk}}}
+
+%%%%% BCS specific stuff %%%%%
+\newcommand{\alice}{\ensuremath{\mathit{A}}}
+\newcommand{\bob}{\ensuremath{\mathit{B}}}
 % adaptor sigs
 \newcommand{\presign}{\ensuremath{\mathsf{PreSig}}}
 \newcommand{\prevrfy}{\ensuremath{\mathsf{PreVrfy}}}
 \newcommand{\adapt}{\ensuremath{\mathsf{Adapt}}}
 \newcommand{\presig}{\ensuremath{\tilde{\sigma}}}
+% BCS algos
+\newcommand{\Promise}{\ensuremath{\mathsf{PPromise}}}
+\newcommand{\Pay}{\ensuremath{\mathsf{PSolver}}}
+\newcommand{\open}{\ensuremath{\mathsf{Open}}}
+% BCS games
+\newcommand{\expUnlink}{\ensuremath\mathsf{ExpBlnd}}
+\newcommand{\expUnlock}{\ensuremath\mathsf{ExpUnlock}}
+\newcommand{\expSec}{\ensuremath\mathsf{ExpUnforg}}
