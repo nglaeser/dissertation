@@ -1,10 +1,10 @@
 \section{Introduction}
 
-Bitcoin~\cite{bitcoin} was the first digital currency to successfully implement a fully trustless and decentralized payment system. Its underlying innovation was the \emph{blockchain}, a distributed append-only ledger to record transactions. Its consistency is enforced via a ``proof-of-work'' (PoW) consensus mechanism in which participants solve difficult computational puzzles (hash preimages) to append the newest bundle of transactions (block) to the chain. 
+Bitcoin~\cite{bitcoin} was the first digital currency to successfully implement a fully trustless and decentralized payment system. Its underlying innovation was the \emph{blockchain}, a distributed append-only ledger to record transactions. The blockchain's consistency is enforced via a ``proof-of-work'' (PoW) consensus mechanism in which participants solve difficult computational puzzles (hash preimages) to append the newest bundle of transactions (a block) to the chain. 
 
 Ethereum~\cite{ethereum} introduced programmability via \emph{smart contracts}, special applications which sit on top of the consensus layer and can maintain state and modify it programmatically. This has led to the emergence of a number of \emph{decentralized applications} enabling more diverse functionalities in a trustless manner.
 
-This proposal describes various applications of cryptography to blockchains. In \Cref{sec:building-blocks}, I discuss work on privacy-enhancing building blocks of blockchains, namely zero-knowledge proofs. In particular, I summarize my work adding universally composable security to zero-knowledge proofs with updatable common reference strings~\cite{CSF:AGRS24}. \Cref{sec:applications} moves on to privacy-enchancing blockchain applications, specifically my work analyzing the security of a class of coin mixing services~\cite{CCS:GMMMTT22} and designing a framework for non-interactive and private on-chain elections and auctions~\cite{EPRINT:GSZB23}. Finally, in \Cref{sec:proposed}, I discuss my proposed work: a new construction for a threshold cryptocurrency wallet and a systematic analysis of approaches to key distribution on-chain.
+This proposal describes various applications of cryptography to blockchains. In \Cref{sec:building-blocks}, I discuss work on privacy-enhancing building blocks of blockchains, namely zero-knowledge proofs. In particular, I summarize my work adding universally composable security to zero-knowledge proofs with updatable common reference strings~\cite{CSF:AGRS24}. \Cref{sec:applications} moves on to privacy-enchancing blockchain applications, specifically my work analyzing the security of a class of coin mixing services~\cite{CCS:GMMMTT22} and designing a framework for non-interactive and private on-chain elections and auctions~\cite{EPRINT:GSZB23}. Finally, in \Cref{sec:proposed}, I discuss my proposed work: a new construction for a threshold cryptocurrency wallet and a systematic analysis of approaches to on-chain key distribution.
 
 % \subsection{Universal Composability (UC) Framework}
 
@@ -32,9 +32,8 @@ This proposal describes various applications of cryptography to blockchains. In 
 %     We say a protocol $\Pi$ \emph{UC-realizes} an ideal functionality $\F$ if for any PPT adversary $\adv$, there exists a simulator $\Sim$ such that for any environment $\env$, the distribution ensembles $\{ \real_{\Pi,\adv,\env}(\secpar, x) \}_{\secpar \in \mathbb{N}, x \in \{0,1\}^*}$ and $\{ \ideal_{\F,\Sim,\env}(\secpar,\allowbreak x) \}_{\secpar \in \mathbb{N},x \in \{0,1\}^*}$ are computationally indistinguishable.
 % \end{definition}
 
-\subsection{Notation} % and preliminaries}
-
-We use $x \sample \mathcal{S}$ to denote sampling an element $x$ uniformly at random from a set $\mathcal{S}$.
+\paragraph{Notation.} % and preliminaries}
+I use $x \sample \mathcal{S}$ to denote sampling an element $x$ uniformly at random from a set $\mathcal{S}$.
 
 % \begin{definition}[NP Relation]
 %     An NP relation $\Rel$ is \todo{...}
