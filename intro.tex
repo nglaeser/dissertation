@@ -1,29 +1,55 @@
 \section{Introduction}
 
-Bitcoin~\cite{bitcoin} was the first digital currency to successfully implement a fully trustless and decentralized payment system. \todo{...} Ethereum~\cite{ethereum} introduced programmability via \emph{smart contracts} \todo{...}
+Bitcoin~\cite{bitcoin} was the first digital currency to successfully implement a fully trustless and decentralized payment system. Its underlying innovation was the \emph{blockchain}, a distributed append-only ledger to record transactions. Its consistency is enforced via a ``proof-of-work'' (PoW) consensus mechanism in which participants solve difficult computational puzzles (hash preimages) to append the newest bundle of transactions (block) to the chain. 
 
-\subsection{Model} 
+Ethereum~\cite{ethereum} introduced programmability via \emph{smart contracts}, special applications which sit on top of the consensus layer and can maintain state and modify it programmatically. This has led to the emergence of a number of \emph{decentralized applications} enabling more diverse functionalities in a trustless manner.
 
-\subsection{Universal Composability (UC) Framework}
+This proposal describes various applications of cryptography to blockchains. In \Cref{sec:building-blocks}, I discuss work on privacy-enhancing building blocks of blockchains, namely zero-knowledge proofs. In particular, I summarize my work adding universally composable security to zero-knowledge proofs with updatable common reference strings~\cite{CSF:AGRS24}. \Cref{sec:applications} moves on to privacy-enchancing blockchain applications, specifically my work analyzing the security of a class of coin mixing services~\cite{CCS:GMMMTT22} and designing a framework for non-interactive and private on-chain elections and auctions~\cite{EPRINT:GSZB23}. Finally, in \Cref{sec:proposed}, I discuss my proposed work: a new construction for a threshold cryptocurrency wallet and a systematic analysis of approaches to key distribution on-chain.
 
-\subsection{Notation and preliminaries}
+% \subsection{Universal Composability (UC) Framework}
+
+% \copied{This section is copied from the KSP overleaf}
+
+% The universal composability (UC) framework~\cite{FOCS:Canetti01} defines the security requirements of a protocol via an \emph{ideal functionality} which is executed by a trusted party. To prove that a protocol \emph{UC-realizes} a given ideal functionality, we show that the execution of this protocol (in the real or hybrid world) can be \emph{emulated} in the ideal world, where in both worlds there is an additional adversary $\env$ (the environment) which models arbitrary concurrent protocol executions. Specifically, we show that for any adversary $\adv$ attacking the protocol execution in the real world (by controlling communication channels and corrupting parties involved in the protocol execution), there exists an adversary in the ideal world (the simulator) $\Sim$ who can produce a protocol execution which no environment $\env$ can distinguish from the real-world execution.
+
+% All parties are represented as probabilistic interactive Turing machines (ITMs) with input, output, and communication tapes. For simplicity, we assume that all communication is authenticated, so an adversary can only delay but not forge or modify messages from parties involved in the protocol. Therefore, the order of message delivery is also not guaranteed (asynchronous communication). We consider a PPT malicious, adaptive adversary who can corrupt or tamper with parties at any point during the protocol execution (modeled in the ideal world via the interfaces in \cref{fig:FSign3}).
+
+% The execution in both worlds consists of a series of sequential party activations. Only one party can be activated at a time (by writing a message on its input tape). In the real world, the execution of a protocol $\Pi$ occurs among parties $P_1, \dots, P_n$ with adversary $\adv$ and environment $\env$. In the ideal world, interaction takes place between dummy parties $\tilde{P}_1, \dots, \tilde{P}_n$ communicating with the ideal functionality $\F$, with the adversary (simulator) $\Sim$ and environment $\env$. In both cases, the environment is activated first and activates either the adversary ($\adv$ resp. $\Sim$) or an uncorrupted (dummy) party by writing on its input tape. If $\adv$ (resp. $\Sim$) is activated, it can take an action or return control to $\env$. After a (dummy) party (or $\F$) is activated, control returns to $\env$. The protocol execution ends when $\env$ completes an activation without writing on the input tape of another party.
+
+% We denote with $\real_{\Pi,\adv,\env}(\secpar,x)$ the random variable describing the output of the real-world execution of $\Pi$ with security parameter $\secpar$ and input $x$ in the presence of adversary $\adv$ and environment $\env$. We write the corresponding distribution ensemble as $\{ \real_{\Pi,\adv,\env}(\secpar, x) \}_{\secpar \in \mathbb{N}, x \in \{0,1\}^*}$. The output of the ideal-world interaction with ideal functionality $\F$, adversary (simulator) $\Sim$, and environment $\env$ is represented by the random variable $\ideal_{\F,\Sim,\env}(\secpar, x)$ and corresponding distribution ensemble $\{ \ideal_{\F,\Sim,\env}(\secpar, x) \}_{\secpar \in \mathbb{N}, x \in \{0,1\}^*}$.
+
+% The actions each party can take are summarized below:
+% \begin{itemize}
+%     \item Environment $\env$: \textbf{read} output tapes of the adversary ($\adv$ or $\Sim$) and any uncorrupted (dummy) parties; \textbf{write} on the input tape of one party (the adversary $\adv$ or $\Sim$ or any uncorrupted (dummy) parties).
+%     \item Adversary $\adv$: \textbf{read} its own tapes and the outgoing communication tapes of all parties; \textbf{deliver} a pending message to party by writing on its input tape \emph{or} \textbf{corrupt} a party (which becomes inactive: its tapes are given to $\adv$ and $\adv$ controls its actions from this point on, and $\env$ is notified of the corruption).
+%     \item Real-world party $P_i$: only follows its code (potentially writing to its output tape or sending messages via its outgoing communication tape).
+%     \item Dummy party $\tilde{P}_i$: acts only as a simple relay with the ideal functionality $\F$, copying inputs from its input tape to its outgoing communication tape (to $\F$) and any messages received on its ingoing communication tape (from $\F$) to its output tape.
+%     \item Adversary $\Sim$: \textbf{read} its own input tape and the public headers of the messages on $\F$'s and dummy parties' outgoing communication tapes; \textbf{send} a message to $\F$ by writing on its incoming incoming communication tape \emph{or} \textbf{deliver} a message from $\F$ to a dummy party by copying it from $\env$'s outgoing communication tape to the dummy party's incoming communication tape \emph{or} \textbf{corrupt} a dummy party (which becomes inactive: its tapes are given to $\Sim$ and $\Sim$ controls its actions from this point on, and $\env$ and $\F$ are notified of the corruption).
+%     \item Ideal functionality $\F$: \textbf{read} incoming communication tape; \textbf{send} messages to the dummy parties and/or adversary $\Sim$ by writing to its outgoing communication tape.
+% \end{itemize}
+
+% \begin{definition}
+%     We say a protocol $\Pi$ \emph{UC-realizes} an ideal functionality $\F$ if for any PPT adversary $\adv$, there exists a simulator $\Sim$ such that for any environment $\env$, the distribution ensembles $\{ \real_{\Pi,\adv,\env}(\secpar, x) \}_{\secpar \in \mathbb{N}, x \in \{0,1\}^*}$ and $\{ \ideal_{\F,\Sim,\env}(\secpar,\allowbreak x) \}_{\secpar \in \mathbb{N},x \in \{0,1\}^*}$ are computationally indistinguishable.
+% \end{definition}
+
+\subsection{Notation} % and preliminaries}
 
 We use $x \sample \mathcal{S}$ to denote sampling an element $x$ uniformly at random from a set $\mathcal{S}$.
 
-\begin{definition}[NP Relation]
-    An NP relation $\Rel$ is \todo{...}
+% \begin{definition}[NP Relation]
+%     An NP relation $\Rel$ is \todo{...}
 
-    The language corresponding to $\Rel$ is defined as $\Lang_\Rel := \{ Y : \exists y \text{ such that } (Y, y) \in \Rel \}$.
-\end{definition}
+%     The language corresponding to $\Rel$ is defined as $\Lang_\Rel := \{ Y : \exists y \text{ such that } (Y, y) \in \Rel \}$.
+% \end{definition}
 
-\begin{definition}[CPA-security]
-    An encryption scheme $\Pi_\ENC$ is said to be CPA-secure if \todo{...}
-\end{definition}
+% \begin{definition}[CPA-security]
+%     An encryption scheme $\Pi_\ENC$ is said to be CPA-secure if \todo{...}
+% \end{definition}
 
-\begin{definition}[Rerandomizable encryption]
-    An rerandomizable encryption scheme $\Pi_\ENC$ has an additional algorithm $\sf Rand$ \todo{...}
-\end{definition}
+% \begin{definition}[Rerandomizable encryption]
+%     An rerandomizable encryption scheme $\Pi_\ENC$ has an additional algorithm $\sf Rand$ \todo{...}
+% \end{definition}
 
-\begin{definition}[existential unforgeability]
-    A digital signature scheme $\Pi_\DS$ is said to be existentially unforgeable (or EUF-CMA-secure) if \todo{...}
-\end{definition}
+% \begin{definition}[existential unforgeability]
+%     A digital signature scheme $\Pi_\DS$ is said to be existentially unforgeable (or EUF-CMA-secure) if \todo{...}
+% \end{definition}

@@ -1,2 +1,27 @@
-\subsection{Registration-Based Encryption as a Web3 service}
-\noemi{Unclear if this can be included}
+\subsection{SoK: On-chain key management}\label{sec:sok}
+
+In \cite{CCS:GKMR23} we introduced the first efficient construction of registration-based encryption (RBE). RBE can be seen as a transparent version of identity-based encryption (IBE)~\cite{C:Shamir84} in which the trusted third party (TTP) is replaced with an untrusted, transparent \emph{key curator} (KC). This allows encryption directly to the identity (i.e., some unique identifying string such as a username or phone number) of any party registered in the system. The transparent nature of the KC, who simply accumulates the public keys of registering parties into a succinct and publicly available key registry ``digest'', makes RBE a natural fit to the blockchain. With an efficient construction now available, such a deployment is a realistic possibility.
+
+An important problem in all secure systems is correctly linking identities to public keys. The usual approach in classic networks is some kind of public key infrastructure (PKI), but the trustless and decentralized nature of blockchains offers alternative trust-minimized approaches. I propose a detailed analysis of the tradeoffs between various approaches to key distribution that can be deployed on-chain in the form of a systematization of knowledge (SoK). These include a simple public-key registry (PKR) of identity-public key pairs (the existing Ethereum Name Service (ENS)~\cite{ens} is an example), (threshold) IBE, and RBE. For the case of sending encrypted messages, \Cref{tab:pki-comparison} gives an initial comparison of a simple public-key registry (where a list of identity-public key pairs are stored on-chain), the Boneh-Franklin IBE~\cite{C:BonFra01} with a secret-shared master secret key, and our efficient RBE construction~\cite{CCS:GKMR23}.
+
+\newcommand{\med}{\LEFTcircle}
+\begin{table}[htb]
+    \centering
+    \begin{tabular}{lccc}
+        \toprule
+            & Public-key registry & Threshold IBE & RBE \\
+        \midrule
+        Succinct on-chain storage    & \xmark & \cmark & \med   \\
+        Non-interactive encryption   & \med   & \cmark & \med   \\
+        Non-interactive decryption   & \cmark & \cmark & \med   \\
+        Sender-anonymous             & \med   & \cmark & \cmark \\
+        Recipient-anonymous          & \cmark & \xmark & \med   \\
+        No TTP                       & \cmark & \med   & \cmark \\
+        Arbitrary IDs                & \cmark & \cmark & \cmark$^*$ \\
+        \bottomrule
+    \end{tabular}
+    \caption{Properties of an on-chain public key registry, threshold IBE~\cite{C:BonFra01}, and RBE~\cite{CCS:GKMR23}. ``Succint'' storage means constant (\cmark) or sublinear (\med) in the number of parties, non-interactive means only once (\cmark) or infrequently (\med) in the lifetime of the system.
+    Since the PKR keeps the full list of keys on-chain, it does not have succinct storage; furthermore, the sender occasionally has to retrieve the public key for a new recipient, so encryption and sender-anonymity are not fully achieved. Meanwhile threshold IBE ciphertexts do not normally hide the recipient~\cite{EC:BLSV18} and rely on a set of TTPs. Finally, recipient-anonymity can be added to the RBE construction (\med) as an extension; the asterisk indicates that arbitrary identity strings for RBE are enabled by a follow-up work~\cite{AC:FioKolPer23}.}\label{tab:pki-comparison}
+\end{table}
+
+A more in-depth evaluation would include various proposed alternatives to storing the full PKR on-chain while maintaining transparency~\cite{USENIX:MBBFF15,CCS:CDGM19,FCW:Bonneau16b,SP:TomDev17,EPRINT:MKSGOLL23}. Furthermore, our basic RBE construction of did not consider key updates or revocation, which are important in practice, but recent work~\cite{AC:FioKolPer23} has made progress in that direction and should be incorporated into the analysis. I am also working on a smart contract implementation of the RBE construction to get a more accurate comparison of the on-chain costs of the aforementioned approaches.

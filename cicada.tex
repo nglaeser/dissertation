@@ -1,5 +1,271 @@
-\subsection{On-chain private voting}
+\subsection{On-chain private voting and auctions}\label{sec:cicada}
+
+\textit{(Parts of this section are taken/adapted from \cite{EPRINT:GSZB23}.)}
+
+The application layer can provide more varied functionalities than simply adding anonymity to payments. This includes on-chain auctions and voting, which are are becoming increasingly requested web3 applications.
+Decentralized marketplaces run auctions to sell digital goods like non-fungible tokens (NFTs)~\cite{opensea_auction} or domain names~\cite{ARXIV:XWYLLX21}, while decentralized autonomous organizations (DAOs) deploy voting schemes to enact decentralized governance~\cite{optimismgov}. 
+Most auction or voting schemes currently deployed on blockchains, e.g., NFT auctions on OpenSea or Uniswap governance~\cite{ARXIV:FMW22}, lack bid/ballot privacy. This can negatively influence user behavior, for example, by vote herding or discouraging participation~\cite{FC:ElkLip04,WTSC:GalYou18,FC:SuzYok03}. The lack of privacy can cause surges in congestion and transaction fees as users try to outbid each other to participate, a negative externality for the entire network.
+    
+%-----------------------------BEGIN Approaches Table---------------------------
+\begin{table*}[tb]
+    \footnotesize
+    \centering
+    \makebox[\linewidth]{
+     \setlength{\tabcolsep}{3pt}
+     \setlength{\belowbottomsep}{6pt}
+    %  \newcolumntype{R}{>{\begin{turn}{90}\begin{minipage}}r%
+    % <{\end{minipage}\end{turn}}%
+    % }
+    %  \newcolumntype{v}{>{\rotatebox{270}}r<{}}}
+     \begin{tabular}{lccccc} 
+     \toprule
+      \textbf{Approach} & NI        & No TTPs   &Efficient & Tally privacy & Ev. ballot privacy \\
+    \midrule 
+    Commit-reveal~\cite{AUSC:FOO93,WTSC:GalYou18}              & \xmark                 & \cmark   &\cmark    &\cmark & \xmark     \\ %\color{green}{One-way functions} \\
+    Zero-knowledge proofs~\cite{maci}              & \xmark                 & \xmark   &\cmark    &\cmark & \cmark     \\ %\color{green}{One-way functions} \\
+    Fully homomorphic TLPs~\cite{C:MalThy19}  & \cmark                 & \cmark   &\xmark    &\cmark & \xmark     \\ %\color{red}{Indistinguishability Obfuscation} \\
+    FHE~\cite{STOC:Gentry09,PQCRYPTO:CGGI16,CCS:DLNS17}                              & \cmark                 & \xmark   &\xmark    &\cmark & \cmark     \\ %\color{green}{Bounded Distance Decoding Problem} \\
+    %Functional encryption~\cite{boneh2011functional}&\color{green}{$1$}&\cmark&\cmark&\xmark& \\
+    Multi-party computation~\cite{FC:BDJNPT06,C:AOZZ15}                        & \xmark                 & \LEFTcircle &\cmark    &\cmark & \cmark     \\ %\color{red}{Trusted third parties}& \\
+    TLPs + homomorphic encryption~\cite{ESORICS:CJSS21}                    & \cmark                 & \LEFTcircle   &\cmark    &\cmark & \xmark     \\\midrule
+    HTLPs (our approach)                                    & \cmark                 & \cmark$^{*}$   &\cmark     & \cmark & \LEFTcircle \\ %\color{yellow}{Sequentiality of repeated squaring}~\cite{rotem2020generically}\\[1ex]
+     \bottomrule
+     $^{*}$ when using class groups &&&&&
+    \end{tabular}
+    }
+    \caption{Qualitative comparison of major cryptographic approaches for designing private auction/voting schemes. 
+    % (H)TLP stands for (homomorphic) time-lock puzzle. 
+    %Our approach can support everlasting privacy while remaining non-interactive and efficient. 
+    % No TTPs refer to the absence of trusted third parties. 
+    % An asterisk indicates that those schemes can be instantiated with a transparent setup using class groups, cf.~\Cref{sec:feasability}.}
+    NI = non-interactive, Ev. = everlasting. \cite{C:AOZZ15,ESORICS:CJSS21} require a trusted setup but no TTP. Everlasting ballot privacy can be added to our approach via an extension discussed in \cite{EPRINT:GSZB23}.
+    }
+    \label{table:approaches}
+    \end{table*}
+    %------------------------------END Approaches Table---------------------------
+
+Existing private voting protocols~\cite{maci,plume,rln} achieve privacy at the cost of introducing a trusted authority who is still able to view all submissions.
+Alternatively, the only private \emph{and} trustless auction in deployment we are aware of~\cite{ARXIV:XWYLLX21} uses a two-round commit-reveal protocol: in the first round, every party commits to their bid, and in the second round they open the commitments and the winner can be determined.
+Other protocols relying on more heavyweight cryptographic building blocks have been proposed in the literature.
+We summarize the various approaches for private voting and auctions in \Cref{table:approaches}.
+Unfortunately, all of them suffer from at least one of the following limitations, hindering widespread adoption:
+
+\begin{description}
+    \item[Interactivity.] Interactivity is a usability hurdle that often causes friction in the protocols' execution. Mandatory bid/ballot reveals are also a target for censorship.     
+    %\item[Lack of censorship-resistance]  Voting and auction schemes can be easily censored due to their public nature.
+    A malicious party can bribe the block proposers to exclude certain bids or ballots until the auction/voting ends~\cite{ARXIV:PaiResFox23}. %With bid/ballot privacy the cost of censorship can be increased substantially.
+    %
+    \item[Trusted third party (TTP).] Many schemes use a trusted coordinator to tally submissions during the voting/bidding phase. This introduces a strong assumption which is at odds with the trustless ethos of the blockchain ecosystem.
+    %
+    \item[Inefficiency.] Introducing more complicated cryptographic primitives such as fully-homomorphic encryption (FHE) introduces additional overheads which can incur extra gas fees or at least extra time for all participants.
+\end{description}
 
 \subsubsection{Contribution: Cicada, a framework for private non-interactive on-chain auctions and voting}
 
-In this section, we summarize the contributions and constructions of~\cite{EPRINT:GSZB23}. \todo{...}
+We introduce Cicada, a general framework for practical, privacy-preserving, and trust-minimized protocols for both auctions and voting. 
+Cicada uses time-lock puzzles (TLPs)~\cite{RSW96} to achieve \emph{privacy and non-interactivity} in a trustless and efficient manner.
+A TLP allows a party to ``encrypt'' a message to the future. Specifically, to recover the solution, one needs to perform a computation that is believed to be inherently sequential, with a parameterizable number of steps.
+Intuitively, the TLPs play the role of commitments to bids/ballots that any party can open after a predefined time, avoiding the reliance on a second \emph{reveal} round. 
+
+% \paragraph{(Homomorphic) Time-lock puzzles}
+% A time-lock puzzle (TLP) allows a party to ``encrypt'' a message to the future. Specifically, to recover the solution, one needs to perform a computation that is believed to be inherently sequential, with a parameterizable number of steps.
+
+% \begin{definition}[Time-lock puzzle~\cite{RSW96}] A time-lock puzzle scheme $\sf TLP$ consists of the following three efficient algorithms:
+%     \begin{description}
+%         \item[$\mathsf{TLP.Setup}(\secparam, \Ttime) \randout \pp$.] The (potentially trusted) setup algorithm takes as input a security parameter $\secparam$ and a difficulty (time) parameter $\Ttime$, and outputs public parameters $\pp$. % (usually a group $\mathbb{G}$ with $\lambda$ bits of security). 
+%         % Typically $\mathbb{G}$ is a group of unknown order, e.g., the group $\mathbb{Z}^{*}_N$. 
+%         \item[$\mathsf{TLP.Gen}(\pp, s) \randout Z$.] Given a solution $s\in\ZZ$, the puzzle generation algorithm efficiently computes a time-lock puzzle $Z\in\mathbb{G}$.
+%         \item[$\mathsf{TLP.Solve}(\pp, Z) \rightarrow s$.] Given a TLP $Z$, the puzzle solving algorithm requires at least $\Ttime$ sequential steps to output the solution $s$.
+%     \end{description}
+% \end{definition}
+% Informally, we say that a TLP scheme is \emph{correct} if $\mathsf{TLP.Gen}$ is efficiently computable and $\tlp.{\sf Solve}$ always recovers the original solution $s$ to a validly constructed puzzle. A TLP scheme is \emph{secure} if $Z$ hides the solution $s$ and no adversary can compute $\mathsf{TLP.Solve}$ in fewer than $\Ttime$ steps with non-negligible probability. For the formal definitions, we refer the reader to~\cite{C:MalThy19}.
+
+Since solving a TLP is computationally intensive, ideally, an efficient protocol would require solving only a sublinear number of TLPs (in the number of voters/bidders). Cicada achieves this via \emph{homomorphic} TLPs (HTLPs): bids/ballots encoded as HTLPs can be ``squashed'' into a sublinear number of TLPs. Fully homomorphic TLPs are not practically efficient, but Malavolta and Thyagarajan~\cite{C:MalThy19} introduced efficient additively and multiplicatively homomorphic TLP constructions which we will describe below. This is clearly enough for simple constructions like first-past-the-post (FPTP) voting, but it remained an open problem how to apply HTLPs to realize more complicated auction and voting protocols, e.g., cumulative voting.
+% $\htlp$s allow an evaluator to compute a function $f$ homomorphically on TLPs  $Z_0,\dots,Z_k$ to obtain a puzzle $Z^* = f(Z_0,\dots,Z_k)$ such that for the corresponding puzzle solutions $s_0, \dots, s_k, s^*$, it holds that $f(s_0,\dots,s_k)=s^{*}$. Concretely efficient $\htlp$ constructions are known for addition, multiplication, and XOR. These are already powerful building blocks for first-past-the-post, range and approval voting, which only require adding together votes. 
+% Linearly homomorphic TLPs are practical by instantiating them with an elegant scheme derived from the Paillier-encryption scheme~\cite{paillier1999public}.
+% ~\cite{malavolta2019homomorphic} showed how to conduct private auctions using a fully-homomorphic TLP. Sadly, fully homomomorphic TLPs are currently not practically efficient and therefore are primarily of theoretical interest. They left devising efficient auction and voting protocols using their techniques to future work. 
+
+We show how to use HTLPs to build practically efficient, private, and non-interactive protocols for a special class of auction and voting schemes where the tallying procedure can be expressed as a linear function. We show that this limited class nonetheless includes many schemes of interest:
+\begin{description}
+    \item[Majority, approval, range, and cumulative voting.] In majority/FPTP voting, users can cast a $1$ (support) vote for a single candidate (or cause) and give $0$ (oppose) to the others. Approval voting is a slight generalization of binary voting, where users can submit several binary votes for multiple candidates, i.e., the cast ballot $s$ can be seen as $s\in\{0,1\}^{m}$, where $m$ is the number of causes. In a range voting scheme (or score voting), users can give each candidate some weight between $0$ and $w$. A similar scheme is cumulative voting, where users can distribute $w$ votes (points) among the candidates. In each case, each candidate's points are tallied and the candidate with the highest number is declared the winner.
+    \item[Ranked-choice voting.] In a ranked-choice voting scheme, voters can signal more fine-grained preferences among $m$ candidates by listing them in order of preference. There are multiple approaches to determining the winner, including single transferrable vote (STV) and instant runoff voting (IRV). In this work, we focus on the simpler Borda count version~\cite{Emerson13}, where each voter can cast $m-1$ points to their first-choice candidate, $m-2$ points to their second-choice candidate, etc., and the candidate with the most points is the winner. Our protocols can be adapted to similar counting functions, such as the Dowdall system~\cite{FraGro14}, via minor modifications.
+    \item[Quadratic voting.] In quadratic voting~\cite{AEA:LalWey18}, each user's ballot is a vector $\vec{b} = (b_1, \dots, b_m)$ such that $\langle \vec{b}, \vec{b} \rangle = \lVert \vec{b} \rVert^2_2 = \sum_i b_i^2 \leq w$. Once again, the winner is determined by summing all the ballots and determining the candidate with the most points. 
+    % However, proving ballot well-formedness efficiently in this particular case benefits greatly from the novel application of the residue numeral system (RNS) to private voting (see~\Cref{sec:packing}).
+\end{description}
+
+    % \item[One-round protocol.] We argue that usability is one of the major challenges of deploying privacy-preserving voting and auction protocols in practice. Multi-round protocols, e.g., commit-reveal-style protocols, have incentive compatibility issues and considerable usability hurdles. We solve these pressing issues with efficient one-round protocols.  
+
+    % \item[Ballot/bid privacy.] Last but not least, we want to achieve ballot/bid privacy. Our approach naturally provides ballot/bid privacy till the end of the voting/bidding phase. Additionally, we show novel cryptographic techniques in~\Cref{sec:everlasting_ballot_privacy} how we can achieve everlasting ballot and bid privacy without sacrificing our two previously stated goals. 
+
+% \input{voting-table}
+
+% Malavolta and Thyagarajan~\cite{C:MalThy19} introduce \emph{homomorphic} TLPs (HTLPs). An HTLP is defined with respect to a class $\mathcal{C}$ of circuits which can be homomorphically evaluated over puzzle solutions, i.e., $\htlp.{\sf Eval}(\pp, C, Z_1, \dots, Z_m) \rightarrow Z_*$ where $Z_*$ contains the application of $c \in \mathcal{C}$ to the solutions in $Z_1, \dots, Z_m$. Moving forward, 
+% we will use $\boxplus$ for homomorphic addition and $\cdot$ for scalar multiplication of HTLPs. For the homomorphic application of a linear function $f$, we write $f(Z_1, \dots, Z_m)$.
+
+\paragraph{Homomorphic time-lock puzzles.} Malavolta and Thyagarajan~\cite{C:MalThy19} construct two HTLPs with, respectively, linear and multiplicative homomorphisms in groups of unknown order. For our purposes we are only interested in the former, which is based on the Paillier cryptosystem~\cite{EC:Paillier99}. It uses $N=pq$ a strong semiprime, $g \sample \ZZ_N^*$ and $h = g^{2^\Ttime}$, and has solution space $\ZZ_N$. A puzzle $Z$ is constructed as
+\begin{equation}\label{eq:paillierHTLP}
+(g^r, h^{r \cdot N} (1+N)^s) \in \mathbb{J}_N \times \ZZ_{N^2}^*
+\end{equation}
+where $\JJ_N$ is the subgroup of $\subseteq \ZZ_N^*$ of elements with Jacobi symbol +1.
+To recover $s$, a solver must recompute $h^r = (g^r)^{2^\Ttime}$, which is believed to be an inherently sequential computation in a group of unknown order.
+
+As an alternative, we introduce a novel linear HTLP based on the exponential ElGamal cryptosystem~\cite{EC:CraGenSch97} over a group of unknown order. This construction is more efficient for a small solution space $\mathcal{S} \subset \ZZ_N$, i.e., $\mathcal{S} = \{ s : s \in \JJ_N \land\ s \ll N \}$. Here a puzzle $Z$ is constructed as
+\begin{equation}\label{eq:exp_elgamalHTLP}
+(g^r, h^r y^s) \in (\ZZ_N^*)^2
+\end{equation}
+where $g,y \sample \ZZ_N^*$ and again $h = g^{2^\Ttime}$. This scheme is only practical for small $\mathcal{S}$ since, in addition to recomputing $h^r$, recovering $s$ requires brute-forcing the discrete modulus of $y^s$. We discuss the efficiency trade-off between these two constructions in \cite{EPRINT:GSZB23}.
+
+Introducing a homomorphism raises the issue of puzzle malleability, i.e., the possibility of ``mauling'' one puzzle (whose solution may be unknown) into a puzzle with a related solution. This could lead to issues when HTLPs are deployed in larger systems, prompting research into non-malleable TLPs~\cite{TCC:FKPS21}. In our case, we define and enforce non-malleability at the system level (see below).
+
+We will use NIZKs to enforce well-formedness of user submissions while maintaining their secrecy. This prevents users from ``poisoning'' the aggregate HTLP maintained by the on-chain coordinator. For efficiency, we make use of custom NIZKs in groups of unknown order following the approach of \cite{C:BonBunFis19} (see \cite{EPRINT:GSZB23}). 
+
+% Since submissions will be instantiated as HTLPs in our application and all known HTLP constructions use groups of unknown order, our proofs of well-formedness must also operate over these groups.
+% Previous ballot correctness proofs~\cite{ACNS:Groth05} and $\Sigma$-protocols generally operate in groups of prime order and cannot directly be applied in groups of unknown order~\cite{PKC:BanCamMau05}.
+% To circumvent these impossibility results, we follow the blueprint of \cite{C:BonBunFis19} and instantiate our protocols in the generic groups of unknown order~\cite{EC:DamKop02} with a common reference string.
+% We detail our constructions in \Cref{app:sigmas}.
+
+\paragraph{Syntax of Time-Locked Voting and Auction Protocols}
+We now introduce a generic syntax for a time-locked voting/auction protocol. Any such protocol is defined with respect to a base \emph{scoring function} $\Score: \X^n \to \Y$ (e.g., second-price auction, range voting), which takes as input $n$ submissions (bids/ballots) $s_1, \dots, s_n$ in the submission domain $\X$ and computes the election/auction result $\Score(s_1, \dots, s_n) \in \Y$. It is useful to break down the scoring function into the ``tally'' or aggregation function $\tally: \X^n \to \X'$ and the finalization function $\final: \X' \to \Y$, i.e., $\Score = \final \circ \tally$.
+For example, in first-past-the-post voting, the tally function $t$ is addition, and the finalization function $f$ is $\argmax$ over the final tally/bids.
+%$\Sigma : \mathcal{X}^n \rightarrow \Y$ which operates over submissions in the clear. 
+
+% \noemi{I think the following is actually unnecessary and I'm not even sure what it was going for...} In the case of an auction, $\Y\subseteq [n]\times\mathbb{Z}^m$. Intuitively, $\Y$ provides the aggregate result of how users voted for the candidates or the number of a specific item they obtained as a result of the auction. %Although it is in theory possible to efficiently open the aggregated $\htlp$(s) given every participant's private puzzle randomness, in practice this is unrealistic. We therefore omit the optimistic opening procedure in the $\Open$ algorithm below.
+
+\begin{definition}[Time-locked voting/auction protocol]\label{def:syntax}
+A time-locked voting/auction protocol $\Pi_\Sigma = (\Setup, \Seal,\allowbreak \Aggr, \Open, \Finalize)$ is defined with respect to a base voting/auction protocol $\Sigma = \final \circ \tally$, where $\tally : \X^n \to \X'$ and $\final : \X' \to \Y$. %where $n$ is the number of participants.
+
+    \begin{description}
+        \item[$\Setup(\secparam, \Ttime) \randout (\pp, \Z)$.] Given a security parameter $\secpar$ and a time parameter $\Ttime$, output public parameters $\pp$ and an initial list of HTLP(s) $\Z$ that corresponds to the running tally or bid computation.
+        \item[$\Seal(\pp, i, s) \randout (\Z_i, \pi_i)$.] User $i\in[n]$ wraps its submission $s \in \X$ in a (list of) HTLP(s) $\Z_i$. It also outputs a proof of well-formedness $\pi_i$.
+        \item[$\Aggr(\pp, \Z, i, \Z_i, \pi_i) \to \Z'$.] Given a list of (tally) HTLPs $\Z$, time-locked submission $\Z_i$ of user $i$, and proof $\pi_i$, the transparent contract potentially aggregates the sealed submission homomorphically into $\Z$ to get an updated (tally) $\Z' = \tally(\Z, \Z_i)$.
+        \item[$\Open(\pp, \Z) \to (\mathcal{S}, \pi_\open)$.] Open $\Z$ to solution(s) $\mathcal{S}$, requiring $\Ttime$ sequential steps, and compute a proof $\pi_\open$ to prove correctness of $\mathcal{S}$.
+        \item[$\Finalize(\pp, \Z, \mathcal{S}, \pi_\open) \to \{y, \perp\}$.] Given proposed solution(s) $\mathcal{S}$ to $\Z$ with proof $\pi_{\sf open}$, the coordinator may reject $\mathcal{S}$ or compute the final result $y = \final(\mathcal{S}) \in \Y$. %, which specifies the winner and, in the case of an auction, the amount to be paid as well as the appropriate items to be transferred.
+    \end{description}
+\end{definition}
+
+We note that the $\Setup(\cdot)$ algorithm in our protocols may use private randomness. In particular, our constructions use cryptographic groups (RSA and Paillier groups) that cannot be efficiently instantiated without a trusted setup (an untrusted setup would require gigantic moduli~\cite{ICICS:Sander99}). This trust can be minimized by generating the group via a distributed trusted setup, e.g.,~\cite{JACM:BonFra01,SP:CHIKMRsVW21,TCC:DamMik10}.
+Alternatively, the HTLPs in our protocols could be instantiated in class groups~\cite{CCS:TCLM21}, which do not require a trusted setup; however, HTLPs in class groups are less efficient and verifying them on-chain would be prohibitively costly.
+
+A time-locked voting/auction protocol $\Pi_\Sigma$ must satisfy the following informal security properties, which we define formally in \cite{EPRINT:GSZB23}:
+\begin{description}
+    \item[Correctness.] $\Pi_\Sigma$ is \emph{correct} if, assuming setup, submission of $n$ puzzles, aggregation of all $n$ submissions, and opening are all performed honestly, the finalization procedure outputs a winner consistent with the base protocol $\Sigma$.
+    \item[Submission privacy.] The scheme satisfies \emph{submission privacy} if the adversary cannot distinguish between two submissions, i.e., bids or ballots. Note that this property is only ensured up to time $\Ttime$.
+    \item[Non-malleability.] Notice that submission privacy alone does not suffice for security: even without knowing the contents of other puzzles, an adversary could submit a value that depends on other participants' (sealed) submissions. For example, in an auction, one could be guaranteed to win by homomorphically computing an HTLP containing the sum of all the other participants' bids plus a small value $\epsilon$. Therefore, we also require \emph{non-malleability}, which requires that no participant can take another's submission and replay it or ``maul'' it into a valid submission under its own name.
+\end{description}
+
+\textit{A note on anonymity.} We consider user anonymity an orthogonal problem. In the applications we have in mind, users can increase their anonymity by using zero-knowledge mixers or other privacy-enhancing overlays, e.g., zero-knowledge sets~\cite{zksetsemaphore}. Additionally, users can decouple their identities from their ballots by applying a verifiable shuffle~\cite{CCS:Neff01}, although the on-chain verification of a shuffle proof might be prohibitively costly for larger elections. 
+%In~\Cref{sec:everlasting_ballot_privacy} we describe how our protocols can be extended to achieve bid privacy even after the election ends, thus disclosing nothing besides a user's (non-)participation.
+
+\paragraph{Efficient vector encoding for HTLPs.}
+In many voting schemes, a ballot consists of a vector indicating the voter's relative preferences or point allocations for all $m$ candidates. To avoid solving many HTLPs, it is desirable to encode this vector into a single HTLP, which requires representing the vector as a single integer. % This motivates the following definition.
+
+\begin{definition}[Packing scheme]\label{def:packing}
+A setup algorithm $\PSetup$ and pair of efficiently computable bijective functions $(\pack,\unpack)$ is called a \emph{packing scheme} and has the following syntax:
+    \begin{itemize}
+        \item $\PSetup(\ell, w) \to \pp$. Given a vector dimension $\ell$ and maximum entry $w$, output public parameters $\pp$.
+        \item $\pack(\pp, \Vec{a}) \to s$. Encode $\Vec{a} \in (\ZZ^+)^\ell$ as a positive integer $s \in \ZZ^+$. 
+        \item $\unpack(\pp, s) \to \Vec{a}$. Given $s \in \ZZ^+$, recover a vector $\Vec{a} \in (\ZZ^+)^\ell$. 
+    \end{itemize}
+For \emph{correctness} we require $\unpack(\pack(\Vec{a}))=\Vec{a}$ for all $\Vec{a}\in (\ZZ^+)^\ell$.
+\end{definition}
+
+The classic approach to packing~\cite{ACNS:Groth05,EC:HirSak00} uses a \emph{positional numeral system (PNS)} to encode a vector of entries bounded by $w$ as a single integer in base $M := w$.
+%More specifically, the vector $\vec{a}=(a_1, \dots, a_m)$ with $\forall j \in [m]:a_j < w$ is encoded as a sum of powers of $M$: the ballot contains a single integer $s := \sum_{j=1}^m a_j M^{j-1}$. Then $a_j$ can be obtained as $s \mod{M^{j-1}}$, 
+Instead, we will set $M:= nw+1$ to accommodate the homomorphic addition of all $n$ users' vectors: each voter submits a length-$m$ vector with entries $\leq w$. Summing over $n$ voters, the result is a length-$m$ vector with a maximum entry value $nw$; to prevent overflow, we set $M = nw+1$.
+
+% \begin{construction}[Packing from Positional Numeral System]\label{con:packingPNS}
+% \hfill
+% \begin{itemize}%[topsep=2pt]
+%     \item $\PSetup(\ell, w) \to M:$ Return $M := w + 1$.
+%     \item $\pack(M, \Vec{a}) \to s:$ Output $s := \sum_{j=1}^{\sizeof{\vec{a}}} a_j M^{j-1}$.
+%     \item $\unpack(M, s) \to \Vec{a}:$ Let $\ell := \ceil{\log_M{s}}$. For $j \in [\ell]$, compute the $j$th entry of $\Vec{a}$ as $a_j := s \mod{M^{j-1}}$.
+% \end{itemize}
+% \end{construction}
+% \end{mdframed}
+
+We also introduce an alternative approach in \Cref{con:packingRNS} which is based on the \emph{residue numeral system (RNS)}. The idea of the RNS packing is to interpret the entries of $\vec{a}$ as prime residues of a single unique integer $s$, which can be found efficiently using the Chinese Remainder Theorem (CRT). In other words, for all $j \in [\ell]$, $s$ captures $a_j$ as $s \bmod p_j$.
+
+\begin{construction}[Packing from Residue Numeral System]\label{con:packingRNS}
+\hfill
+\begin{itemize}%[topsep=2pt]
+    % \textit{Public parameters:}~$\pp:=(p_1,\dots,p_m)$ primes s.t. $\min\limits_{j\in[m]}p_j\geq M(=nw+1)$.\\
+    \item $\PSetup(\ell, w) \to \vec{p}:$ Let $M := w + 1$ and sample $\ell$ distinct primes $p_1, \dots, p_\ell$ s.t. $p_j \geq M\ \forall j \in [\ell]$. Return $\vec{p} := (p_1, \dots, p_\ell)$.
+    \item $\pack(\vec{p}, \Vec{a}) \to s$: Given $\Vec{a} \in (\ZZ^+)^\ell$, use the CRT to find the unique $s \in \ZZ^+$ s.t. $s\equiv a_j \pmod{p_j}~\forall j\in[\ell]$.
+    \item $\unpack(\vec{p}, s) \to \Vec{a}$: return $(a_1, \dots, a_\ell)$ where $a_j \equiv s \mod{p_j}\ \forall j \in [\ell]$.
+\end{itemize}
+\end{construction}
+
+A major advantage of this approach is that, in contrast to the PNS approach, which is only homomorphic for SIMD (single instruction, multiple data) addition, the RNS encoding is fully SIMD homomorphic: the sum of vector encodings $\sum_{i \in [n]} s_i$ encodes the vector $\vec{a}_{+} = \sum_{i \in [n]} \vec{a}_i$, and the product $\prod_{i \in [n]} s_i$ encodes the vector $\vec{a}_{\times} = \prod_{i \in [n]} \vec{a}_i$. Note that as in the PNS approach, we set $M = nw + 1$ to accommodate homomorphic addition of submissions; homomorphic multiplication, however, would require $M = w^n+1$, and the primes in $\vec{p}$ would therefore be larger as well.
+Although the RNS has found application in error correction~\cite{KPTOC22,TaiCha14}, side-channel resistance~\cite{TCHES:PFPB18}, and parallelization of arithmetic computations~\cite{AsiHosKon17,BajDuqMel06,GomTyaNam11,VNLVC20}, to our knowledge it has not been applied to voting schemes. We show in \cite{EPRINT:GSZB23} that RNS is in fact a natural fit for some voting schemes, in particular quadratic voting, where results in more efficient proofs of ballot correctness. 
+
+%%-------------BEGIN Cicada Framework FIGURE---------------
+\begin{figure*}[tbh]
+\begin{mdframed}
+\begin{center}
+    \textbf{The Cicada Framework}
+\end{center}
+Let $\Sigma: \X^n \rightarrow \Y$ be an linear voting/auction scheme
+where 
+% $\Sigma = f \circ g$ for some linear function $g$ and 
+$\X = [0,w]^m$, $\htlp$ a linear HTLP, $\Ttime \in \NN$ be a time parameter representing the election/auction length, and a packing scheme $(\PSetup, \pack, \unpack)$.
+Let $\NIZK$ be a NIZKPoK for 
+submission correctness (the language depends on $\Sigma$ and $\htlp$)
+% the language $\{(i, Z) : \exists x \text{ s.t. } Z \in {\sf Im}(\htlp.{\sf Gen}(\pack(x))) \land\ x \in \X\}$ 
+and \poe\ a proof of exponentiation~\cite{ITCS:Pietrzak19b,EC:Wesolowski19}. 
+%\noemi{is this better?}\istvan{LFG to me, but I think Joe wanted to have a list IIRC.}
+
+\hrulefill
+\begin{description}
+    \item[$\Setup(\secparam, \Ttime, \ell) \randout (\pp, \Z)$.] 
+    Set up the public parameters $\pp_{\NIZK} \sample \NIZK.\Setup(\secparam)$, $\pp_{\sf tlp} \sample \htlp.\Setup(\secparam, \Ttime)$, and $\pp_{\sf pack} \gets \PSetup(\ell, w)$. 
+    Let $\Z = \{Z_j\}_{j \in [m/\ell]}$ where $Z_j \sample \htlp.{\sf Gen}(0)$. Output $\pp := (\pp_{\sf tlp}, \pp_{\sf pack}, \pp_\NIZK)$ and $\Z$.
+    \item[$\Seal(\pp,i, \vec{v}_i) \randout (\Z_i, \pi_i)$.] Parse $\vec{v}_i := \vec{v}_{i,1} || \dots || \vec{v}_{i,m/\ell}$. Compute $Z_{i,j} \gets \htlp.{\sf Gen}(\pack(\vec{v}_{i,j}))~\forall j \in [m/\ell]$ and $\pi_i \gets \NIZK.\prove((i, \Z_i), \vec{v}_i)$.
+    % $s_{i,j} \gets \pack(\vec{v}_{i,j})$ for all $j \in [m/\ell]$. 
+    Output $(\Z_i := \{Z_{i,j}\}_{j \in [m/\ell]}, \pi_i)$ 
+    \item[$\Aggr(\pp,\Z,i,\Z_i,\pi_i) \rightarrow \Z'$.] If $\NIZK.vrfy((i, \Z_i), \pi_i) = 1$, update $\Z$ to $\Z \boxplus \Z_i$. %, where $\boxplus$ is applied pairwise to elements of $\Z,\Z_i$.
+    \item[$\Open(\pp,\Z) \rightarrow (\mathcal{S}, \pi_{\sf open})$.] Parse $\Z := \{Z_j\}_{j \in [m/\ell]}$ and solve for the encoded tally $\mathcal{S} = \{s_j\}_{j \in [m/\ell]}$ where $s_j \gets \htlp.{\sf Solve}(Z_j)$. Prove the correctness of the solution(s) as $\pi_{\sf open} \gets \poe.{\sf Prove}(\mathcal{S}, \Z, 2^\Ttime)$ and output $(\mathcal{S}, \pi_{\sf open})$.
+    \item[$\Finalize(\pp, \Z, \mathcal{S}, \pi_{\sf open}) \rightarrow \{y,\perp\}$.] If $\poe.{\sf Verify}(\mathcal{S}, \Z, 2^\Ttime, \pi_{\sf open}) \neq 1$, return $\perp$. Otherwise, parse $S := \{s_j\}_{j \in [m/\ell]}$ and let $\Vec{v} := \vec{v}_1 || \dots || \vec{v}_{m/\ell}$, where $\vec{v}_j \gets \unpack(s_j)~\forall j \in [m/\ell]$. Output 
+    % $y = f(\vec{v})$.
+    $y$ such that $y = \Sigma(\vec{v})$.
+\end{description}
+\end{mdframed}
+\caption{The Cicada framework for non-interactive private auctions and elections.}
+\label{fig:cicada}
+\end{figure*}
+%%-------------END Cicada Framework FIGURE---------------
+
+\paragraph{The Cicada framework.}
+We present Cicada, our framework for non-interactive private auctions/elections, in \Cref{fig:cicada}. Cicada can be applied to voting and auction schemes where the scoring function $\Score$ has a linear tally function $t$. 
+This includes the following schemes:
+
+\textit{Additive voting.}
+FPTP, approval, range, and cumulative voting are all examples of schemes with a linear tally function: each ballot (a length-$m$ vector) is simply added to the tally, and the finalization function $f$ is applied to the tally after the voting phase has ended to determine the winner. Borda-count ranked-choice voting~\cite{Emerson13} can also be expressed as a linear scheme, where each candidate is given a descending number of points based on preference and the vectors are again added. All of these schemes differ only in what qualifies as a ``proper'' ballot, which will be enforced by the NIZK.
+
+\textit{Sealed-bid auctions.}\footnote{Locking up collateral is necessary for every (private) auction scheme. We treat the problem of collateral lock-up as an important but orthogonal problem and refer to~\cite{CCS:TAFWBM23} for an extensive discussion.}
+The Cicada framework can also be used to implement a sealed-bid auction with a number of HTLPs which is independent of the number of participants $n$. 
+% The following slight modification works as long as $M^n < \sizeof{\gp}$, where $M$ is the largest bid.
+Assuming bids are bounded by $M$, we use an HTLP with solution space $\mathcal{S}$ such that $\sizeof{\mathcal{S}} > M^n$.
+Each user $i$ submits $Z_i \gets \htlp.{\sf Gen}({bid}_i)$ and $\pi_i$, where $\pi_i$ proves $0 \leq {bid}_i \leq M$. A packing of the bids is computed at aggregation time, with $\Aggr$ updating $Z$ to $Z \boxplus (M^{i-1} \cdot Z_i)$. After the bidding phase, the final ``tally'' is opened to $s^*$ and the bids are recovered as ${\sf Bids} := \{ s^* \mod{M^{i-1}} \}_{i \in [n]}$. Any payment and allocation function can now be computed over the bids; in the simplest case, the winner is $\argmax_i ({\sf Bids})$ and their payment is $\max_i ({\sf Bids})$. Notice that the full set of bids is revealed after the auction concludes. This cannot be avoided when using Cicada with linear HTLPs, since $\max_i$ is a nonlinear function, i.e., it cannot be computed it homomorphically.
+% \noemi{This reminds me of the fact that our auction schemes are not bid-private since the `tally'' reveals all the bids, which we have to do because the finalize function $\max$ is not linear}
+
+Cicada is instantiated with a linear HTLP, vector packing scheme, and matching NIZK for membership in $\X$ to ensure the correctness of submissions. 
+We note that Cicada introduces a crucial design choice via the packing parameter $\ell\in[m]$, which defines a storage-computation trade-off that we discuss in \cite{EPRINT:GSZB23}. %The on-chain footprint of a protocol is minimized by using a ballot correctness proof system $\sf NIZK$ with low verification cost. % this seems kind of obvious? And if anything it belongs in the implementation section
+
+% \noemi{In Cicada we need to talk about the function that is applied to the final tally, not the ballots -- maybe we could introduce a definition of ``linear'' protocols $\Sigma : \X^n \to \Y$ which are those functions that have an associated function $\Sigma_{\sf winner}: \X' \to \Y$ such that $\Sigma_{\sf winner}(t) = \Sigma(s_1, \dots, s_n)$ where $t = f(s_1, \dots, s_n)$ for some linear function $f$.}
+%\noemi{difference between $\Sigma$ and $\Sigma_{\sf winner}$ is the domain, $\X^n$ and $\X$, resp.}
+
+
+\begin{theorem}\label{thm:cicada}
+    Given a linear scoring function $\Sigma$, a secure NIZKPoK $\sf NIZK$, a secure $\htlp$, and a packing scheme $({\sf PSetup}, \pack, \unpack)$, the Cicada protocol $\Pi_\Sigma$ (\Cref{fig:cicada}) is a secure time-locked voting/auction protocol. % i.e., it satisfies correctness, bid/ballot privacy, and non-malleability.
+\end{theorem}
+
+Intuitively, submission privacy follows from the security of the HTLP and zero-knowledge of the NIZK used: the submission can't be opened before time $\Ttime$ and none of the proofs leak any information about it. Non-malleability is enforced by requiring the NIZK to be a proof of knowledge and including the user's identity $i$ in the instance to prove, e.g., including it in the hash input of the Fiat-Shamir transform. This prevents a malicious actor from replaying a different user's ballot correctness proof.
+% \istvan{Correctness is due to the correctness of the underlying NIZKs. Submission privacy is reduced to the HTLP sequentiality, while non-malleability is ensured by the proof of knowledge property of our applied NIZKs.} 
+We delegate the full proof to \cite{EPRINT:GSZB23}.
+
+% \subsection{Application to voting schemes}\label{sec:voting}
+
+% \todo{revisit this} The main reason we are interested in building protocols for cardinal voting schemes is that they allow voters to express more fine-grained preferences. Put differently, they bypass Arrow's impossibility theorem~\cite{arrow1950difficulty}, i.e., cardinal voting schemes satisfy non-dictatorship, unrestricted domain, independence of irrelevant alternatives and Pareto efficient. 
+
+\paragraph{Implementation.}
+We provide open-source, freely available implementations tailored to the popular Ethereum Virtual Machine (EVM) with word size $256$ bits.\footnote{\url{https://github.com/a16z/cicada}} Our most efficient protocols work in $\ZZ_N^*$ for $N\approx 2^{1024}$, groups which are not natively supported by EVM. We implement several gas-efficient libraries to support modular arithmetic in such groups of unknown order. These protocols can be run today on Ethereum Layer 1. Our non-interactive protocols are particularly well-suited to the EVM since, unlike prior works, we do not need to keep bids, ballots, and proofs in persistent storage as they are not required for any subsequent rounds.

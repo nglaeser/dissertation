@@ -1,0 +1,176 @@
+\newcommand{\blue}[1]{\textcolor{blue}{#1}}
+\newcommand{\green}[1]{\textcolor{teal}{#1}}
+\newcommand{\twoPC}{\ensuremath{\mathsf{2PC}}}
+
+\begin{figure*}%[!t]
+\centering
+%\resizebox{\textwidth}{!}{
+\makebox[0pt]{\begin{minipage}{1.4\textwidth}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%    PUZZLE PROMISE    %%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{pchstack}[boxed]
+    \procedure{Public parameters: group description $(\GG, g, q)$, message $m_{HB}$}{
+ 	\text{ $\Promise \langle H( \dk_H, \sk_{HB}^H), \cdot \rangle$} \< \< \text{$\Promise \langle \cdot, B(\ek_H, \vk_{HB}^H) \rangle$} \\[][\hline]
+	\pcln s \sample \ZZ_p, Y := g^s \< \< \\ [-0.15\baselineskip][]
+	\pcln c \gets \Pi_\ENC.\enc(\ek_H, s) \< \< \\ [-0.15\baselineskip][]
+	\pcln \pi_s \gets \NIZK.\prove( (\ek_H, Y, c), s)  \< \< \\ [-0.15\baselineskip][]
+	\pcln \tilde{\sigma}_{HB}^H \gets \Pi_\ADP.\presig( \sk_{HB}^H, m_{HB}, Y ) \< \< \\ [-0.85\baselineskip][]
+	\pcln \< \sendmessageright*{Y, c, \pi_s, \tilde{\sigma}_{HB}^H}\< \\ [-0.55\baselineskip][]
+	\pcln \< \< {\mathbf{If}\ \NIZK.\vrfy((\ek_H,Y,c), \pi_s) \neq 1\ \mathbf{ then}\ \pcreturn \bot} \\ [-0.15\baselineskip][]
+	\pcln \< \< \mathbf{If}\ \Pi_\ADP.\prevrfy(\vk_{HB}^H, m_{HB}, Y, \tilde{\sigma}_{HB}^H) \neq 1\ \mathbf{then} \\ [-0.15\baselineskip][]
+	\pcln \< \< \quad \pcreturn \bot \\ [-0.15\baselineskip][]
+	\pcln \< \< \mathbf{set}\ \tau := (m_{HB}, \tilde{\sigma}_{HB}^H, (Y, c)) \\ [-0.15\baselineskip][]
+	\pcln \pcreturn \bot \< \< \pcreturn \tau
+}
+\end{pchstack}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%     PUZZLE SOLVER    %%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{pchstack}[boxed]
+    \procedure{Public parameters: group description $(\GG, g, q)$, message $m_{AH}$}{ 
+ 	\text{$\Pay \langle A(\sk_{AH}^A, \ek_H, \tau), \cdot\rangle$} \< \< \text{$\Pay \langle \cdot, H(\dk_H, \vk_{AH}^A) \rangle$} \\[][\hline]
+ 	\pcln \pcparse \tau := ( \cdot, \cdot, (Y, c)) \< \< \\ [-0.15\baselineskip][]
+ 	\pcln r \sample \ZZ_p, Y' := Y \cdot g^r \< \< \\ [-0.15\baselineskip][]
+ 	\pcln \tilde{\sigma}_{AH}^A \gets \Pi_\ADP.\presig( \sk_{AH}^A, m_{AH}, Y') \< \< \\ [-0.85\baselineskip][] 
+ 	\pcln \< \sendmessageright*{Y', \tilde{\sigma}_{AH}^A} \< \\ [-0.55\baselineskip][]
+ 	\pcln \< \< \mathbf{If}\ \Pi_\ADP.\prevrfy(\vk_{AH}^A, m_{AH}, Y', \tilde{\sigma}_{AH}^A) \neq 1\ \mathbf{then} \\ [-0.15\baselineskip][]
+ 	\< \< \quad \pcreturn \bot\\ [-0.15\baselineskip][]
+ 	\pcln \< \begin{subprocedure}
+ 	\dbox{\procedure[linenumbering]{$\twoPC((r,c), (\dk_H))$}{
+ 	\pcif \ek_H \neq \Pi_\ENC.\mathsf{Gen}(\dk_H)\\
+ 	\pcthen \text{abort}\\
+ 	s^* \gets \Pi_\ENC.\dec(\dk_H, c)\\
+ 	z := s^* + r\\
+ 	\pcreturn ((\bot), (z))
+ 	}}
+ 	\end{subprocedure}
+ 	\< \\ [-0.15\baselineskip][]
+ 	\pcln \< \< \mathbf{If}\ Y' \neq g^z\ \mathbf{then}\ \pcreturn \bot\\ [-0.15\baselineskip][]
+ 	\pcln \< \< \sigma_{AH}^A \gets \Pi_\ADP.\adapt(\tilde{\sigma}_{AH}^A, z)\\ [-0.85\baselineskip][]
+ 	%\pcln \< \< \sigma_{AH}^H \gets \Pi_\sign(\sk_{AH}^H, m)\\ [-0.85\baselineskip][]
+ 	\pcln \< \sendmessageleft*{{\sigma}_{AH}^A} \< \\ [-0.55\baselineskip][]
+ 	\pcln \mathbf{If}\ \Pi_\ADP.\vrfy(\vk_{AH}^A, m_{AH}, \sigma_{AH}^A) \neq 1\ \mathbf{then} \< \< \\ [-0.15\baselineskip][]
+ 	\pcln \quad \pcreturn \bot \< \< \\ [-0.15\baselineskip][]
+ 	\pcln z' \gets \Pi_\ADP.\ext(\tilde{\sigma}_{AH}^A, \sigma_{AH}^A, Y')\< \< \\ [-0.15\baselineskip][]
+ 	\pcln s := z'-r \< \< \\ [-0.15\baselineskip][]
+ 	\pcln \pcreturn (\sigma_{AH}^A, s) \< \< \pcreturn \sigma_{AH}^A
+}
+\end{pchstack}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%     SETUP & OPEN     %%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{center}
+    \begin{pchstack}[boxed]
+        \procedure[space=auto,codesize=\small]{$\setup(\secparam)$}{
+    (\ek_H, \dk_H) \gets \Pi_\ENC.\kgen(\secparam)\\
+    \pcreturn (\ek_H, \dk_H)
+    }
+    
+    \pchspace
+    
+    \procedure[space=auto,codesize=\small]{$\open(\tau, s)$}{
+    \mathbf{parse}\ \tau := ( \cdot, \tilde{\sigma}, \cdot)\\
+    \sigma \gets \Pi_\ADP.\adapt(\tilde \sigma, s)\\
+    \pcreturn \sigma
+    }
+    \end{pchstack}
+\end{center}
+\end{minipage}}
+%}
+\caption{Puzzle promise, puzzle solver, and open protocols of \AALUC}
+\label{fig:a2l_uc}
+\end{figure*}
+
+% \begin{figure}
+%     \centering
+%     \begin{pchstack}[boxed]
+%         \procedure[space=auto,codesize=\small]{$\setup(\secparam)$}{
+%     (\ek_H, \dk_H) \gets \Pi_\ENC.\kgen(\secparam)\\
+%     \mathbf{set}\ \tilde \pk := \ek_H, \tilde \sk := \dk_H\\
+%     \pcreturn (\tilde \pk, \tilde \sk)
+%     }
+    
+%     \pchspace
+    
+%     \procedure[space=auto,codesize=\small]{$\open(\tau, s)$}{
+%     \mathbf{parse}\ \tau := ( \cdot, \tilde{\sigma}, \cdot)\\
+%     \sigma \gets \Pi_\ADP.\adapt(\tilde \sigma, s)\\
+%     \pcreturn \sigma
+%     }
+%     \end{pchstack}
+%     \caption{Setup and Open algorithms of our conditional puzzle construction}
+%     \label{fig:our_protocol_algorithms}
+% \end{figure}
+
+% \begin{figure*}[h]
+% \centering
+% %\resizebox{\textwidth}{!}{
+% \begin{pchstack}[boxed]
+%     \procedure{Public parameters: group description $(\GG, g, q)$, message $m_{HB}$}{ 
+%  	\text{ $\Promise \langle H( \dk_H, \sk_{HB}^H), \cdot \rangle$} \< \< \text{$\Promise \langle \cdot, B(\ek_H, \vk_{HB}^H) \rangle$} \\[][\hline]
+% 	\pcln s \sample \ZZ_p, Y := g^s \< \< \\ [-0.15\baselineskip][]
+% 	\pcln c \gets \Pi_\ENC.\enc(\ek_H, s) \< \< \\ [-0.15\baselineskip][]
+% 	\pcln \pi_s \gets \NIZK.\prove( (\ek_H, Y, c), s)  \< \< \\ [-0.15\baselineskip][]
+% 	\pcln \tilde{\sigma}_{HB}^H \gets \Pi_\ADP.\presig( \sk_{HB}^H, m_{HB}, Y ) \< \< \\ [-0.85\baselineskip][]
+% 	\pcln \< \sendmessageright*{Y, c, \pi_s, \tilde{\sigma}_{HB}^H}\< \\ [-0.55\baselineskip][]
+% 	\pcln \< \< {\mathbf{If}\ \NIZK.\vrfy((\ek_H,Y,c), \pi_s) \neq 1\ \mathbf{ then}\ \pcreturn \bot} \\ [-0.15\baselineskip][]
+% 	\pcln \< \< \mathbf{If}\ \Pi_\ADP.\prevrfy(\vk_{HB}^H, m_{HB}, Y, \tilde{\sigma}_{HB}^H) \neq 1\ \mathbf{then} \\ [-0.15\baselineskip][]
+% 	\pcln \< \< \quad \pcreturn \bot \\ [-0.15\baselineskip][]
+% 	\pcln \< \< \mathbf{set}\ \tau := (m_{HB}, \tilde{\sigma}_{HB}^H, (Y, c)) \\ [-0.15\baselineskip][]
+% 	\pcln \pcreturn \bot \< \< \pcreturn \tau
+% % 	\pcln \< \< \text{If } \NIZK.\vrfy(\pi_s, (Y,c)) \neq 1 \text{ then abort} \\ [-0.15\baselineskip][]
+% % 	\pcln \< \< \pcsend\ (Y, c)\ \pcto\ A \\ [-0.15\baselineskip][]
+% % 	\pcln \< \< \pcreceive\ s^*\ \pcfrom\ A \\ [-0.15\baselineskip][]
+% % 	\pcln \< \< \sigma_{HB}^H \gets \Pi_\ADP.\adapt(\tilde{\sigma}_{HB}^H, s^*) \\ [-0.15\baselineskip][]
+% % 	\pcln \< \< \sigma_{HB}^B \gets \Pi_\DS.\sign(\sk_{HB}^B, m_{HB}) \\ [-0.15\baselineskip][]
+% % 	\pcln \< \< \pcpost\ (m_{HB}, [\sigma_{HB}^H, \sigma_{HB}^B])\ \pcto\ \BB\\ [-0.15\baselineskip][]
+% % 	\pcln \pcreturn \top \< \< \pcreturn \top 
+% }
+% \end{pchstack}
+% %}
+% \vspace{-0.2cm}
+% \caption{Puzzle promise protocol of \sysnameuc}
+% \label{fig:our_protocol_hub_bob}
+% \vspace{-0.4cm}
+% \end{figure*}
+
+% \begin{figure*}
+% \centering
+% %\resizebox{\textwidth}{!}{
+% \begin{pchstack}[boxed]
+%     \procedure{Public parameters: group description $(\GG, g, q)$, message $m_{AH}$}{ 
+%  	\text{$\Pay \langle A(\sk_{AH}^A, \ek_H, \tau), \cdot\rangle$} \< \< \text{$\Pay \langle \cdot, H(\dk_H, \vk_{AH}^A) \rangle$} \\[][\hline]
+%  	\pcln \pcparse \tau := ( \cdot, \cdot, (Y, c)) \< \< \\ [-0.15\baselineskip][]
+%  	\pcln r \sample \ZZ_p, Y' := Y \cdot g^r \< \< \\ [-0.15\baselineskip][]
+%  	\pcln \tilde{\sigma}_{AH}^A \gets \Pi_\ADP.\presig( \sk_{AH}^A, m_{AH}, Y') \< \< \\ [-0.85\baselineskip][] 
+%  	\pcln \< \sendmessageright*{Y', \tilde{\sigma}_{AH}^A} \< \\ [-0.55\baselineskip][]
+%  	\pcln \< \< \mathbf{If}\ \Pi_\ADP.\prevrfy(\vk_{AH}^A, m_{AH}, Y', \tilde{\sigma}_{AH}^A) \neq 1\ \mathbf{then} \\ [-0.15\baselineskip][]
+%  	\< \< \quad \pcreturn \bot\\ [-0.15\baselineskip][]
+%  	\pcln \< \begin{subprocedure}
+%  	\dbox{\procedure[linenumbering]{$\twoPC((r,c), (\dk_H))$}{
+%  	\pcif \ek_H \neq \Pi_\ENC.\mathsf{Gen}(\dk_H)\\
+%  	\pcthen \text{abort}\\
+%  	s^* \gets \Pi_\ENC.\dec(\dk_H, c)\\
+%  	z := s^* + r\\
+%  	\pcreturn ((\bot), (z))
+%  	}}
+%  	\end{subprocedure}
+%  	\< \\ [-0.15\baselineskip][]
+%  	\pcln \< \< \mathbf{If}\ Y' \neq g^z\ \mathbf{then}\ \pcreturn \bot\\ [-0.15\baselineskip][]
+%  	\pcln \< \< \sigma_{AH}^A \gets \Pi_\ADP.\adapt(\tilde{\sigma}_{AH}^A, z)\\ [-0.85\baselineskip][]
+%  	%\pcln \< \< \sigma_{AH}^H \gets \Pi_\sign(\sk_{AH}^H, m)\\ [-0.85\baselineskip][]
+%  	\pcln \< \sendmessageleft*{{\sigma}_{AH}^A} \< \\ [-0.55\baselineskip][]
+%  	\pcln \mathbf{If}\ \Pi_\ADP.\vrfy(\vk_{AH}^A, m_{AH}, \sigma_{AH}^A) \neq 1\ \mathbf{then} \< \< \\ [-0.15\baselineskip][]
+%  	\pcln \quad \pcreturn \bot \< \< \\ [-0.15\baselineskip][]
+%  	\pcln z' \gets \Pi_\ADP.\ext(\tilde{\sigma}_{AH}^A, \sigma_{AH}^A, Y')\< \< \\ [-0.15\baselineskip][]
+%  	\pcln s := z'-r \< \< \\ [-0.15\baselineskip][]
+%  	\pcln \pcreturn (\sigma_{AH}^A, s) \< \< \pcreturn \sigma_{AH}^A
+% }
+% \end{pchstack}
+% %}
+% \vspace{-0.2cm}
+% \caption{Puzzle solver protocol of \sysnameuc}
+% \label{fig:our_protocol_alice_hub}
+% \vspace{-0.4cm}
+% \end{figure*}

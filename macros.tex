@@ -15,8 +15,22 @@
 % math
 \newcommand{\ZZ}{\ensuremath{\mathbb{Z}}}
 \newcommand{\NN}{\ensuremath{\mathbb{N}}}
+\newcommand{\GG}{\ensuremath{\mathbb{G}}}
+\newcommand{\JJ}{\ensuremath{\mathbb{J}}}
 \newcommand{\prob}[1]{\ensuremath{\Pr\left[#1\right]}}
 \newcommand{\suchthat}{\ensuremath{\mathrm{~s.t.~}}}
+\newcommand{\F}{\ensuremath{\mathcal{F}}}
+\newcommand{\X}{\ensuremath{\mathcal{X}}}
+\newcommand{\Y}{\ensuremath{\mathcal{Y}}}
+\newcommand{\Z}{\ensuremath{\mathcal{Z}}}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\newcommand{\sizeof}[1]{\lvert #1 \rvert}
+\newcommand{\ceil}[1]{\lceil #1 \rceil}
+
+% theorem, etc. environments
+\newtheorem{construction}{Construction}
+\crefname{construction}{construction}{constructions}
+\Crefname{construction}{Construction}{Constructions}
 
 % primitives
 \newcommand{\ENC}{\ensuremath{\mathsf{E}}}
@@ -33,9 +47,9 @@
 % \newcommand{\secpar}{\ensuremath{\lambda}}
 % \newcommand{\secparam}{\ensuremath{1^\secpar}}
 \newcommand{\sample}{\ensuremath{\stackrel{\$}{\gets}}}
+\newcommand{\randout}{\ensuremath{\stackrel{\$}{\to}}}
 \newcommand{\Rel}{\ensuremath{\mathcal{R}}}
 \newcommand{\Lang}{\ensuremath{\mathcal{L}}}
-\newcommand{\F}{\ensuremath{\mathcal{F}}}
 % oracles
 \newcommand{\oracle}{\ensuremath{\mathcal{O}}}
 \newcommand{\oaal}{\ensuremath{\oracle^{\sf A^2L}}}
@@ -47,11 +61,26 @@
 \newcommand{\ext}{\ensuremath{\mathsf{Ext}}}
 \newcommand{\sign}{\ensuremath{\mathsf{Sign}}}
 \newcommand{\vrfy}{\ensuremath{\mathsf{Vrfy}}}
+\newcommand{\prove}{\ensuremath{\mathsf{P}}}
+\newcommand{\recon}{\ensuremath{\mathsf{Reconstruct}}}
 % keys
 \newcommand{\vk}{\ensuremath{\mathsf{vk}}}
 \newcommand{\sk}{\ensuremath{\mathsf{sk}}}
 \newcommand{\ek}{\ensuremath{\mathsf{ek}}}
 \newcommand{\dk}{\ensuremath{\mathsf{dk}}}
+% other elements
+\newcommand{\crs}{\ensuremath{\mathsf{crs}}}
+\newcommand{\pp}{\ensuremath{\mathsf{pp}}}
+\newcommand{\com}{\ensuremath{\mathsf{com}}}
+% UC framework
+\newcommand{\Sim}{\ensuremath{\mathcal{S}}}
+\newcommand{\env}{\ensuremath{\mathcal{E}}}
+\newcommand{\real}{\ensuremath{\textsc{real}}}
+\newcommand{\ideal}{\ensuremath{\textsc{ideal}}}
+
+%%%%% UC-SE specific stuff %%%%%
+\newcommand{\fnizk}{\mathcal{F}_{\mathsf{NIZK}}}
+\newcommand{\fupcrs}{\mathcal{F}_{\mathsf{up\text{-}CRS}}}
 
 %%%%% BCS specific stuff %%%%%
 \newcommand{\alice}{\ensuremath{\mathit{A}}}
@@ -64,8 +93,44 @@
 % BCS algos
 \newcommand{\Promise}{\ensuremath{\mathsf{PPromise}}}
 \newcommand{\Pay}{\ensuremath{\mathsf{PSolver}}}
-\newcommand{\open}{\ensuremath{\mathsf{Open}}}
 % BCS games
 \newcommand{\expUnlink}{\ensuremath\mathsf{ExpBlnd}}
 \newcommand{\expUnlock}{\ensuremath\mathsf{ExpUnlock}}
 \newcommand{\expSec}{\ensuremath\mathsf{ExpUnforg}}
+\newcommand{\Fbcs}{\ensuremath{\mathcal{F}_{\sf BCS}}}
+
+%%%%% Cicada %%%%%
+% HTLPs
+\newcommand{\htlp}{\ensuremath{\mathsf{HTLP}}\xspace}
+\newcommand{\tlp}{\ensuremath{\mathsf{TLP}}\xspace}
+\newcommand{\Ttime}{\ensuremath{T}}
+% Cicada syntax
+\newcommand{\Setup}{\ensuremath{\mathsf{Setup}}}
+\newcommand{\Seal}{\ensuremath{\mathsf{Seal}}}
+\newcommand{\Aggr}{\ensuremath{\mathsf{Aggr}}}
+\newcommand{\Open}{\ensuremath{\mathsf{Open}}}
+\newcommand{\Finalize}{\ensuremath{\mathsf{Finalize}}}
+\newcommand{\open}{\ensuremath{\mathsf{open}}}
+
+\newcommand{\Score}{\ensuremath{\Sigma}}
+\newcommand{\tally}{\ensuremath{t}}
+\newcommand{\final}{\ensuremath{f}}
+%%pack and unpack functions
+\newcommand{\PSetup}{\mathsf{PSetup}}
+\newcommand{\pack}{\mathsf{Pack}}
+\newcommand{\unpack}{\mathsf{Unpack}}
+% sigma protocols
+\newcommand*{\poe}{\ensuremath{\mathsf{PoE}}}
+
+%%%%% KSP %%%%%
+\newcommand{\hot}{\ensuremath{\mathsf{hot}}}
+\newcommand{\cold}{\ensuremath{\mathsf{cold}}}
+\newcommand{\skref}{\ensuremath{\mathsf{SKRefresh}}}
+\newcommand{\shref}{\ensuremath{\mathsf{ShareRefresh}}}
+\newcommand{\cSign}{\mathsf{CSign}\xspace}
+\newcommand{\hSign}{\mathsf{HSign}\xspace}
+\newcommand{\hx}{\tilde{x}}
+\newcommand{\aux}{\mathsf{aux}}
+\newcommand{\cProof}{\mathsf{CProof}\xspace}
+\newcommand{\hProof}{\mathsf{HProof}\xspace}
+\newcommand{\timeT}{\ensuremath{T}}

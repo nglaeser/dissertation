@@ -1,7 +1,13 @@
     \begin{figure}
         \centering
+        \makebox[0pt]{\begin{minipage}{1.35\textwidth}
         \begin{pchstack}[boxed]
-        \procedure[space=auto,codesize=\small]{$\expUnlink^{\adv}_{\Pi_{\mathsf{BCS}}}(\secpar)$}{
+        \begin{pcvstack}
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %%%%% Blindness (unlinkability) %%%%%
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        \begin{pchstack}%[boxed]
+        \procedure[space=auto,codesize=\small]{Blindness experiment $\expUnlink^{\adv}_{\Pi_{\mathsf{BCS}}}(\secpar)$}{
         \hfill\\[-0.5\baselineskip]
        (\tilde{\ek}, \vk^H_0, \vk^H_1, (m_{HB,0}, m_{AH,0}), (m_{HB,1}, m_{AH,1})) \gets \adv(\secparam)\\
         (\vk_0^A, \sk_0^A) \gets \kgen(\secparam)\\
@@ -14,20 +20,18 @@
         \mathbf{if~}(\sigma^*_0 = \bot) \lor (\sigma^*_1 = \bot) \lor (\tau_0 = \bot) \lor (\tau_1 = \bot)\\
         \quad \sigma_0 := \sigma_1 := \bot\\
         \mathbf{else}\\
-        \quad \sigma_{0 \oplus b} \gets \open(\tau_{0 \oplus b}, s_0)\\
-        \quad \sigma_{1 \oplus b} \gets \open(\tau_{1 \oplus b}, s_1)\\
+        \quad \sigma_{0 \oplus b} \gets \Open(\tau_{0 \oplus b}, s_0)\\
+        \quad \sigma_{1 \oplus b} \gets \Open(\tau_{1 \oplus b}, s_1)\\
         b' \gets \adv(\sigma_0, \sigma_1)\\
         \mathbf{return}\ (b = b')
         }
-    \end{pchstack}
-        \caption{Blindness experiment \label{fig:exp_unlinkability}}
-        
-    \end{figure}
-%
-    \begin{figure}
-        \centering
-        \begin{pchstack}[boxed]
-        \procedure[space=auto,codesize=\small]{$\expUnlock^{\adv}_{\Pi_{\mathsf{BCS}}}(\secpar)$}{
+        \end{pchstack}
+        \pcvspace
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %%%%%      Unlockability        %%%%%
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        \begin{pchstack}%[boxed]
+        \procedure[space=auto,codesize=\small]{Unlockability experiment $\expUnlock^{\adv}_{\Pi_{\mathsf{BCS}}}(\secpar)$}{
         \hfill\\[-0.5\baselineskip]
         (\tilde{\ek}, \vk^H, m_{HB}, m_{AH}) \gets \adv(\secparam)\\
         (\vk^A, \sk^A) \gets \kgen(\secparam)\\
@@ -40,19 +44,18 @@
         \quad (\hat{\sigma}, \hat{m}) \gets \adv\\ 
         \quad b_1 := (\vrfy(\vk^A,\hat{\sigma}, \hat{m}) =1) \land (\hat{m} \neq m_{AH})\\
          \quad b_2 := (\vrfy(\vk^A,\sigma^*, m_{AH}) =1)\\
-        \quad b_3 := (\vrfy(\vk^H, m_{HB}, \open(\tau,s)) \neq1) \\
+        \quad b_3 := (\vrfy(\vk^H, m_{HB}, \Open(\tau,s)) \neq1) \\
          \mathbf{return}\ b_0 \lor b_1 \lor (b_2 \land b_3)
         }
-    \end{pchstack}
-        \caption{Unlockability experiment} 
-        \label{fig:exp_unlockability}
-    \end{figure}
-    %
-    \begin{figure}
-        \centering
-        \begin{pchstack}[boxed]
+        \end{pchstack}
+        \end{pcvstack}
+        \pchspace
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %%%%%      Unforgeability       %%%%%
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        \begin{pchstack}%[boxed]
         \begin{pcvstack}
-        \procedure[space=auto,codesize=\small]{$\expSec^{\adv}_{\Pi_{\mathsf{BCS}}}(\secpar)$}{
+        \procedure[space=auto,codesize=\small]{Unforgeability experiment $\expSec^{\adv}_{\Pi_{\mathsf{BCS}}}(\secpar)$}{
         \hfill\\[-0.5\baselineskip]
     \mathcal{L} := \emptyset, Q := 0 \\
     (\tilde{\ek}, \tilde{\dk}) \gets \setup(\secparam)\\
@@ -81,7 +84,69 @@
     }
         \end{pcvstack}
     \end{pchstack}
-        \caption{Unforgeability experiment}
-        \label{fig:exp_security_ab}
+    \end{pchstack}
+    \end{minipage}}
+    \caption{BCS security games \label{fig:bcs_games}}
     \end{figure}
+%
+    % \begin{figure}
+    %     \centering
+    %     \begin{pchstack}[boxed]
+    %     \procedure[space=auto,codesize=\small]{$\expUnlock^{\adv}_{\Pi_{\mathsf{BCS}}}(\secpar)$}{
+    %     \hfill\\[-0.5\baselineskip]
+    %     (\tilde{\ek}, \vk^H, m_{HB}, m_{AH}) \gets \adv(\secparam)\\
+    %     (\vk^A, \sk^A) \gets \kgen(\secparam)\\
+    %     \tau \gets \Promise \left\langle  \adv(\vk^A), \bob(\tilde{\ek}, \vk^H, m_{HB}) \right\rangle\\
+    %     \textbf{if } \tau = \bot\\
+    %     \quad (\hat{\sigma}, \hat{m}) \gets \adv\\ 
+    %     \quad b_0 := (\vrfy(\vk^A,\hat{\sigma}, \hat{m}) =1)\\
+    %     \textbf{if } \tau \neq \bot\\
+    %         \quad (\sigma^*,s) \gets \Pay \left\langle  \alice \left(\sk^A, \tilde{\ek}, m_{AH},\tau\right), \adv \right\rangle\\
+    %     \quad (\hat{\sigma}, \hat{m}) \gets \adv\\ 
+    %     \quad b_1 := (\vrfy(\vk^A,\hat{\sigma}, \hat{m}) =1) \land (\hat{m} \neq m_{AH})\\
+    %      \quad b_2 := (\vrfy(\vk^A,\sigma^*, m_{AH}) =1)\\
+    %     \quad b_3 := (\vrfy(\vk^H, m_{HB}, \Open(\tau,s)) \neq1) \\
+    %      \mathbf{return}\ b_0 \lor b_1 \lor (b_2 \land b_3)
+    %     }
+    % \end{pchstack}
+    %     \caption{Unlockability experiment} 
+    %     \label{fig:exp_unlockability}
+    % \end{figure}
+    % %
+    % \begin{figure}
+    %     \centering
+    %     \begin{pchstack}[boxed]
+    %     \begin{pcvstack}
+    %     \procedure[space=auto,codesize=\small]{$\expSec^{\adv}_{\Pi_{\mathsf{BCS}}}(\secpar)$}{
+    %     \hfill\\[-0.5\baselineskip]
+    % \mathcal{L} := \emptyset, Q := 0 \\
+    % (\tilde{\ek}, \tilde{\dk}) \gets \setup(\secparam)\\
+    % (\vk_1^H, m_1, \sigma_1), \ldots, (\vk_q^H, m_q, \sigma_q)  \gets \adv^{\oracle\mathsf{PP}(\cdot), \oracle\mathsf{PS}(\cdot)}(\tilde{\ek})\\
+    % b_0 := \exists i \in [q] \suchthat (\vk_i^H,\cdot) \in \mathcal{L} \land (\vk_i^H,m_i) \notin \mathcal{L} \\
+    % \qquad \qquad  \land \vrfy(\vk_i^H,m_i,\sigma_i) = 1\\
+    % b_1 := \forall i \in [q], (\vk_i^H,m_i) \in \mathcal{L} \land \vrfy(\vk_i^H, m_i, \sigma_i) = 1\\
+    % b_2 := \bigwedge_{i,j \in [q], i \ne j}  (\vk_i^H, m_i, \sigma_i) \ne (\vk_j^H, m_j, \sigma_j) \\
+    % b_3 := (Q \le q-1) \\
+    % \mathbf{return}\ b_0 \lor (b_1 \land b_2 \land b_3)
+    % }
+    % \pcvspace
+    
+    % \procedure[space=auto,codesize=\small]{$\oracle\mathsf{PP}(m)$}{
+    % \hfill\\[-0.5\baselineskip]
+    % (\vk^H, \sk^H) \gets \Pi_\ADP.\kgen(\secparam)\\
+    % \mathcal{L} := \mathcal{L} \cup \{ (\vk^H,m) \}\\
+    % \bot \gets \Promise\langle H(\tilde{\dk}, \sk^H, m), \adv(\vk^H) \rangle \\
+    % }
+    
+    
+    % \procedure[space=auto,codesize=\small]{$\oracle\mathsf{PS}(\vk^A, m')$}{
+    % \hfill\\[-0.5\baselineskip]
+    % \sigma^* \gets \Pay\langle \adv, H(\tilde{\dk}, \vk^A, m') \rangle \\
+    % \mathbf{if}\ \sigma^* \ne \bot\ \mathbf{then}~ Q:= Q+ 1
+    % }
+    %     \end{pcvstack}
+    % \end{pchstack}
+    %     \caption{Unforgeability experiment}
+    %     \label{fig:exp_security_ab}
+    % \end{figure}
     

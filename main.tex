@@ -1,8 +1,12 @@
 \documentclass{article}
 \usepackage{graphicx} % Required for inserting images
 \usepackage{xcolor}
+\usepackage{dashbox}
+\usepackage{tikz}
+\usetikzlibrary{patterns}
 \usepackage{xspace}
 \usepackage{booktabs,multicol}
+\usepackage{mdframed}
 \usepackage{hyperref}
 \hypersetup{
     colorlinks=true,
@@ -14,16 +18,20 @@
 \usepackage{amsthm}
 \newtheorem{definition}{Definition}
 \newtheorem{theorem}{Theorem}
-\usepackage{amsmath,amsfonts}
+\usepackage{amsmath,amsfonts,amssymb}
+\usepackage{wasysym}
 \usepackage{cleveref}
 \usepackage[lambda]{cryptocode}
+\usepackage{hyphenat}
+\hyphenation{inter-active}
 
 \input{macros}
 \newcommand{\copied}[1]{\textcolor{red}{[copied] #1}}
 \newcommand{\noemi}[1]{\textcolor{magenta}{Noemi: #1}}
 \newcommand{\todo}[1]{\textcolor{red}{todo: #1}}
 
-\title{Cryptography for Blockchain Applications}
+\title{Cryptography for Private and Secure Blockchain Applications}
+% \title{Cryptography for Blockchain Applications}
 % \title{Privacy-Enhancing Technologies for Blockchains}
 % \title{Improving Privacy and Security of Blockchain with Cryptography}
 % \title{Private and Responsible Decentralized Payments} % from MPI contract
@@ -34,34 +42,46 @@
 
 \maketitle
 \begin{abstract}
-Blockchains were introduced in 2008 by Satoshi Nakamoto as a way to implement a trusted but decentralized append-only ledger. This simple functionality has given rise to a plethora of decentralized applications utilizing the blockchain as a public bulleting board. In recent years, it has become clear that this basic functionality is not enough to prevent widespread attacks on both the privacy and security of blockchain users, as evidenced by the blockchain analytics industry and the billions of dollars stolen via cryptocurrency exploits to date. This work explores the role cryptography has to play in the blockchain ecosystem to both enhance user privacy and secure user funds.
+Blockchains were introduced in 2008 by Satoshi Nakamoto as a way to implement a trusted but decentralized append-only ledger. This simple functionality has given rise to a plethora of decentralized applications utilizing the blockchain as a public bulleting board. In recent years, it has become clear that this basic functionality is not enough to prevent widespread attacks on both the privacy and security of blockchain users, as evidenced by the blockchain analytics industry and the billions of dollars stolen via cryptocurrency exploits to date. 
+
+This work explores the role cryptography has to play in the blockchain ecosystem to both enhance user privacy and secure user funds. I discuss how to generically add universally composable security to any non-interactive zero-knowledge proof in a way that is compatible with an updatable common reference string, thus showing how to strengthen security for any system relying on ZKPs while maintaining minimal trust assumptions; improve the security of a class of coin mixing protocols by giving a formal security treatment of this class and patching the security of an existing, insecure protocol; and show how to construct efficient, non-interactive, and private on-chain protocols for a large class of elections and auctions. Finally, I describe two proposed works: a new threshold wallet construction in a strong threat model and a comparison of on-chain key management approaches.
 
 % Blockchains are inherently public, [but sometimes we want privacy. We need to use crypto to do this. And so on and so forth\dots] \noemi{actually probably need to expand to also include ``security'', since the threshold sigs project isn't really about privacy}
 % A key challenge in [my area of research] is [problem I halfway figured out how to solve]. (And so on and so forth\dots)
 \end{abstract}
 
 \tableofcontents
+\newpage
 
 \input{intro}
 
 \section{Privacy-Enhancing Building Blocks}\label{sec:building-blocks}
 
-Although cryptocurrencies are often treated as fully anonymous digital currencies, numerous works have shown how to link transactions or even fully deanonymize users in many popular cryptocurrencies \cite{CCS:BirKhoPus14,EuroSP:BirTik19,FC:KosKosMcD14,PoPETS:MSHLHSHHMNC18,USENIX:KYMM18}. Numerous mitigations have been suggested, including cryptocurrency mixers (described below) and privacy-first cryptocurrencies like Zcash~\cite{zcash} and Monero~\cite{monero}. 
+Although cryptocurrencies are often treated as fully anonymous digital currencies, numerous works have shown how to link transactions or even fully deanonymize users on many popular blockchains \cite{CCS:BirKhoPus14,EuroSP:BirTik19,FC:KosKosMcD14,PoPETS:MSHLHSHHMNC18,USENIX:KYMM18}. Numerous mitigations have been suggested, including adding privacy as an overlay on top of existing blockchains (e.g., via cryptocurrency mixers, described in \cref{sec:mixers}), or by building new privacy-first cryptocurrencies like Zcash~\cite{zcash} and Monero~\cite{monero}. Many of these overlays and new blockchains rely on zero-knowledge proofs.
 
 \input{uc-se}
 
 \section{Privacy-Enhancing Applications}\label{sec:applications}
 
+Because the blockchain itself does not guarantee the privacy of users, privacy is often added at the application layer. For example, many applications serve as a privacy overlay to the underlying payment layer. Other applications, such as private voting, enable a wholly new functionality while also adding privacy.
+
 \input{bcs}
 \input{cicada}
 
 \section{Proposed Work}\label{sec:proposed}
-\input{onchain-rbe}
 \input{ksp}
+\input{onchain-rbe}
 % \subsection{Formalizing Bolt}
 
 \section{Timeline}
-\todo{}
+
+\paragraph{January 2024:} Preliminary exam (Jan. 22); submit Cicada (\Cref{sec:cicada}) and threshold hot-cold wallet (\Cref{sec:ksp}) to CCS (Jan. 28).
+
+\paragraph{March 2024:} Publish a16z blog post about on-chain RBE along with smart contract implementation.
+
+\paragraph{Summer/Fall 2024:} Submit SoK (\Cref{sec:sok}) to IEEE S\&P'25 or FC'25.
+
+\paragraph{December 2024:} Dissertation defense.
 
 {\small
 \bibliographystyle{alpha}
