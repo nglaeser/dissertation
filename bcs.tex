@@ -9,13 +9,12 @@
 Cryptocurrency mixers~\cite{ESORICS:RufMorKat14,EPRINT:SNBB19,ACSAC:TLKBS18,FC:BNMCKF14,coinjoin,CCS:GreMie17} add a measure of $k$-anonymity to cryptocurrency tokens by employing a central party, or \emph{mixer}, to shuffle the tokens among users of the service. Users deposit their coins into the service, and later retrieve them again (using a different address, otherwise anonymity is trivially broken).
 Any particular token (retrieved from the mixer) cannot be tied to a particular source (user who deposited money into the mixer): each of the $k$ users is equally likely to be the source of a given token. For security, a mixer must offer \emph{atomicity}, i.e., a user pays $c+\epsilon$ coins if and only if the ``recipient'' (normally the same user, but under a new address) is paid $c$ coins ($\epsilon$ is a parameter which represents the mixer and transaction fees).
 
-When the underlying blockchain offers scripting functionality, a simple mixer can be set up as an account into which users deposit coins and later retrieve them (or allow another party to retrieve them) by redeeming a token, where atomicty is enforced via an on-chain script. When the goal is scalability and/or interoperability between different blockchains, more complicated protocols are needed to enforce the atomicity requirement without relying on the on-chain scripting functionality. 
+When the underlying blockchain offers scripting functionality, a simple mixer can be set up as an account into which users deposit coins and later retrieve them (or allow another party to retrieve them) by redeeming a token, where atomicity is enforced via an on-chain script. When the goal is scalability and/or interoperability between different blockchains, more complicated protocols are needed to enforce the atomicity requirement without relying on the on-chain scripting functionality. 
 
 \begin{figure}[htb]
     \centering
     \includegraphics[width=0.7\linewidth]{syncpuzzle.pdf}
-    \caption{Protocol flow of a synchronization puzzle, the un-
-    derlying cryptographic mechanism of Tumblebit and \AAL, which we formalize as Blind Conditional Signatures.
+    \caption{Protocol flow of a synchronization puzzle, the underlying cryptographic mechanism of Tumblebit and \AAL, which we formalize as Blind Conditional Signatures.
     Dotted double-edged arrows indicate 2-party protocols. Solid arrows indicate secure point-to-point communication.}
     \label{fig:syncpuzzle_overview}
   \end{figure}
