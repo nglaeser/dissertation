@@ -15,12 +15,13 @@ An important problem in all secure systems is correctly linking identities to pu
         Non-interactive encryption   & \med   & \cmark & \med   \\
         Non-interactive decryption   & \cmark & \cmark & \med   \\
         Sender-anonymous             & \med   & \cmark & \cmark \\
-        Recipient-anonymous          & \cmark & \xmark & \med   \\
+        Recipient-anonymous          & \cmark & \med   & \cmark$^*$ \\
+        Transparent setup            & \cmark & \xmark & \med   \\
         No TTP                       & \cmark & \med   & \cmark \\
         Arbitrary IDs                & \cmark & \cmark & \cmark$^*$ \\
         \bottomrule
     \end{tabular}
-    \caption{Properties of an on-chain public key registry, threshold IBE~\cite{C:BonFra01}, and RBE~\cite{CCS:GKMR23}. ``Succint'' storage means constant (\cmark) or sublinear (\med) in the number of parties, non-interactive means only once (\cmark) or infrequently (\med) in the lifetime of the system.
+    \caption{Properties of an on-chain public key registry, threshold IBE~\cite{C:BonFra01}, and RBE~\cite{CCS:GKMR23}. ``Succinct'' storage means constant (\cmark) or sublinear (\med) in the number of parties, non-interactive means only once (\cmark) or infrequently (\med) in the lifetime of the system.
     Since the PKR keeps the full list of keys on-chain, it does not have succinct storage; furthermore, the sender occasionally has to retrieve the public key for a new recipient, so encryption and sender-anonymity are not fully achieved. Meanwhile threshold IBE ciphertexts do not normally hide the recipient~\cite{EC:BLSV18} and rely on a set of TTPs. Finally, recipient-anonymity can be added to the RBE construction (\med) as an extension; the asterisk indicates that arbitrary identity strings for RBE are enabled by a follow-up work~\cite{AC:FioKolPer23}.}\label{tab:pki-comparison}
 \end{table}
 

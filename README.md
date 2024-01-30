@@ -1,6 +1,4 @@
-# PhD Proposal: Cryptography for Private & Secure Blockchain Applications
-
-> A proposal document such as this one is part of the requirements for advancing to candidacy at the University of Maryland.
+# Cryptography for Private & Secure Blockchain Applications
 
 **Abstract**
 
