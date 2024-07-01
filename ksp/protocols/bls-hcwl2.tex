@@ -1,0 +1,39 @@
+\begin{figure*}
+% \begin{figure}[tbhp]
+    \centering
+    \begin{mdframed}
+    \textbf{Parameters:} Groups $\GG_1, \GG_2$ of prime order $p$ with generators $g_1, g_2$, respectively; a degree-$d$ KZG common reference string $\crs$.
+    %%%%% proof of remembrance %%%%%
+    \begin{center}
+        \textsc{Proofs of Remembrance}
+    \end{center}
+    \underline{Cold proof:} A client $C$ can verify that an institutional cold storage $P_i^\cold$ still retains its key material (namely $\dk_i$). On input $(\sid, \mathsf{CProof}, C, (P_i^\cold))$, $C$ sends a designated proof request message to $P_i^\cold$. Then:
+    \begin{enumerate}
+        \item $P_i^\cold$ retrieves its stored $\ek_i = (\ek_{i,1}, \ek_{i,2}), \dk_i = (\dk_{i,1}, \dk_{i,2})$ and computes a non-replayable proof $\pi_{i,k}^\cold \gets \Pi_{\sf DL}.\mathsf{Prove}(\ek_{i,k}; \dk_{i,k})$ for $k=1,2$. It sends $\pi_i^\cold := (\pi_{i,1}^\cold, \pi_{i,2}^\cold)$ to $C$.
+        \item To verify, $C$ calls $\Fpk$ on input $(\sid, \mathsf{PKRecover}, C, (P_i^\cold))$ and receives $(\sid, \mathsf{PKRecoverResult}, C, (P_i^\cold, \ek_i))$. It parses $\ek_i = (\ek_{i,1}, \ek_{i,2})$ and computes $b_k \gets \Pi_{\sf DL}.\vrfy(\ek_{i,k}, \pi_{i,k}^\cold)$ for $k=1,2$. Finally it outputs $(\sid, \mathsf{CProofResult}, C, (P_i^\cold, b_1 \land b_2))$.
+    \end{enumerate}
+    \underline{Hot proof:} A client $C$ can also verify that an institutional hot storage $P_i^\cold$ still retains its key material (namely $\hx_i$). On input $(\sid, \mathsf{HProof}, C, (P_i^\hot))$, $C$ sends a designated proof request message to $P_i^\hot$. Then:
+    \begin{enumerate}
+        \item $P_i^\hot$ calls $\Fs$ on input $(\sid, \mathsf{AuxRecover}, P_i^\hot, (C))$ and receives $(\sid, \mathsf{AuxInfo}, P_i^\hot, (C, \vk, \com))$. Then it uses $\com$ and the stored tuple $(C, \hx_i, \pi_i) \in \keylist_i$ to compute $\pi_i^\hot \gets \Pi_{\sf EKS}.\mathsf{Prove}((\crs, \com, i);\allowbreak (\hx_i, \pi_i))$, which it sends to $C$.
+        \item To verify, $C$ calls $\Fs$ on input $(\sid, \mathsf{AuxRecover}, C, (C))$ and receives $(\sid, \mathsf{AuxInfo}, C, (C, *, \com))$. Then it lets $b \gets \Pi_{\sf EKS}.\vrfy((\crs, \com, i), \pi_i^\hot)$ and outputs $(\sid, \mathsf{HProofResult}, C, (P_i^\hot, b))$.
+    \end{enumerate}
+    % %%%%% proactive refresh %%%%%
+    \begin{center}
+        \textsc{Proactive Refresh}
+    \end{center}
+    \underline{Hot share refresh:} A client $C$ can trigger a refresh of its hot key shares. On input $(\sid, \mathsf{ShareRefresh}, C)$,
+    % first picks a set of volunteers $\mathcal{V}$ to assist and 
+    $C$ retrieves its stored wallet parameters $\clientlist = (\vk, *, t, \mathcal{I})$ where $\mathcal{I} = \{(P_i^\hot, P_i^\cold)\}_{i \in [n]}$. Then:
+    \begin{enumerate}
+        \item $C$ calls $\Fs$ on intput $(\sid, \mathsf{ZeroSetup}, C, (t, \{P_i^\hot\}_{i \in [n]}))$.
+        \item $\Fs$ outputs $(\sid, \mathsf{ZeroShare}, P_i^\hot, (C, \delta_i, \zopen_i))$ to $P_i^\hot$ for all $i \in [n]$. It also outputs $(\sid,\allowbreak \mathsf{ZeroSetupDone}, C, (b))$ to $C$.
+        \item Each $P_i^\hot$ 
+        % \corrc{calls $\Fs$ on $(\sid, \mathsf{ZeroComRecover}, P_i^\hot, (C))$ to get $\ucom$ and computes $b_i \gets \Pi_{\sf Ref}.\mathsf{H}\verify((\crs, \ucom, i, \delta_i), \zopen_i)$. If $b_i=1$,} 
+        \corrc{checks if $(\delta_i, \zopen_i) = (\perp, \perp)$. If so, it sets $b_i = 0$; otherwise, it sets $b_i = 1$ and}
+        updates $(C, \hx_i, \pi_i) \in \keylist_i$ to $(C, \hx_i + \delta_i,\allowbreak \pi_i \cdot \zopen_i)$. Then it outputs $(\sid, \mathsf{ShareRefreshResult},\allowbreak P_i^\hot, (C, b_i))$.
+        \item Meanwhile, $C$ outputs $(\sid, \mathsf{ShareRefreshResult}, C, (b))$.
+    \end{enumerate}
+    \end{mdframed}
+    \caption{Our BLS \hcwl protocol (proofs of remembrance and proactive refresh).}
+    \label{fig:hc_bls2}
+\end{figure*}

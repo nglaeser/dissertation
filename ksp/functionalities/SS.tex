@@ -1,0 +1,49 @@
+\newcommand{\chblue}[1]{\textcolor{blue}{#1}}
+% \newcommand{\chblue}[1]{#1}
+
+\begin{figure*}
+% \begin{figure}[tbhp]
+\centering
+\fbox{\parbox{.9\textwidth}{%
+\renewcommand{\labelitemi}{\textendash}
+\setlength{\itemsep}{0pt}
+\textbf{Public parameters:} Groups $\GG_1, \GG_2$ of prime order $p$ with generators $g_1, g_2$, respectively; a degree-$d$ KZG common reference string $\crs$.
+\begin{itemize}
+    \item On input $(\sid,\mathsf{SSSetup}, C, (t, \mathcal{P}, \{\ek_i\}_{i \in [n]}))$, where 
+    % $\mathcal{V}$ is a set of volunteer helpers, 
+    $\mathcal{P} = \{P_1, \ldots, P_n\}$ is a set of parties, 
+    for $i \in [n]$, $\ek_i \in \GG_2$ is an encryption key, 
+    and $t \leq \sizeof{\mathcal{P}}$, 
+    it proceeds as follows:
+    \begin{enumerate}
+        \item Sample $x \sample \ZZ_p \setminus \{0\}$. Let $y := g_2^x$.
+        % \item Add $(C, \mathcal{V}, \mathcal{P}, t, n, y)$ to a list $S$.
+        \item Generate $t$-out-of-$n$ Shamir Shares of $x$ as $x_1, \ldots x_n \in \ZZ_p$. %; let $f$ be the polynomial used.
+        Let $y_i := g_2^{x_i}~\forall i \in [n]$.
+        \item Interpolate the degree-$n$ polynomial $\tilde{f}$ such that $\tilde{f}(i) = \lhlhash(\ek_i^x) + x_i~\forall i\in [n]$. Compute $\com \gets \mathsf{KZG}.\Commit(\crs, \tilde{f})$. % and ${\sf d}\com := g_1^{\tau^{d-n} \cdot \tilde{f}(\tau)}$.
+        \item Delete any entries $(C, *, *, *, *, *) \in \clientlist$. %\chblue{and $(C, *, *) \in U$}.
+        Add $(C, \mathcal{P}, t, y, \com, \texttt{time} := 1)$ to $\clientlist$.
+        \item For each $i \in [n]$, compute $(\hx_i, \pi_i) \gets \mathsf{KZG}.\Open(\crs, \tilde{f}, i)$ and output $(\texttt{sid}, \mathsf{SecretShare},\allowbreak P_i,\allowbreak (C, i, \hx_i, \pi_i))$.
+        \item Finally, output $(\texttt{sid}, \mathsf{SSSetupDone}, C, (y, \{y_i\}_{i \in [n]}))$.
+    \end{enumerate}
+\item On input $(\texttt{sid},\mathsf{ZeroSetup}, C, (t,\mathcal{P}))$, where 
+% $\mathcal{V}$ is a set of volunteer helpers, and 
+$\mathcal{P} = \{P_1, \ldots, P_n\}$ is a set of parties and
+$t \leq \sizeof{\mathcal{P}}$, 
+it proceeds as follows:
+    \begin{enumerate}
+        \item Generate $t$-out-of-$n$ Shamir Shares of $0$ as $x_1, \ldots x_n \in \ZZ_p$; let $f$ be the polynomial used.
+        \item Compute $\com_0 \gets \mathsf{KZG}.\Commit(\crs, f)$.
+        % and output $(\sid, \mathsf{ZeroCom}, P_i, (C, \com_0))$ for all $i \in [n]$.
+        \item Retrieve $(C, \mathcal{P}, t, y, \com, \texttt{time}) \in \clientlist$ for the maximum value of $\texttt{time}$. Add $(C, \mathcal{P}, t, y, \com \cdot \com_0, \texttt{time++})$ to $\clientlist$. % \chblue{and $(C, \com_0, \texttt{time++})$ to $U$}.
+        \item For each $i \in [n]$, \chblue{if $C$ is corrupt ask $\adv$ for a bit $b_i^*$. If $b_i^* = 1$,} compute $(\delta_i, \pi_i) \gets \mathsf{KZG}.\Open(\crs, f, i)$. \chblue{Otherwise set $(\delta_i, \pi_i) := (\perp, \perp)$.} 
+        \item \chblue{If $P_i$ is corrupt, ask $\adv$ for values $(\delta_i', \pi_i')$ and set $(\delta_i, \pi_i) = (\delta_i', \pi_i')$.} Output $(\texttt{sid}, \mathsf{ZeroShare}, P_i,\allowbreak (C, \delta_i, \pi_i))$.
+        \item Finally, output $(\texttt{sid}, \mathsf{ZeroSetupDone}, C, (1))$.
+    \end{enumerate}
+\item On input $(\sid, \mathsf{AuxRecover}, P_i, (C))$ for some client $C$, retrieve $(C, *, *, y, \com, \texttt{time}) \in \clientlist$ for the maximum value of $\texttt{time}$ and output $(\texttt{sid}, \mathsf{AuxInfo}, P_i, (C, y, \com))$.
+% \item \chblue{On input $(\sid, \mathsf{ZeroComRecover}, P, (C))$, retrieve $(C, \com_0, \texttt{time}) \in U$ for the maximum value of $\texttt{time}$ and output $(\sid, \mathsf{ZeroCom}, P, (C, \com_0))$.}
+\end{itemize}
+}}
+    \caption{The encrypted secret sharing functionality $\Fs$.}
+    \label{fig:Fs}
+\end{figure*}

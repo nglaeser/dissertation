@@ -16,3 +16,9 @@ git push
 ```
 
 Overleaf seems not to support submodules, so [CryptoBib](https://cryptobib.di.ens.fr/) will be updated manually. -->
+
+## LaTeX Workshop shortcuts
+
+`Cmd + click`: Go to source code from PDF location
+
+`Opt + cmd + j`: Go to PDF from source code

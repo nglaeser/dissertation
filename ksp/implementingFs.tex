@@ -1,0 +1,67 @@
+\subsubsection{Trustless proactive refresh using a bulletin-board}\label{sec:fs_protocol}
+
+Recall from \Cref{subsec:enc_pok} that the correctness of our proactive refresh protocols relies on the update polynomial $z_\timeT(X)$ being of degree $t-1 \leq d$ and having $z_\timeT(0)=0$. 
+We can use a folklore technique~\cite[\S2.5]{EC:CHMMVW20} 
+% First, in addition to the elements $\{g_1, g_1^\tau, g_1^{\tau^2}, \dots, g_1^{\tau^n}, g_2, g_2^\tau\}$, the CRS will include $\{g_1^\alpha, g_1^{\alpha\tau}, g_1^{\alpha\tau^2}, \dots, g_1^{\alpha\tau^t}, g_2^\alpha\}$ where $\alpha \sample \ZZ_p$ is a second trapdoor. Second,
+% in addition to verifying their update share $z_\timeT(i)$ with the evaluation proof $\pi_{\timeT,i}'$, the hot storages verify 
+to enforce the degree requirement: the client publishes an additional public ``degree commitment'' $\dcom_\timeT := g_1^{\tau^{d-t+1} \cdot z_\timeT(\tau)}$, %g_1^{\alpha z_\timeT(\tau)}$
+which is verified by checking
+\[
+    e(\dcom_\timeT, g_2) = e(\ucom_\timeT, g_2^{\tau^{d-t+1}}), %g_2^\alpha),
+\]
+where $d$ is the degree of the KZG CRS. This ensures that the polynomial $z_\timeT(X)$ committed to by $\ucom_\timeT$ is of degree at most $t-1$. To enforce the evaluation at zero, $C$ can simply provide a KZG opening proof for $\ucom_\timeT$ at $X=0$.
+
+Additionally, the hot parties should also be sure that the client is using the \emph{same} polynomial $z_\timeT(X)$ for all of them when computing their share updates $\delta_i$. This is easily done, since each $P_i^\hot$ is already provided with an evaluation proof $\zopen_i$ for $\delta_i$. In the case of a trusted client, these were assumed to be computed correctly so $P_i^\hot$ only used them to blindly update the its key share and opening proof $(\hx_i, \pi_i)$. In the case of an untrusted client, parties will instead first check their correctness by ensuring $\mathsf{KZG}.\vrfy(\crs, \ucom_\timeT, i, \delta_i, \zopen_i) = 1$, and only update their key share and opening proof if verification passes.
+
+% \noemi{Alternatively can include commitments to the encrypted shares in $C$'s public key and each $P_i^\hot$ proves knowledge of the contents}
+
+\Cref{fig:pi_ref} gives the proof system $\Pi_{\sf Ref}$ used to prove correctness of share refreshes, with verification split between verifying the well-formedness of the update polynomial $z_\timeT(X)$ committed to by ${\sf u}\com_\timeT$ (via ${\sf UC}\vrfy$) and of each hot party's refresh information $\delta_i$ (via ${\sf H}\vrfy$).
+
+% The proof $\Pi_{\sf HUpd}$ used by the client $C$ to show correctness of an update $\delta_i$ (except for the degree) is:
+\begin{figure*}[tb]
+    \centering
+    \begin{mdframed}
+    \begin{center}
+        \textsc{Share Refresh Proofs ($\Pi_{\sf Ref}$)}
+    \end{center}
+    \medskip
+    \textbf{Parameters:} Degree-$d$ KZG common reference string $\crs = \{g_1, g_1^\tau, \dots, g_1^{\tau^d}, g_2, g_2^\tau\}$.
+    \hfill\medskip\\
+    \underline{$\mathsf{Prove}((\crs, {\sf u}\com_\timeT, t-1, \{\delta_i\}_{i \in [n]}); z_\timeT(X)) \to (\{\zopen_{\timeT,i}\}_{i \in [n]}, \pi_z)$:} Given $\crs$, a KZG commitment ${\sf u}\com_\timeT$ to update polynomial $z_{\timeT}(X)$, the latter's degree $t-1$, and each party's share refresh information $\delta_i$, use $z_\timeT(X)$ to compute the following:
+    \begin{enumerate}
+        \item For each $i \in [n]$, prove that $\delta_i = z_\timeT(i)$ by computing $(\delta_i, \zopen_{\timeT,i}) \gets \mathsf{KZG}.\mathsf{Open}(\crs, z_\timeT(X), i)$. 
+        \item Prove that $z_\timeT(0) = 0$ and $z_\timeT(X)$ has degree $t-1 \leq d$ by computing $(0, \zopen_{\timeT,0}) \gets \mathsf{KZG}.\mathsf{Open}(\crs, z_\timeT(X), 0)$ and $\dcom_\timeT := g_1^{\tau^{d-t+1} \cdot z_t(\tau)}$ using $\crs$. Let $\pi_\ucom := (\zopen_{\timeT,0}, \dcom_\timeT)$. 
+        \item Output $(\{\zopen_{\timeT,i}\}_{i \in [n]}, \pi_\ucom)$.
+    \end{enumerate}
+    \underline{$\mathsf{H}\vrfy((\crs, \ucom_\timeT, i, \delta_i), \zopen_{\timeT,i}) \to \{0,1\}$:} Given $\crs$, a KZG commitment $\ucom_\timeT$, party index $i$, and share refresh information $\delta_i$, output $\mathsf{KZG}.\vrfy(\crs, \ucom_\timeT, i, \delta_i, \zopen_{\timeT,i})$.\medskip\\
+    \underline{${\sf UC}\vrfy((\crs, \ucom_\timeT, t-1), \pi_\ucom) \to \{0,1\}$:} Given $\crs$, a KZG commitment $\ucom_\timeT$, and its supposed degree $t-1$, verify the proof $\pi_\ucom = (\zopen_{\timeT,0}, \dcom_\timeT)$ by outputting 1 iff the following hold:
+    \[\begin{array}{c}
+        \mathsf{KZG}.\vrfy(\crs, \ucom_\timeT, 0, 0, \zopen_{\timeT,0}) = 1\\
+        e(\dcom_\timeT, g_2) = e(\ucom_\timeT, g_2^{d-t+1})
+    \end{array}\]
+    \end{mdframed}
+    \caption{The proof system $\Pi_{\sf Ref}$ used to prove correctness of the every hot party's share refresh information $\delta_i$ and the commitment update ${\sf u}\com_t$. Each hot party verifies its own update information using ${\sf H}\vrfy$, and the correctness of ${\sf u}\com$ is verified separately via ${\sf UC}\vrfy$.}
+    \label{fig:pi_ref}
+\end{figure*}
+
+Given $\Pi_{\sf Ref}$, it is fairly simple to realize $\Fs$ in a manner that avoids trusting $C$ except for the setup phase.
+To do this, we assume a public bulletin board functionality $\Fbb$ with limited programmability (\Cref{fig:Fbb}). This functionality will store the most up-to-date commitment $\com$ to the hot shares $\hx_1, \dots, \hx_n$. Whenever the shares are refreshed, it will also check the correctness of the update to $\com$ (namely $\ucom$) before making the new commitment available.
+
+Specifically, instead of only running the steps of $\Fs$ locally, $C$ will compute some additional values using $\Pi_{\sf Ref}$ to let $\Fbb$ and each $P_i^\hot$ check the correctness of the share and update commitments. 
+The proof for the update commitment $\ucom$ will be checked by $\Fbb$ before changing the stored commitment. 
+Additionally, $C$ will let $\Fbb$ store and distribute $\ucom$ instead. 
+\renewcommand{\chblue}[1]{\textcolor{blue}{#1}}
+We describe the full protocol in \Cref{fig:fs_protocol}, where changes with respect to locally running the ideal functionality $\Fs$ are shown in \chblue{blue}.
+
+\input{ksp/functionalities/BB}
+\input{ksp/protocols/Fs-usingBB}
+
+\renewcommand{\chblue}[1]{#1}
+
+\begin{theorem}\label{thm:fs-protocol}
+The encrypted secret sharing protocol in \Cref{fig:fs_protocol} UC-realizes $\Fs$ in the $\Fbb$-hybrid model.
+\end{theorem}
+
+\begin{proof}
+    \todo{}
+\end{proof}

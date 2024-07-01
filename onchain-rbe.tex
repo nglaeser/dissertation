@@ -26,3 +26,7 @@ An important problem in all secure systems is correctly linking identities to pu
 \end{table}
 
 A more in-depth evaluation would include various proposed alternatives to storing the full PKR on-chain while maintaining transparency~\cite{USENIX:MBBFF15,CCS:CDGM19,FCW:Bonneau16b,SP:TomDev17,EPRINT:MKSGOLL23}. Furthermore, our basic RBE construction did not consider key updates or revocation, which are important in practice, but recent work~\cite{AC:FioKolPer23} has made progress in that direction and should be incorporated into the analysis. I am also working on a smart contract implementation of the RBE construction to get a more accurate comparison of the on-chain costs of the aforementioned approaches.
+
+\noemi{Other approaches:}
+\paragraph{RBE.} Moves the interaction with the key database from the encryptor side to the decryptor. All \noemi{check this} of the practical constructions of RBE use the so-called ``slotted RBE'' paradigm, which \noemi{...}
+\paragraph{PKI + PIR.} This option still maintains the classic PKI communication pattern: the onus of communicating with the key database is left with the encryptor. Additionally, although PIR adds anonymity, it does nothing to improve the transparency of the key database.

@@ -1,13 +1,25 @@
+% !TEX root = .
 \documentclass{article}
+\usepackage[T1]{fontenc}
+% \documentclass{report}
 \usepackage{graphicx} % Required for inserting images
 \usepackage{xcolor}
 \usepackage{dashbox}
 \usepackage{tikz}
+\usetikzlibrary{arrows.meta}
 \usetikzlibrary{patterns}
 \usepackage{xspace}
 \usepackage{booktabs,multicol}
+\usepackage{footnote}
 \usepackage{mdframed}
-\usepackage{hyperref}
+\usepackage[backref=page]{hyperref}
+\renewcommand*{\backref}[1]{}
+\renewcommand*{\backrefalt}[4]{\scriptsize%
+    \ifcase #1%
+          \or \textit{[page~#2.]}%
+          \else \textit{[pages~#2.]}%
+    \fi%
+}
 \hypersetup{
     colorlinks=true,
     linkcolor=blue,
@@ -18,10 +30,15 @@
 \usepackage{amsthm}
 \newtheorem{definition}{Definition}
 \newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
 \usepackage{amsmath,amsfonts,amssymb}
 \usepackage{wasysym}
 \usepackage{cleveref}
-\usepackage[lambda]{cryptocode}
+% \usepackage[nottoc,notlot,notlof]{tocbibind}
+\usepackage[resetlabels]{multibib}
+\newcites{This}{Basis of this Dissertation}
+\newcites{Other}{Other Publications by the Author}
+\usepackage[lambda,keys,sets]{cryptocode}
 \usepackage{hyphenat}
 \hyphenation{inter-active}
 \hyphenation{block-chain}
@@ -30,8 +47,11 @@
 \newcommand{\copied}[1]{\textcolor{red}{[copied] #1}}
 \newcommand{\noemi}[1]{\textcolor{magenta}{Noemi: #1}}
 \newcommand{\todo}[1]{\textcolor{red}{todo: #1}}
+\newcommand{\change}[1]{\ensuremath{\boxed{#1}}}
 
-\title{Cryptography for Private and Secure Blockchain Applications}
+\title{Practical Cryptography for Blockchains: Minimizing Trust and Maximizing Security}
+% \title{Cryptographic Protocols for Blockchains: Minimizing Trust and Maximizing Security}
+% \title{Cryptography for Private and Secure Blockchain Applications}
 % \title{Cryptography for Blockchain Applications}
 % \title{Privacy-Enhancing Technologies for Blockchains}
 % \title{Improving Privacy and Security of Blockchain with Cryptography}
@@ -45,44 +65,68 @@
 \begin{abstract}
 In 2008, Satoshi Nakamoto introduced Bitcoin, the first digital currency without a trusted authority whose security is maintained by a decentralized blockchain. Since then, a plethora of decentralized applications have been proposed utilizing blockchains as a public bulletin board. In recent years, it has become clear that this basic functionality is not enough to prevent widespread attacks on both the privacy and security of blockchain users, as evidenced by the blockchain analytics industry and the billions of dollars stolen via cryptocurrency exploits to date. 
 
-This work explores the role cryptography has to play in the blockchain ecosystem to both enhance user privacy and secure user funds. I discuss how to generically add universally composable security to any non-interactive zero-knowledge proof (NIZK), a crucial building block in many blockchain systems, in a way that is compatible with an updatable common reference string. This strengthens security for any system relying on NIZKs, including many blockchains and blockchain applications, while maintaining minimal trust assumptions. Next, I discuss how to improve the security of a class of coin mixing protocols by giving a formal security treatment of this class and patching the security of an existing, insecure protocol. Finally, I show how to construct efficient, non-interactive, and private on-chain protocols for a large class of elections and auctions. I conclude by describing two proposed works: a new threshold wallet construction and a systematic comparison of on-chain key management approaches.
+This work explores the role cryptography has to play in the blockchain ecosystem to both reduce trust and secure user funds. 
+% I discuss how to generically add universally composable security to any non-interactive zero-knowledge proof (NIZK), a crucial building block in many blockchain systems, in a way that is compatible with an updatable common reference string. This strengthens security for any system relying on NIZKs, including many blockchains and blockchain applications, while maintaining minimal trust assumptions. Next, I discuss how to improve the security of a class of coin mixing protocols by giving a formal security treatment of this class and patching the security of an existing, insecure protocol. 
+I discuss a new paradigm for rollups called ``naysayer proofs'' which sits between optimistic and zero-knowledge approaches.
+Next, I show how to construct efficient, non-interactive, and private on-chain protocols for a large class of elections and auctions. 
+Finally, I introduce a new type of threshold wallet which adds offline components at each custodian to improve security. Furthermore, the construction enables transparency by allowing the wallet owner to request custodians to prove ``remembrance'' of the secret key material.
+All three of these works will be deployed in practice or have seen interest from practitioners who I hope will be interested in applying them. Thus, they have real practical impact.
+I conclude by describing future directions.
 
 % Blockchains are inherently public, [but sometimes we want privacy. We need to use crypto to do this. And so on and so forth\dots] \noemi{actually probably need to expand to also include ``security'', since the threshold sigs project isn't really about privacy}
 % A key challenge in [my area of research] is [problem I halfway figured out how to solve]. (And so on and so forth\dots)
 \end{abstract}
 
-\tableofcontents
 \newpage
+\section*{Acknowledgments}
 
+\newpage %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \section*{Basis of this Dissertation}
+\nociteThis{FC:SGB24,EPRINT:GSZB23,GGJLM24}
+\bibliographystyleThis{alpha}
+\bibliographyThis{
+    cryptobib/abbrev3,
+    cryptobib/crypto,
+    extrarefs
+}
+
+% \section*{Other Publications by the Author}
+\nociteOther{CSF:AGRS24,CCS:GKMR23,CCS:GMMMTT22}
+\bibliographystyleOther{alpha}
+\bibliographyOther{
+    cryptobib/abbrev3,
+    cryptobib/crypto,
+    extrarefs
+}
+
+\newpage %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\tableofcontents
+
+\newpage %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \input{intro}
 
-\section{Privacy-Enhancing Building Blocks}\label{sec:building-blocks}
+\input{prelims}
 
-Although cryptocurrencies are often treated as fully anonymous digital currencies, numerous works have shown how to link transactions or even fully deanonymize users on many popular blockchains \cite{CCS:BirKhoPus14,EuroSP:BirTik19,FC:KosKosMcD14,PoPETS:MSHLHSHHMNC18,USENIX:KYMM18}. Numerous mitigations have been suggested, including adding privacy as an overlay on top of existing blockchains (e.g., via cryptocurrency mixers, described in \Cref{sec:mixers}), or by building new privacy-first cryptocurrencies like Zcash~\cite{zcash} and Monero~\cite{monero}. Many of these overlays and new blockchains rely on zero-knowledge proofs.
+\section{Naysayer Proofs}\label{sec:naysayer}
 
-\input{uc-se}
+\section{On-chain Voting and Auctions}
+% \input{cicada/intro}
 
-\section{Privacy-Enhancing Applications}\label{sec:applications}
+\section{{\HCWL}s}\label{sec:hcwl}
+\input{ksp/intro}
+\input{ksp/results}
+\input{ksp/tech-overview}
+\input{ksp/related}
+\input{ksp/model}
+\input{ksp/keyshares}
+\input{ksp/hotproofs}
+\input{ksp/bls-construction}
+\input{ksp/bls-security}
+\input{ksp/bls-eval}
+\subsection{Extensions}
+\input{ksp/implementingFs}
 
-Because the blockchain itself does not guarantee the privacy of users, privacy is often added at the application layer. For example, many applications serve as a privacy overlay to the underlying payment layer. Other applications, such as private voting, enable a wholly new functionality while also adding privacy.
-
-\input{bcs}
-\input{cicada}
-
-\section{Proposed Work}\label{sec:proposed}
-\input{ksp}
-\input{onchain-rbe}
-% \subsection{Formalizing Bolt}
-
-\section{Timeline}
-
-\paragraph{January 2024:} Preliminary exam (Jan. 22); submit Cicada (\Cref{sec:cicada}) and threshold hot-cold wallet (\Cref{sec:ksp}) to CCS (Jan. 28).
-
-\paragraph{March 2024:} Publish a16z blog post about on-chain RBE along with smart contract implementation.
-
-\paragraph{Summer/Fall 2024:} Submit SoK (\Cref{sec:sok}) to IEEE S\&P'25 or FC'25.
-
-\paragraph{December 2024:} Dissertation defense.
+\section{Conclusion}
 
 {\small
 \bibliographystyle{alpha}

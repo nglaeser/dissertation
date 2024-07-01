@@ -13,9 +13,6 @@
 % \renewcommand{\epsilon}{\varepsilon}
 
 % math
-\newcommand{\ZZ}{\ensuremath{\mathbb{Z}}}
-\newcommand{\NN}{\ensuremath{\mathbb{N}}}
-\newcommand{\GG}{\ensuremath{\mathbb{G}}}
 \newcommand{\JJ}{\ensuremath{\mathbb{J}}}
 \newcommand{\prob}[1]{\ensuremath{\Pr\left[#1\right]}}
 \newcommand{\suchthat}{\ensuremath{\mathrm{~s.t.~}}}
@@ -26,6 +23,7 @@
 \DeclareMathOperator*{\argmax}{arg\,max}
 \newcommand{\sizeof}[1]{\lvert #1 \rvert}
 \newcommand{\ceil}[1]{\lceil #1 \rceil}
+\renewcommand{\vec}[1]{\ensuremath{\mathbf{#1}}}
 
 % theorem, etc. environments
 \newtheorem{construction}{Construction}
@@ -62,10 +60,12 @@
 \newcommand{\sign}{\ensuremath{\mathsf{Sign}}}
 \newcommand{\vrfy}{\ensuremath{\mathsf{Vrfy}}}
 \newcommand{\prove}{\ensuremath{\mathsf{P}}}
+\newcommand{\share}{\ensuremath{\mathsf{Share}}}
 \newcommand{\recon}{\ensuremath{\mathsf{Reconstruct}}}
+\newcommand{\Commit}{\ensuremath{\mathsf{Com}}}
+\newcommand{\Open}{\ensuremath{\mathsf{Open}}}
+\newcommand{\decom}{\ensuremath{\mathsf{decom}}}
 % keys
-\newcommand{\vk}{\ensuremath{\mathsf{vk}}}
-\newcommand{\sk}{\ensuremath{\mathsf{sk}}}
 \newcommand{\ek}{\ensuremath{\mathsf{ek}}}
 \newcommand{\dk}{\ensuremath{\mathsf{dk}}}
 % other elements
@@ -108,7 +108,6 @@
 \newcommand{\Setup}{\ensuremath{\mathsf{Setup}}}
 \newcommand{\Seal}{\ensuremath{\mathsf{Seal}}}
 \newcommand{\Aggr}{\ensuremath{\mathsf{Aggr}}}
-\newcommand{\Open}{\ensuremath{\mathsf{Open}}}
 \newcommand{\Finalize}{\ensuremath{\mathsf{Finalize}}}
 \newcommand{\open}{\ensuremath{\mathsf{open}}}
 
@@ -134,3 +133,23 @@
 \newcommand{\cProof}{\mathsf{CProof}\xspace}
 \newcommand{\hProof}{\mathsf{HProof}\xspace}
 \newcommand{\timeT}{\ensuremath{T}}
+\newcommand{\blshash}{\ensuremath{H}}
+\newcommand{\lhlhash}{\ensuremath{\mathcal{H}}}
+\newcommand{\mex}{MEX\xspace}
+\newcommand{\hcwl}{hot-cold threshold wallet\xspace}
+\newcommand{\HCWL}{Hot-Cold Threshold Wallet\xspace}
+\newcommand{\zopen}{\ensuremath{\zeta}}
+\newcommand{\dcom}{\ensuremath{\mathsf{dcom}}}
+\newcommand{\ucom}{\ensuremath{\mathsf{ucom}}}
+% functionalities
+\newcommand{\Fs}{\F_\mathsf{SS}\xspace}
+\newcommand{\Fpk}{\F_\mathsf{PK}\xspace}
+\newcommand{\Fbb}{\F_\mathsf{BB}\xspace}
+\newcommand{\FSign}{\F_\mathsf{HC}\xspace}
+% ideal functionality variables
+\newcommand{\sid}{\ensuremath{\texttt{sid}}}
+\newcommand{\keylist}{\ensuremath{L}}
+\newcommand{\coldlist}{\ensuremath{\keylist_\cold}}
+\newcommand{\clientlist}{\ensuremath{D}}
+\newcommand{\hotlist}{\ensuremath{\keylist_\hot}}
+\newcommand{\hotstates}{\ensuremath{S_\hot}}

@@ -5,6 +5,7 @@ proposal-Noel/
 *.aux
 *.bbl
 *.blg
+*.brf
 *.fdb_latexmk
 *.fls
 *.log

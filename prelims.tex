@@ -1,0 +1,189 @@
+\section{Preliminaries}
+We use $[n]$ to denote the range $\{1, \dots, n\}$. For other ranges (mostly zero-indexed), we explicitly write the (inclusive) endpoints, e.g., $[0,n]$. 
+Concatenation of vectors $\vec{x},\vec{y}$ is written as $\vec{x} || \vec{y}$. 
+Let $\secpar$ be the security parameter.
+We use the uppercase variable $X$ for the free variable of a polynomial, e.g., $f(X)$. 
+We use a calligraphic font, e.g., $\mathcal{S}$ or $\mathcal{X}$, to denote sets or domains. When we apply an operation to two sets of equal size $\ell$ we mean pairwise application, e.g., $\mathcal{Z} = \mathcal{X} + \mathcal{Y}$ means $z_i = x_i + y_i~\forall{i \in [\ell]}$. 
+Sampling an element $x$ uniformly at random from a set $\mathcal{X}$ is written as $x \sample \mathcal{X}$. 
+We use $:=$ to denote variable assignment, $y \gets \mathsf{Alg}(x)$ to assign to $y$ the output of some algorithm $\mathsf{Alg}$ on input $x$, and $y \sample \mathsf{Alg}(x)$ if the algorithm is randomized. When we wish to be explicit about the randomness $r$ used, we write $y \gets \mathsf{Alg}(x; r)$. 
+
+For a non-interactive zero-knowledge proof system $\Pi$, we write $\pi \gets \Pi.{\sf Prove}(x; w)$ to show that the proving algorithm takes as input an instance $x$ and witness $w$ and outputs a proof $\pi$. Verification is written as $\Pi.\vrfy(x, \pi)$ and outputs a bit $b$. 
+
+We distinguish the key-pairs used in a signature scheme ($\vk, \sk$ for ``verification'' and ``signing'' key, respectively) from those used in an encryption scheme ($\ek, \dk$ for ``encryption'' and ``decryption'' key, respectively). 
+
+\subsection{Bilinear Pairings}\label{sec:pairings}
+
+\begin{definition}[bilinear pairing]
+   A bilinear pairing is a map $e : \GG_1 \times \GG_2 \mapsto \GG_T$ where $\GG_1, \GG_2,$ and $\GG_T$ are cyclic groups of prime order $p$. (Often, $\GG_1,\GG_2$ are written in additive notation and $\GG_T$ in multiplicative notation.) Let $g_1,h_1 \in \GG_1$ and $g_2,h_2 \in \GG_2$ (generators of their respective groups). The map $e$ has the following properties:
+   \begin{description}
+       \item[Bilinearity:] For all $a,b \in \ZZ_p^*$, the following hold:
+       \begin{align*}
+           e(g_1^a, g_2) = e(g_1, g_2^a) = e(g_1, g_2)^a\\
+           e(g_1 h_1, g_2) = e(g_1, g_2) \cdot e(h_1, g_2)\\
+           e(g_1, g_2 h_2) = e(g_1, g_2) \cdot e(g_1, h_2)
+        \end{align*}
+        \item[Non-degeneracy:] $e(g_1, g_2) \neq 1$.
+        \item[Computability:] There is an efficient algorithm for computing $e$.
+    \end{description}
+\end{definition}
+
+Pairings are divided into types based on the (in)equality of the utilized groups $\GG_1,\GG_2$ and whether there is an efficiently computable homomorphism between the groups. For our purposes, we will use a type-3 pairing: asymmetric ($\GG_1 \neq \GG_2$) and with no such efficiently computable homomorphism. In this case, the Decisional Diffie-Hellman (DDH) assumption is believed to hold in both $\GG_1$ and $\GG_2$; this is referred to as the \emph{symmetric external Diffie-Hellman (SXDH) assumption}.
+
+\subsection{Shamir Secret Sharing}\label{sec:shamir}
+Shamir~\cite{ShamirSS} introduced a scheme to share a secret among $n$ parties such that any $t$ parties can work together to recover the secret, but with any fewer parties the secret remains information-theoretically hidden.
+
+\begin{construction}[Shamir secret sharing \cite{ShamirSS}]
+Let $p$ be a prime.
+    \begin{itemize}
+        \item \underline{$\{s_1, \dots, s_n\} \gets \share(s, t, n)$:} Given a secret $s \in \ZZ_p$ and $t \leq n \in \mathbb{N}$, compute a $t$-out-of-$n$ sharing of $s$ by choosing a random degree-$(t-1)$ polynomial $f(X) \in \ZZ_p[X]$ such that $f(0) = s$. For $i \in [n]$, compute $s_i := (i, f(i))$.
+        \item \underline{$\{s', \perp\} \gets \recon(S, t, n)$:} Given some set of shares $S$, check if $\sizeof{S} < t$. If so, output $\perp$. Otherwise, without loss of generality, let $S' := \{s_1, \dots, s_t\}$ be the first $t$ entries of $S$, where $s_i := (x_i, y_i)$. Output the Lagrange interpolation at 0:
+        \[
+            s' := \sum_{i=1}^t y_i \prod_{j=1, j \neq i}^t \frac{x_j}{x_j - x_i}.
+        \]
+    \end{itemize}
+\end{construction}
+
+The secret sharing scheme is \emph{correct}, since for any secret $s$ and values $t \leq n \in \NN$, we have $\recon(\share(s, t, n),\allowbreak t, n) = s$. 
+
+For notational convenience, let $\share(s,t,n; r)[i]$ denote the $i$th share of $s$ computed with randomness $r$. The reconstruction algorithm can be generalized to interpolate any point $f(k)$ (not just the secret at $k=0$) and thereby recover the $i$th share:
+\begin{itemize}
+    \item \underline{$\{s_k,\perp\} \gets {\sf Interpolate}(S, k, t, n)$:} If $\sizeof{S} < t$, output $\perp$. Otherwise, use the first $t$ entries $(x_1, y_1), \dots,\allowbreak (x_t, y_t)$ of $S$ to interpolate
+    \[
+        f(k) = \sum_{i=1}^t y_i \prod_{j=1, j \neq i}^t \frac{x_j - k}{x_j - x_i}.
+    \]
+    Output $s_k := (k, f(k))$.
+\end{itemize}
+
+\subsection{BLS Signatures}\label{sec:bls}
+
+\begin{construction}[BLS signature scheme \cite{AC:BonLynSha01}]\label{con:bls}
+Let $\GG_1, \GG_2$ be elliptic curve groups of order $p$ generated by $g_1$ and $g_2$, respectively, and $e: \GG_1 \times \GG_2 \rightarrow \GG_T$ be an efficiently computable asymmetric pairing between them. We also require a hash function $\blshash: \{0, 1\}^* \rightarrow \GG_1$. The signature scheme works as follows:
+\begin{itemize}
+\item \underline{$(\sk, \vk) \gets \kgen(\secparam)$:} Given the security parameter $1^\lambda$, sample $x \sample \ZZ_p$ and output the keypair consisting of signing key $\sk := x$ and verification key $\vk := g_2^x$.
+\item \underline{$\sigma \gets \sign(\sk, m)$:} Given a signing key $\sk \in \ZZ_p$ and a message $m \in \{0,1\}^*$, compute a signature $\sigma := \blshash(m)^{sk}$.
+\item \underline{$\{0,1\} \gets \vrfy(\vk, m, \sigma)$:} Given a verification key $\vk \in \GG_2$, message $m \in \bin^*$, and signature $\sigma \in \GG_1$, if $e(\sigma, g_2) = e(\blshash(m), \vk)$, output 1. Else output 0.
+\end{itemize}
+\end{construction}
+
+The security of BLS relies on the gap co-Diffie Hellman assumption on $(\GG_1,\GG_2)$, i.e., co-DDH being easy but co-CDH being hard on $\GG_1,\GG_2$, as well as the existence of an efficiently computable homomorphism $\phi: \GG_2 \rightarrow \GG_1$ (type-2 pairing). Since we require a type-3 pairing for our purposes (i.e., no efficiently computable $\phi$ exists), we rely on a stronger variant of the co-GDH assumption (see discussion in \cite[\S3.1]{AC:BonLynSha01} and \cite[\S2.2]{EPRINT:SmaVer05}).
+
+\paragraph{Threshold variant}
+Sharing a BLS signing key $\sk \in \ZZ_p$ via Shamir secret sharing leads directly to a robust $t$-out-of-$n$ threshold signature \cite{AC:BonLynSha01}.
+More specifically, each party $i \in [n]$ receives a $t$-out-of-$n$ Shamir secret share $\sk_i$ of the key. The ``partial'' public keys $\vk_i := g_2^{\sk_i}$ are published along with the public key $\vk$.
+
+A partial signature is computed in exactly the same way as a regular BLS signature, but under the secret key share: $\sigma_i := \blshash(m)^{\sk_i}$. This value is publicly verifiable by checking that $(g_2, \vk_i, \blshash(m), \sigma_i)$ is a co-Diffie-Hellman tuple (i.e., it is of the form $(g_2, g_2^a, h, h^a)$ where $g_2 \in \GG_2$ and $h \in \GG_1$).
+
+ Given $t$ valid partial signatures on a message $m \in \{0,1\}^*$ anyone can recover a regular BLS signature:
+
+\begin{itemize}
+    \item \underline{$\sigma \gets \recon(S := \{(i, \sigma_i)\})$}: Let $S' \subseteq S$ be the set of valid partial signatures in $S$. If $\sizeof{S'} < t$, output $\perp$. Otherwise, without loss of generality, assume the first $t$ valid signatures come from users $1, \dots, t$ and recover the complete signature as
+    \[
+        \sigma \gets \prod_{i=1}^t \sigma_i^{\lambda_i}, \text{ where } \lambda_i = \prod_{j=1,j\neq i}^t \frac{j}{j-i} \pmod{p}
+    \]
+\end{itemize}
+
+Notice that the reconstruction simply performs Shamir reconstruction of the signing key shares $\sk_i$ in the exponent and thus the output will equal $\blshash(m)^{\sk}$. Hence, the complete signature is indistinguishable from a regular BLS signature, and verification proceeds exactly as in the regular scheme.
+
+\subsection{KZG polynomial commitments}\label{sec:kzg}
+
+We give the asymmetric version of KZG below.
+
+\begin{construction}[KZG polynomial commitments~\cite{AC:KatZavGol10}]
+Let $\GG_1, \GG_2$ be elliptic curve groups of order $p$ with generators $g_1,g_2$ and $e: \GG_1 \times \GG_2 \mapsto \GG_T$ be an elliptic curve pairing. The following is a commitment scheme for polynomials in $\ZZ_p[X]$ with degree at most $d$.
+\begin{itemize}
+    \item \underline{$\crs \gets \setup(d):$} Sample $\tau \sample \ZZ_p$ and output $\crs := \{g_1, g_1^\tau, g_1^{\tau^2}, \dots, g_1^{\tau^d}, g_2, g_2^\tau\}$.
+    \item \underline{$\com_f \gets \Commit(\crs, f(X)):$} Let $f(X) = a_0 + a_1 X + \dots + a_d X^d \in \ZZ_p[X]$. Use $\crs$ to compute and output $g_1^{f(\tau)} = g_1^{a_0} \cdot (g_1^\tau)^{a_1} \dots (g_1^{\tau^d})^{a_d} = g_1^{a_0 + a_1 \tau + \dots + a_d \tau^d} \in \GG_1$.
+    \item \underline{$(f(i), \pi_i) \gets \Open(\crs, f(X), i):$} To open $f(X)$ at $i$, let $q_i(X) := \frac{f(X) - f(i)}{X - i} \in \ZZ_p[X]$\footnote{This is a polynomial by Little Bézout's Theorem.}. Then compute $\com_{q_i} \gets \Commit(\crs, q_i(X))$ and output $(f(i), \com_{q_i}) \in \ZZ_p \times \GG_1$.
+    \item \underline{$\{0,1\} \gets \vrfy(\crs, \com_f, i, y, \pi_i):$} To confirm $y = f(i)$, it suffices to check that $q_i(X) = \frac{f(X) - y}{X - i}$ at $X=\tau$. This can be done with a single pairing check:
+    \[
+        e(\com_f / g_1^y, g_2) \stackrel{?}{=} e(\pi_i, g_2^\tau / g_2^i)
+    \]
+\end{itemize}
+\end{construction}
+
+% Notice that this scheme is linearly homomorphic: given commitments $\com_f, \com_{f'}$ to two distinct polynomials $f(X),f'(X)$, the commitment to $(f+f')(X)$ is $\com_{f+f'} := \com_f \cdot \com_{f'}$. The same holds with the corresponding evaluation proofs $\pi_{f,i}, \pi_{f',i}$ at some point $i$: the evaluation proof for the point $(f+f')(i)$ is $\pi_{f+f',i} := \pi_{f,i} \cdot \pi_{f',i}$. Scaling the polynomial $f(X)$ by a constant $c \in \ZZ_p$ is also simple: the new commitment is $\com_{cf} := \com_f^c$ and an adjusted evaluation proof is obtained as $\pi_{cf, i} := \pi_{f,i}^c$.
+
+The security of the scheme relies on the $d$-Strong Diffie Hellman assumption ($d$-SDH), which states that given $\{g_1, g_1^\tau, \dots, g_1^{\tau^d}, g_2, g_2^\tau\}$, it is difficult to compute $(c, g_1^{\frac{1}{\tau-c}})$ for any $c \in \ZZ_p \setminus \{-\tau\}$. This assumption is stronger than $d$-SDH in $\GG_1$, which in turn implies DDH in $\GG_1$.
+
+\subsection{Pedersen Commitments}\label{sec:pedersen}
+
+Next, we recall Pedersen commitments~\cite{C:Pedersen91}, a commitment scheme which is unconditionally (information-theroetically) hiding and computationally binding (by the discrete logarithm assumption on $\GG$). In our construction we will instantiate the scheme over $\GG_1$, so we let $\GG = \GG_1$ in the description below.
+
+\begin{construction}[Pedersen commitment scheme~\cite{C:Pedersen91}]
+Let $\GG_1$ be a group of order $p$ and $g_1,h_1$ be generators of $\GG_1$. The following is a commitment scheme for elements $x \in \ZZ_p$.
+\begin{itemize}
+    \item \underline{$(\com, \decom) \gets \Commit(x):$} Sample $r \sample \ZZ_p$ and return $\com := g_1^x h_1^r$ and decommitment information $(x, r)$.
+    \item \underline{$(x, r) \gets \Open(\com, \decom):$} To open $\com$, directly output $\decom = (x, r)$.
+    \item \underline{$\{0,1\} \gets \vrfy(\com, x, r):$} To confirm the opening of $\com$ to $x$, it suffices to check that $\com = g_1^x h_1^r$.
+\end{itemize}
+\end{construction}
+
+A PoK of the committed value can be computed using a Sigma protocol due to Okamoto~\cite{C:Okamoto92}, which can be made non-interactive using the Fiat-Shamir transform~\cite{C:FiaSha86}. We refer to this protocol as $\Pi_{\sf ped}$ and present it in \Cref{fig:pi_ped}.
+
+\begin{figure*}[tbh]
+   \centering
+   \begin{mdframed}
+   \begin{center}
+       \textsc{PoK of Pedersen opening ($\Pi_{\sf ped}$)}
+   \end{center}
+   \medskip
+   \textbf{Parameters:} Group $\GG_1$ of order $p$ with generators $g_1, h_1$.
+   \hfill\medskip\\
+   \underline{$\mathsf{Prove}(\com_{\sf ped}; (v, r)) \to \pi_{\sf ped}$:} Given a Pedersen commitment $\com_{\sf ped} = g_1^v h_1^r$, a party can prove knowledge of the opening $(v,r)$ as follows:
+   \begin{enumerate}
+       \item The prover samples $s_1, s_2 \sample \ZZ_p$ and sends $a := g_1^{s_1} h_1^{s_2}$ to the verifier.
+       \item The verifier sends back a uniform challenge $c \sample \ZZ_p$.
+       \item The prover computes $t_1 := s_1 + vc$ and $t_2 := s_2 + rc$ and sends both values to the verifier.
+   \end{enumerate}
+   The proof is defined as $\pi_{\sf ped} := (a, c, (t_1, t_2))$.\medskip\\
+   \underline{$\vrfy(\com_{\sf ped}, \pi_{\sf ped}) \to \{0,1\}$:} Given the commitment $\com_{\sf ped}$ and a proof $\pi_{\sf ped}$, the verifier parses $\pi_{\sf ped} := (a, c, (t_1, t_2))$ and outputs 1 iff $a \cdot \com_{\sf ped}^c = g_1^{t_1} h_1^{t_2}$.
+   \end{mdframed}
+   \caption{The proof system $\Pi_{\sf ped}$ used to prove knowledge of the opening to a Pedersen commitment~\cite{C:Okamoto92}.}
+   \label{fig:pi_ped}
+\end{figure*}
+
+\subsection{Leftover Hash Lemma}\label{sec:lhl}  
+
+We use the presentation of the leftover hash lemma (LHL)~\cite{FOCS:ImpZuc89} from~\cite{EC:AMPR19}.\footnote{We specifically use the improved version from the Journal of Cryptology version of this paper.}  Let $\left(\mathcal{X},\oplus\right)$ be a finite group of size $\left|\mathcal{X}\right|$, and let $n$ be a positive integer. For any fixed $2n$-vector of group elements $\mathbf{x} = \left\lbrace x_{j,b} \right\rbrace_{j\in \left[ n \right],b\in\left\lbrace 0,1 \right\rbrace} \in\mathcal{X}^{2n}$, denote by $\mathcal{S}_{\mathbf{x}}$ the following distribution:
+\begin{equation}
+	\mathcal{S}_{\mathbf{x}} = \Big\{\bigoplus_{j\in[n]}x_{j,r_j} : \left(r_1,\cdots,r_n\right)\gets\left\lbrace 0,1 \right\rbrace^n\Big\}.\nonumber
+\end{equation}
+Also, let $\mathcal{U}_{\mathcal{X}}$ denote the uniform distribution over $\mathcal{X}$, and let $\Delta \left(\mathcal{D}_1,\mathcal{D}_2\right)$ denote the statistical distance between the distributions $\mathcal{D}_1$ and $\mathcal{D}_2$. We will use the following special case of leftover hash lemma~\cite{FOCS:ImpZuc89}. The proof can be found in the JoC version of~\cite{EC:AMPR19}.
+
+\begin{lemma}{\textnormal{(Leftover Hash Lemma.)}}
+	\label{lemma:LHL}	
+	Let $\left(\mathcal{X},\oplus\right)$ be a finite group, and let $\mathcal{S}_{\mathbf{x}}$ and $\mathcal{U}_{\mathcal{X}}$ be two distributions over $\mathcal{X}$ as defined above. For any (large enough) positive integer $n$, it holds that
+	\begin{equation}
+		\Pr_{\mathbf{x}\gets\mathcal{X}^{2n}}\left[\Delta\left(\mathcal{S}_{\mathbf{x}},\mathcal{U}_{\mathcal{X}}\right)> \sqrt[4]{\frac{\sizeof{\mathcal{X}}}{2^n}}  \right]\leq \sqrt[4]{\frac{\sizeof{\mathcal{X}}}{2^n}} \nonumber.
+	\end{equation}
+	In particular, for any $n > \log(\sizeof{\mathcal{X}}) + \omega(\log(\lambda))$, if $\mathbf{x}$ is sampled uniformly then with overwhelming probability the statistical distance between two distributions is negligible.
+\end{lemma}
+
+\subsection{Universal Composability (UC) Framework}\label{sec:uc}
+
+In the universal composability (UC) framework~\cite{FOCS:Canetti01}, the security requirements of a protocol are defined via an \emph{ideal functionality} which is executed by a trusted party. To prove that a protocol \emph{UC-realizes} a given ideal functionality, we show that the execution of this protocol (in the real or hybrid world) can be \emph{emulated} in the ideal world, where in both worlds there is an additional adversary $\env$ (the environment) which models arbitrary concurrent protocol executions. Specifically, we show that for any adversary $\adv$ attacking the protocol execution in the real world (by controlling communication channels and corrupting parties involved in the protocol execution), there exists an adversary $\Sim$ (the simulator) in the ideal world who can produce a protocol execution which no environment $\env$ can distinguish from the real-world execution.
+
+Below we describe the UC framework as it is presented in \cite{EPRINT:CLOS02}. 
+All parties are represented as probabilistic interactive Turing machines (ITMs) with input, output, and ingoing/outgoing communication tapes. For simplicity, we assume that all communication is authenticated, so an adversary can only delay but not forge or modify messages from parties involved in the protocol. Therefore, the order of message delivery is also not guaranteed (asynchronous communication). We consider a PPT malicious, adaptive adversary who can corrupt or tamper with parties at any point during the protocol execution.
+%(modeled in the ideal world via the interfaces in \Cref{fig:FSign3}).
+
+The execution in both worlds consists of a series of sequential party activations. Only one party can be activated at a time (by writing a message on its input tape). In the real world, the execution of a protocol $\Pi$ occurs among parties $P_1, \dots, P_n$ with adversary $\adv$ and environment $\env$. In the ideal world, interaction takes place between dummy parties $\tilde{P}_1, \dots, \tilde{P}_n$ communicating with the ideal functionality $\F$, with the adversary (simulator) $\Sim$ and environment $\env$. Every copy of $\F$ is identified by a unique session identifier $\texttt{sid}$. 
+% The environment $\env$ can read all parties' output tapes and write to any party's input tape, including the adversary $\adv$ or $\Sim$. $\adv$ can read the outgoing communication tapes of all parties $P_i$ and \emph{deliver} messages between parties by writing them on the corresponding incoming communication tape (this models the asynchronous but authenticated communication). $\adv$ can also \emph{corrupt} any party $P_i$, and $\env$ will be notified. In the ideal world, the dummy parties simply copy any input they receive to their outgoing communication tape. $\Sim$ interacts primarily with the ideal functionality $\F$ in several ways: it can \emph{read} the public headers of any messages on its incoming and and outgoing communication tapes, \emph{write} on $\F$'s incoming communication tape, or \emph{deliver} messages from $\F$ to a dummy party or vice versa. It can also \emph{corrupt} any dummy party $\tilde{P}_i$, and $\env$ and $\F$ will be notified.
+
+In both the real and ideal worlds, the environment is activated first and activates either the adversary ($\adv$ resp. $\Sim$) or an uncorrupted (dummy) party by writing on its input tape. If $\adv$ (resp. $\Sim$) is activated, it can take an action or return control to $\env$. After a (dummy) party (or $\F$) is activated, control returns to $\env$. The protocol execution ends when $\env$ completes an activation without writing on the input tape of another party.
+
+We denote with $\real_{\Pi,\adv,\env}(\secpar,x)$ the random variable describing the output of the real-world execution of $\Pi$ with security parameter $\secpar$ and input $x$ in the presence of adversary $\adv$ and environment $\env$. We write the corresponding distribution ensemble as $\{ \real_{\Pi,\adv,\env}(\secpar, x) \}_{\secpar \in \mathbb{N}, x \in \{0,1\}^*}$. The output of the ideal-world interaction with ideal functionality $\F$, adversary (simulator) $\Sim$, and environment $\env$ is represented by the random variable $\ideal_{\F,\Sim,\env}(\secpar, x)$ and corresponding distribution ensemble $\{ \ideal_{\F,\Sim,\env}(\secpar, x) \}_{\secpar \in \mathbb{N}, x \in \{0,1\}^*}$.
+
+The actions each party can take are summarized below:
+\begin{itemize}
+   \item Environment $\env$: \textbf{read} output tapes of the adversary ($\adv$ or $\Sim$) and any uncorrupted (dummy) parties; then \textbf{write} on the input tape of one party (the adversary $\adv$ or $\Sim$ or any uncorrupted (dummy) parties).
+   \item Adversary $\adv$: \textbf{read} its own tapes and the outgoing communication tapes of all parties; then \textbf{deliver} a pending message to party by writing it on the recipient's ingoing communication tape \emph{or} \textbf{corrupt} a party (which becomes inactive: its tapes are given to $\adv$ and $\adv$ controls its actions from this point on, and $\env$ is notified of the corruption).
+   \item Real-world party $P_i$: only follows its code (potentially writing to its output tape or sending messages via its outgoing communication tape).
+   \item Dummy party $\tilde{P}_i$: acts only as a simple relay with the ideal functionality $\F$, copying inputs from its input tape to its outgoing communication tape (to $\F$) and any messages received on its ingoing communication tape (from $\F$) to its output tape.
+   \item Adversary $\Sim$: \textbf{read} its own input tape and the public headers (see below) of the messages on $\F$'s and dummy parties' outgoing communication tapes; then \textbf{deliver} a message to $\F$ from a dummy party or vice versa by copying it from the sender's outgoing communication tape to the recipient's incoming communication tape \emph{or} \textbf{send} its own message to $\F$ by writing on the latter's incoming communication tape \emph{or} \textbf{corrupt} a dummy party (which becomes inactive: its tapes are given to $\Sim$ and $\Sim$ controls its actions from this point on, and $\env$ and $\F$ are notified of the corruption).
+   \item Ideal functionality $\F$: \textbf{read} incoming communication tape; then \textbf{send} any messages specified by its definition to the dummy parties and/or adversary $\Sim$ by writing to its outgoing communication tape.
+\end{itemize}
+
+\begin{definition}
+    We say a protocol $\Pi$ \emph{UC-realizes} an ideal functionality $\F$ if for any PPT adversary $\adv$, there exists a simulator $\Sim$ such that for any environment $\env$, the distribution ensembles $\{ \real_{\Pi,\adv,\env}(\secpar, x) \}_{\secpar \in \mathbb{N}, x \in \bin^*}$ and $\{ \ideal_{\F,\Sim,\env}(\secpar, x) \}_{\secpar \in \mathbb{N},x \in \bin^*}$ are computationally indistinguishable.
+\end{definition}

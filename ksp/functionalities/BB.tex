@@ -1,0 +1,32 @@
+\begin{figure*}
+    % \begin{figure}[tbh]
+    \centering
+    \fbox{\parbox{.9\textwidth}{%
+    \renewcommand{\labelitemi}{\textendash}
+    \setlength{\itemsep}{0pt}
+    \textbf{Public parameters:} Groups $\GG_1, \GG_2$ of order $p$ with generators $g_1,g_2$, respectively.
+    \begin{itemize}
+        \item On input $(\sid,\mathsf{Setup}, C, (\vk, t, \com))$, delete any existing entries $(C, *, *, *, *) \in \clientlist$ and $(C, *, *) \in U$.
+        % \item Check $e(\dcom, g_2) = e(\com, g_2^{d-n})$. If so, set $b:=1$ 
+        Add $(C, \vk, t, \com,\allowbreak \texttt{time} := 0)$ to $\clientlist$
+        % Otherwise set $b := 0$.
+        and output $(\sid,\mathsf{SetupResult}, C, (1))$.
+        %
+        \item On input $(\sid, \mathsf{ComUpdate}, C, (\ucom, \pi_{\ucom}))$:
+        \begin{enumerate}
+            \item Retrieve $(C, \vk, t, \com, \texttt{time}) \in \clientlist$ for the maximum value of $\texttt{time}$.
+            \item If $\Pi_{\sf Ref}.\mathsf{UC}\vrfy((\crs, \ucom, t), \pi_{\ucom}) = 1$, set $b := 1$ and add $(C, \vk, t, \com \cdot \ucom,\allowbreak \texttt{time++})$ to $\clientlist$ and $(C, \ucom, \texttt{time++})$ to $U$. Otherwise set $b := 0$.
+            % \item For all $i \in [n]$, output $(\sid, \mathsf{UpdateCom},P_i, (C, \ucom))$. \noemi{make this a separate interface for the $P_i$'s to query since $\Fbb$ shouldn't keep track of each $C$'s signing set.}
+            \item Output $(\sid, \mathsf{ComUpdateResult}, C, (b))$.
+        \end{enumerate}
+        %
+        \item On input $(\sid,\mathsf{ClientInfoRecover}, P, (C))$, 
+        retrieve $(C, \vk, *, \com, \texttt{time}) \in \clientlist$ for the maximum value of $\texttt{time}$ and output $(\sid,\mathsf{ClientInfo}, P, (C,\vk,\com))$.
+        %
+        \item On input $(\sid, \mathsf{UComRecover}, P, (C))$,
+        retrieve $(C, \ucom, \texttt{time}) \in U$ for the maximum value of $\texttt{time}$ and output $(\sid, \mathsf{UCom}, P, (C, \ucom))$.
+    \end{itemize}
+    }}
+        \caption{\textbf{The Programmable Bulletin-Board Functionality $\Fbb$}}
+        \label{fig:Fbb}
+    \end{figure*}

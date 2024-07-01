@@ -1,0 +1,29 @@
+\subsection{Our Results}
+
+We introduce a new type of wallet which combines offline components with the threshold wallet approach to achieve stronger security guarantees. In our model, each threshold signer consists of two parties: an online \emph{hot} storage and an offline, resource-constrained \emph{cold} storage, e.g., a secure enclave, trusted execution environment, or perhaps something even more sophisticated.  Producing a threshold signature on any message should require the involvement of both the hot and cold parties while minimizing the computation and communication on the part of the cold party. Wallet owners should also be able to request proofs from any party, hot or cold, that it retains its share of the secret key. Finally, it should be possible to periodically refresh the shares of the online parties to thwart an adversary who slowly and incrementally corrupts parties in the system. We describe each of our contributions in more detail below.
+
+\paragraph{Stronger threat model}
+In a hot-cold threshold wallet, an attacker must corrupt \emph{both} the cold and hot components of a signer to obtain its key share.
+This requirement to corrupt a threshold $t$ of hot-cold \emph{pairs} is different from a generic $2t$-out-of-$2n$ threshold wallet, since the attacker cannot forge a signature by corrupting any arbitrary set of $2t$ parties: in our model, corrupting, e.g., $2t$ hot parties should be of no use in forging a signature (in fact, even corrupting all $n$ hot parties should be useless). Indeed, our threat model is instead comparable to a Boolean signing policy which requires at least $t$ pairs of hot \emph{and} cold parties to contribute, which is much more difficult to attack since the cold components are almost always offline. %, or only connected with a \emph{one-way} channel to the corresponding hot storage even when they do come online.
+
+% some threshold $t$ out of $n$ \emph{pairs} of hot and cold storages in order to forge a signature. Intuitively, the cold storages, being accessible only via their corresponding hot storage and not reading any input from the latter, should be much harder for an attacker to corrupt; at the same time, however, this prevents them from engaging in the more resource intensive and interactive process of engaging in a threshold signing protocol, thus necessitating a hot component.
+
+% \paragraph{Hot-cold threshold BLS signature with proactive refresh}
+\paragraph{Threshold BLS construction}
+We show how to construct such a hot-cold threshold signing protocol for the BLS signature scheme~\cite{AC:BonLynSha01,PKC:Boldyreva03}. Although ECDSA~\cite{EPRINT:GenGolNar16,SP:DKLs18,CCS:LinNof18,CCS:GenGol18,EPRINT:AumHamShl20,EPRINT:GKSS20,EPRINT:DJNPO20,CCS:CGGMP20,PKC:CCLST20,EPRINT:CCLST21,CANS:Pettit21,SP:ANOSS22} and Schnorr~\cite{SAC:KomGol20,C:BCKMTZ22,EPRINT:BatLonMen22} are the most popular threshold signature schemes in the literature, their more complicated structure makes a threshold signing procedure with offline parties difficult. 
+BLS signatures have the advantage of being simple to understand and deploy. This has led to their widespread use in production systems, including in Ethereum's consensus protocol~\cite[\S2.9.1]{eth2book}, Filecoin~\cite{Filecoin-Spec}, transactions on the Chia Network~\cite{chia-bls}, and a BLS smart contract wallet~\cite{bls-wallet}.
+% \hart{It’s probably worth it to list some more applications/use cases of BLS signatures. This section is probably a little too harsh on us; we can be more enthusiastic about BLS signatures.} 
+With the event of account abstraction on Ethereum~\cite{account-abstraction}, users will be able to specify alternative signature schemes to verify their transactions, further easing the adoption of BLS-based wallets. 
+The homomorphic structure of BLS allows us to give a simple non-interactive hot-cold threshold signature protocol. 
+% \paragraph{Hot-only key generation} 
+% \paragraph{Non-interactive cold key generation} 
+Our construction also has the added benefit that the cold parties can generate their secret key shares independently, without interacting with the hot parties or with each other. 
+
+\paragraph{Proofs of remembrance}
+We show how the cold and hot parties in our protocol can produce ``proofs of remembrance'', i.e., zero-knowledge proofs that they still possess their key material. In order to support proactive refreshes (see below), our proof systems must accommodate periodic updates to individual key shares while guaranteeing that the underlying secret key is still available. We show how to meet both needs simultaneously, allowing a client to intermittently and independently audit its (hot or cold) custodians. This allows it to ensure that its key material has not been overwritten or forgotten, and its funds are still accessible.
+
+\paragraph{Proactive refresh}
+Many threshold wallets support proactive refresh~\cite{SP:KMOS21}, meaning secret key shares are regularly updated. This forces an attacker to compromise at least $t$ parties within a single epoch in order to mount a successful attack: otherwise, any partial key material which has been obtained is made obsolete by the refresh operation. Our protocol allows proactive refresh of the hot key shares while still letting hot parties prove knowledge of those shares and their consistency with the (unchanging) verification key.
+
+\paragraph{Efficient open-source implementation}
+We implemented our protocol and show that it is practically efficient for essentially all reasonable settings of $t, n$. Producing a signature takes less than 1ms and computing proofs of remembrance is on the order of milliseconds. Our implementation is publicly available in Hyperledger Labs\footnote{\url{https://github.com/hyperledger-labs/agora-key-share-proofs}} and is Apache 2.0 licensed. 

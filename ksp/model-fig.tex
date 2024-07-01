@@ -1,0 +1,50 @@
+\begin{figure*}[tbh]
+    \centering
+    \begin{tikzpicture}[par/.style={sloped,fill=white,inner sep=-.4ex}]
+    \tikzstyle{box} = [rectangle, draw]
+    \tikzstyle{charrow} = [-Stealth,dashed]
+    % \tikzstyle{hharrow} = [Stealth-Stealth]
+    \tikzstyle{hharrow} = [-Stealth]
+        %%% P1 %%%
+        \node[box] (p1cold) {$\sk_1^\cold$};
+        \node[box,right=10em] (p1hot) at (p1cold) {$\sk_1^\hot$};
+        % \draw[->,thick] (p1cold) -- node[par]{||} (p1hot);
+        \draw[charrow] (p1cold) -- node[yshift=1em]{$\sigma_1^\cold$} (p1hot);
+        % \node[par] at (p1) {||};
+        %%% labels
+        \node[below of=p1cold,yshift=1em]{$P_1^\cold$};
+        \node[below of=p1hot,yshift=1em] {$P_1^\hot$};
+        %%% P2 %%%
+        \node[box,right=10em] (p2hot) at (p1hot) {$\sk_2^\hot$};
+        \node[box,right=10em] (p2cold) at (p2hot) {$\sk_2^\cold$};
+        \draw[charrow] (p2cold) -- node[yshift=1em]{$\sigma_2^\cold$} (p2hot);
+        %%% labels
+        \node[below of=p2cold,yshift=1em] {$P_2^\cold$};
+        \node[below of=p2hot,yshift=1em] {$P_2^\hot$};
+        %%% P3
+        \node[right=5em] (midpoint) at (p1hot) {};
+        \node[box,above=7.5em] (p3hot) at (midpoint) {$\sk_3^\hot$};
+        \node[box,left=10em] (p3cold) at (p3hot) {$\sk_3^\cold$};
+        \draw[charrow] (p3cold) -- node[yshift=1em]{$\sigma_3^\cold$} (p3hot);
+        %%% labels
+        \node[above of=p3cold,yshift=-1em] {$P_3^\cold$};
+        \node[above of=p3hot,yshift=-1em] {$P_3^\hot$};
+        %%% hot connections
+        \begin{scope}[transform canvas={yshift=.5em}]
+        \draw[hharrow] (p1hot) -- node[above]{$\sigma_1$} (p2hot);
+        \end{scope}
+        \begin{scope}[transform canvas={yshift=-.5em}]
+        \draw[hharrow] (p2hot) -- node[below]{$\sigma_2$} (p1hot);
+        \end{scope}
+        \begin{scope}[transform canvas={xshift=-.5em}]
+        \draw[hharrow] (p2hot) -- node[left]{$\sigma_2$}(p3hot);
+        \draw[hharrow] (p1hot) -- node[left]{$\sigma_1$}(p3hot);
+        \end{scope}
+        \begin{scope}[transform canvas={xshift=.5em}]
+        \draw[hharrow] (p3hot) -- node[right]{$\sigma_3$}(p2hot);
+        \draw[hharrow] (p3hot) -- node[right]{$\sigma_3$}(p1hot);
+        \end{scope}
+    \end{tikzpicture}
+    \caption{A \hcwl with $n=3$. Given a message $m$, each $P_i^\cold$ uses its cold share $\sk_i^\cold$ to compute a cold partial signature $\sigma_i^\cold$ on $m$ and sends it to its hot storage. $P_i^\hot$ uses $m$ and its hot share $\sk_i^\hot$ to compute $\sigma_i^\hot$, which it combines with $\sigma_i^\cold$ to get $\sigma_i$. The hot parties broadcast their partial signatures to each other to reconstruct the full signature $\sigma$ on $m$. The dashed lines between each cold and hot storage represent the authenticated channel between them which is only active at signing time. The hot parties are always online and connected, represented by the solid lines.}
+    \label{fig:model}
+\end{figure*}

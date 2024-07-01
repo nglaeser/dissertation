@@ -1,0 +1,85 @@
+\begin{savenotes}
+    \begin{figure*}
+    % \begin{figure}[tbhp]
+    \centering
+    \fbox{\parbox{.9\textwidth}{%
+    \renewcommand{\labelitemi}{\textendash}
+    \setlength{\itemsep}{0pt}
+    \textbf{Signing}
+    \begin{itemize}
+        \item On input $(\texttt{sid},\mathsf{TSign}, P_i^\hot, (C, m))$, retrieve $(C, \mathcal{I}, *, \vk, *) \in \clientlist$ and $(P_i^\hot, P_i^\cold) \in \mathcal{I}$. Then:
+        % if $\exists t,y$ for the largest $t$ such that $(y, \hx_i, \aux_i, t, *) \in \hotlist_i$ and $\pred(y,\hx_i, \aux_i) = 1$ \todo{Define \pred.} 
+        \begin{enumerate}
+            \item Get $(P_i^\cold, *, \dk_i, *, \texttt{tampered}, \texttt{corrupt}_\cold, \texttt{allowc}) \in \coldlist$. If $\texttt{allowc}=1$, set it to 0.
+            \begin{itemize}%[\labelitemi=*]
+                \item If $\texttt{corrupt}_\cold = 1$, send $(\texttt{sid}, \mathsf{CSignRequest}, \adv,\allowbreak (P_i^\cold, C, m))$ to $\adv$, wait for response $b$, and set $b_\cold := (b \land \neg \texttt{tampered})$. Otherwise ($\texttt{corrupt}_\cold = 0$), set $b_\cold := \neg \texttt{tampered}$.
+                % \item Otherwise, compute $\sigma_i^\cold := \blshash(m)^{\lhlhash(\vk^{\dk_i})}$.
+            \end{itemize}
+            \item Retrieve $(P_i^\hot, C, \hx_i, *, \texttt{time}, *, \texttt{tampered}, \texttt{corrupt}_\hot, *) \in \hotlist$ for the maximum $\texttt{time}$. 
+            \begin{itemize}
+                \item If $\texttt{corrupt}_\hot = 1$, send $(\texttt{sid}, \mathsf{HSignRequest}, \adv, (P_i^\hot, C, m))$ to $\adv$, wait for response $b$, and set $b_\hot := (b \land \neg \texttt{tampered})$. Otherwise, set $b_\hot := \neg \texttt{tampered}$.
+                % \item Otherwise, compute $\sigma_i^\hot := \blshash(m)^{\hx_i}$. 
+            \end{itemize}
+            \item If $b_\cold \land b_\hot$, compute $\sigma_i^\cold := \blshash(m)^{\lhlhash(\vk^{\dk_i})}$ and $\sigma_i^\hot := \blshash(m)^{\hx_i}$. Let $\sigma_i := \sigma_i^\hot/\sigma_i^\cold$. Output $(\texttt{sid}, \mathsf{TSignResult}, P_i^\hot, (C, m, \sigma_i))$.
+            \begin{itemize}
+                \item If $(\texttt{corrupt}_\cold \land \neg \texttt{corrupt}_\hot)$, also send $\sigma_i^\hot$ to $\adv$. If $(\neg \texttt{corrupt}_\cold \land \texttt{corrupt}_\hot)$, send $\sigma_i^\cold$ to $\adv$.
+                \item Additionally, for every party $P_j^\hot$ such that $(P_j^\hot, *) \in \mathcal{I}$, retrieve $(P_j^\hot, *, \texttt{allowc}) \in \hotstates$ and set $\texttt{allowc}$ to 0.
+            \end{itemize}
+            \item If instead $\neg (b_\cold \land b_\hot)$, output $(\texttt{sid}, \mathsf{TSignResult}, P_i^\hot, (C, m, \perp))$.
+            \begin{itemize}
+                \item If $(\texttt{corrupt}_\cold \land \neg \texttt{corrupt}_\hot)$ or $(\neg \texttt{corrupt}_\cold \land \texttt{corrupt}_\hot)$, also sample $r \sample \ZZ_p$ and send $\blshash(m)^r$ to $\adv$.
+            \end{itemize}
+        \end{enumerate}
+    
+    \end{itemize}
+    
+    \textbf{Proofs of Remembrance}
+    \begin{itemize}
+        % \noemi{anyone ($Q$) can request a CProof} 
+        \item On input $(\texttt{sid},\mathsf{CProof}, P_i^\cold, (C))$, retrieve $(P_i^\cold, \ek_i, \dk_i, *, *, \texttt{corrupted}, *) \in \coldlist$.
+        % check if $\exists t, \ek_i, \dk_i $ such that $(P_i^\cold, \ek_i, \dk_i, t,  *) \in \coldlist$ 
+        If $\texttt{corrupted} = 1$, send $(\sid, \mathsf{CProofRequest}, \adv, (P_i^\cold))$ to the adversary, who will send back a bit $b^*$ to represent whether the query should be responded to honestly. Set $b := b^* \land (\ek_i = g_2^{\dk_i})$ and
+        % $\ek_i = g_2^{\dk_i}$, set $\pi \gets \Pi_{\sf DL}.\prove((\ek_i, g_2); \dk_i)$, else $\pi := \perp$; then 
+        output $(\sid, \mathsf{CProofResult}, C, (P_i^\cold, b))$.
+    
+        \item On input $(\sid,\mathsf{HProof}, C, (P_i^\hot))$, retrieve $(P_i^\hot, C, \hx_i, \pi_i, *, *, *, \texttt{corrupted}, *) \in \hotlist$ and $(C, *, *, *, \com) \in \clientlist$. %Parse $\aux_i := (\com, *)$ and check if 
+        % $\exists t$ such that $(y, \hx_i, \aux_i, t, *) \in \hotlist_i$ and 
+        % $\pred(y,\hx_i, \aux_i, \pi_i) = 1$ \todo{Define \pred}. 
+        If $\texttt{corrupted} = 1$, send $(\sid, \mathsf{HProofRequest}, \adv, (P_i^\hot))$ to the adversary, who will send back a bit $b^*$. Set $b := b^* \land \mathsf{KZG}.\vrfy(\crs, \com, i, \hx_i, \pi_i)$ and
+        % compute $\pi \gets \Pi_{\sf EKS}.\prove(\crs, \com, (\hx_i, \pi_i))$, else set $\pi := \perp$; then 
+        output $(\sid, \mathsf{HProofResult}, C, (P_i^\hot, b))$.
+    \end{itemize}
+    
+    % \textbf{Client Updates}
+    \textbf{Proactive Refresh}
+    \begin{itemize}
+    \item On input $(\sid,\shref,C)$, it proceeds as follows:
+        \begin{enumerate}
+        %\item Sample $x \sample \ZZ_p$. 
+        \item Output $\bot$ if a prior share refresh from $C$ is still pending.\footnotemark
+        \item Retrieve $(C, \mathcal{I}, t, y, \com, \texttt{time}) \in \clientlist$ for the maximum value of $\texttt{time}$. 
+        \item Generate $t$-out-of-$n$ Shamir shares of $0$ as $x_1, \ldots, x_n \in \ZZ_p$ using polynomial $f$. 
+        \item Compute $\ucom \gets \mathsf{KZG}.\Commit(\crs, f)$ and $\com' := \com \cdot \ucom$.
+        %, $\dcom' := g_1^{\tau^{d-t+1} \cdot f(\tau)}$, and $(0, \pi_0') \gets \mathsf{KZG}.\Open(\crs, f, 0)$.
+        \item Add $(C, \mathcal{I}, t, y, \com', \texttt{time++})$ to $\clientlist$ and send $(\sid, \shref\mathsf{Result}, C, (1))$ to $C$.
+        \item For each $i \in [n]$: 
+        \begin{enumerate}
+            \item Compute $(\delta_i, \pi_i') \gets \mathsf{KZG}.\Open(\crs, f, i)$. % and let $\aux_i' := (\com', \pi_i')$.
+            \item Send $(\sid, \shref\mathsf{Result}, P_i^\hot, (C, b_i=1))$ to $P_i^\hot$. \noemi{(If $C$ is corrupt, $\adv$ decides the value of $b_i$.)}
+            \item Once $\adv$ has delivered/allowed delivery of the message, retrieve $(P_i^\hot, C, \hx_i, \pi_i,\allowbreak \timeT,  *, \texttt{tampered}) \in \hotlist$ and add $(P_i^\hot, C, \hx_i+\delta_i, \pi_i \cdot \pi_i', \timeT\texttt{++}, \texttt{leaked} = 0, \texttt{tampered})$ to $\hotlist$. Also retrieve $(P_i^\hot, *, \texttt{allowc}) \in \hotstates$ and update $\texttt{allowc}$ to 1.
+            % \todo{What if $\hx_i, \pi_i$ are tampered? need to do the $\hx, \pi$ update to the last \emph{untampered} values? or check if KZG verifies?} \noemi{Our core protocol has no concept of ``recovering'' from a tampering or checking for tampering during updates, so no we don't check anything like that. You could imagine in an implementation/extension that you could have a protocol for checking whether a party's signing material has been corrupted (e.g., by requesting a signature on zero) and then run some recovery protocol if so (\cref{sec:ss-rec}).}
+        \end{enumerate}
+        % \item Output $(\texttt{sid}, \mathsf{ClientUpdateResult}, C, (b=1))$.
+        \end{enumerate}
+        % \item On input $(\texttt{sid},\mathsf{ClientUpdateDeliver}, C, I_i)$ from $\adv$, where $I_i$ is an institutional entity, update $(C, \hx_i, \aux_i, \texttt{time},  *)$ in $\hotlist_i$ to $(C,\hx_i+\delta_i, \aux_i',\texttt{time++},  \texttt{unleaked}:=1)$. Send $(\texttt{sid}, \mathsf{ClientUpdateResult}, C, \delta_i, \aux_i')$ to $P_i^\hot$.
+    
+    
+        %\sanjam{how are multiple updates handled? What is one update arrives late -- how does that affect signing?}
+      %  \item On input $(\texttt{sid},\mathsf{ClientUpdateDeliver}, P_i)$ from $\adv$ send $(\texttt{sid},\mathsf{ClientSecretShareUpdate}, C, \delta_i)$ to $P_i^{\hot}$ and set $c := c+\delta_i$ and $\texttt{flag}_i^{g^x} = 1$.
+    \end{itemize}
+    }}
+        \caption{The BLS \hcwl functionality $\FSign$ (signing, proofs of remembrance, and refresh).}
+        \label{fig:FSign2}
+    \end{figure*}
+    \end{savenotes}
+    \footnotetext{We assume share refreshes are sequential and delivery to all $P_i$ precedes any new refreshes.} % \noemi{I think we don't need to assume this. If it doesn't happen, correctness doesn't apply.}}

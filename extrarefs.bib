@@ -8,6 +8,14 @@
   year      = 2024
 }
 
+@inproceedings{FC:SGB24,
+  author    = {István András Seres and Noemi Glaeser and Joseph Bonneau},
+  booktitle = {Financial Cryptography and Data Security},
+  editor    = {Jeremy Clark and Elaine Shi},
+  title     = {Short paper: Naysayer proofs},
+  year      = 2024
+}
+
 @misc{EPRINT:GSZB23,
   author       = {Noemi Glaeser and István András Seres and Michael Zhu and Joseph Bonneau},
   title        = {Cicada: A framework for private non-interactive on-chain auctions and voting},
@@ -62,16 +70,6 @@
   year    = 2016,
   month   = 10,
   day     = 26
-}
-
-@article{DCC:DerSla19,
-  title     = {Key-homomorphic signatures: definitions and applications to multiparty signatures and non-interactive zero-knowledge},
-  author    = {Derler, David and Slamanig, Daniel},
-  journal   = {Designs, Codes and Cryptography},
-  volume    = {87},
-  pages     = {1373--1413},
-  year      = {2019},
-  publisher = {Springer}
 }
 
 @inproceedings{ACSAC:TLKBS18,
@@ -299,14 +297,6 @@
   keywords = {Image processing, Convolutional neural networks, Residue number system, Quantization noise, Field-programmable gate array (FPGA).}
 }
 
-@inproceedings{CCS:TAFWBM23,
-  title     = {Riggs: Decentralized sealed-bid auctions},
-  author    = {Tyagi, Nirvan and Arun, Arasu and Freitag, Cody and Wahby, Riad and Bonneau, Joseph and Mazi{\`e}res, David},
-  booktitle = {Proceedings of the 2023 ACM SIGSAC Conference on Computer and Communications Security},
-  pages     = {1227--1241},
-  year      = {2023}
-}
-
 @misc{coinjoin,
   title = {{{CoinJoin}} - {{Bitcoin Wiki}}},
   note  = {\url{https://en.bitcoin.it/wiki/CoinJoin}},
@@ -314,32 +304,9 @@
   year  = {Accessed on May 2022}
 }
 
-@inproceedings{CCS:GKMR23,
-  title     = {Efficient registration-based encryption},
-  author    = {Glaeser, Noemi and Kolonelos, Dimitris and Malavolta, Giulio and Rahimi, Ahmadreza},
-  booktitle = {Proceedings of the 2023 ACM SIGSAC Conference on Computer and Communications Security},
-  pages     = {1065--1079},
-  year      = {2023}
-}
-
 @misc{ens,
   title        = {Ethereum Name Service},
   howpublished = {\url{https://ens.domains/}}
-}
-
-@inproceedings{AC:FioKolPer23,
-  author    = {Fiore, Dario
-               and Kolonelos, Dimitris
-               and Perthuis, Paola de},
-  editor    = {Guo, Jian
-               and Steinfeld, Ron},
-  title     = {Cuckoo Commitments: Registration-Based Encryption and Key-Value Map Commitments for Large Spaces},
-  booktitle = {Advances in Cryptology -- ASIACRYPT 2023},
-  year      = {2023},
-  publisher = {Springer Nature Singapore},
-  address   = {Singapore},
-  pages     = {166--200},
-  isbn      = {978-981-99-8733-7}
 }
 
 @article{RSA78,
@@ -358,4 +325,99 @@
   author = {Chaum, David Lee},
   year   = {1982},
   school = {University of California, Berkeley}
+}
+
+@inproceedings{EC:Schage24,
+  author    = {Sch{\"a}ge, Sven},
+  editor    = {Joye, Marc
+               and Leander, Gregor},
+  title     = {New Limits of Provable Security and Applications to ElGamal Encryption},
+  booktitle = {Advances in Cryptology -- EUROCRYPT 2024},
+  year      = {2024},
+  publisher = {Springer Nature Switzerland},
+  address   = {Cham},
+  pages     = {255--285},
+  abstract  = {We provide new results showing that ElGamal encryption cannot be proven CCA1-secure -- a long-standing open problem in cryptography. Our result follows from a very broad, meta-reduction-based impossibility result on random self-reducible relations with efficiently re-randomizable witnesses. The techniques that we develop allow, for the first time, to provide impossibility results for very weak security notions where the challenger outputs fresh challenge statements at the end of the security game. This can be used to finally tackle encryption-type definitions that have remained elusive in the past. We show that our results have broad applicability by casting several known cryptographic setups as instances of random self-reducible and re-randomizable relations. These setups include general semi-homomorphic PKE and the large class of certified homomorphic one-way bijections. As a result, we also obtain new impossibility results for the IND-CCA1 security of the PKEs of Paillier and Damg{\aa}rd--Jurik, and many one-more inversion assumptions like the one-more DLOG or the one-more RSA assumption.},
+  isbn      = {978-3-031-58737-5}
+}
+
+@misc{GGJLM24,
+  author       = {Sanjam Garg and Noemi Glaeser and Abhishek Jain and Michael Lodder and Hart Montgomery},
+  title        = {Hot-Cold Threshold Wallets with Proofs of Remembrance},
+  howpublished = {},
+  year         = {2024},
+  ignorenote   = {\url{https://eprint.iacr.org/2023/1473}},
+  url          = {}
+}
+
+@misc{ecdsa-threshold-attack,
+  title        = {New Key Extraction Attacks on Threshold ECDSA Implementations},
+  author       = {Duy Hieu Nguyen and Anh Khoa Nguyen and Huu Giap Nguyen and Thanh Nguyen and Anh Quynh Nguyen},
+  year         = 2023,
+  month        = {August},
+  day          = 10,
+  howpublished = {\url{https://www.verichains.io/tsshock/verichains-tsshock-wp-v1.0.pdf}}
+}
+
+@article{NIST-MPC-Attack,
+  title   = {Practical key-extraction attacks in leading {MPC} wallets},
+  author  = {Nikolaos Makriyannis},
+  journal = {MPTS 2023: NIST Workshop on Multi-party Threshold Schemes 2023},
+  year    = {2023}
+}
+
+@misc{bip32,
+  title        = {{BIP32}: Hierarchical Deterministic Wallets},
+  author       = {Pieter Wuille},
+  howpublished = {\url{https://en.bitcoin.it/wiki/BIP_0032}},
+  year         = 2012,
+  month        = feb,
+  day          = 11
+}
+
+@book{eth2book,
+  title  = {Upgrading Ethereum: A technical handbook on Ethereum's move to proof of stake and beyond},
+  year   = 2023,
+  author = {Ben Edgington},
+  note   = {\url{https://eth2book.info/latest/}}
+}
+
+@misc{deterministic-wallets,
+  title        = {Deterministic Wallets, Their Advantages and their Understated Flaws},
+  author       = {Vitalik Buterin},
+  howpublished = {\url{https://bitcoinmagazine.com/technical/deterministic-wallets-advantages-flaw-1385450276}},
+  year         = {2013},
+  month        = {11},
+  day          = {26}
+}
+
+@misc{Filecoin-Spec,
+  author       = {Filecoin},
+  title        = {Filecoin Spec},
+  howpublished = {\url{https://spec.filecoin.io/algorithms/crypto/signatures/}}
+}
+
+@misc{chia-bls,
+  title        = {{BLS} Keys},
+  author       = {{Chia Network}},
+  howpublished = {\url{https://docs.chia.net/bls-keys/}},
+  year         = {2024}
+}
+
+@misc{bls-wallet,
+  title        = {{BLS} Wallet: Bundling up data},
+  author       = {{Privacy \& Scaling Explorations}},
+  year         = 2022,
+  month        = {August},
+  day          = 5,
+  howpublished = {\url{https://medium.com/privacy-scaling-explorations/bls-wallet-bundling-up-data-fb5424d3bdd3}}
+}
+
+@misc{account-abstraction,
+  title        = {Account abstraction},
+  author       = {Ethereum},
+  howpublished = {\url{https://ethereum.org/en/roadmap/account-abstraction/}},
+  year         = {2024},
+  month        = {march},
+  day          = {24}
 }
