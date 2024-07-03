@@ -28,9 +28,6 @@
     citecolor=blue,
 }
 \usepackage{amsthm}
-\newtheorem{definition}{Definition}
-\newtheorem{theorem}{Theorem}
-\newtheorem{lemma}{Lemma}
 \usepackage{amsmath,amsfonts,amssymb}
 \usepackage{wasysym}
 \usepackage{cleveref}
@@ -82,7 +79,7 @@ I conclude by describing future directions.
 
 \newpage %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % \section*{Basis of this Dissertation}
-\nociteThis{FC:SGB24,EPRINT:GSZB23,GGJLM24}
+\nociteThis{FC:SerGlaBon24,EPRINT:GSZB23,GGJLM24}
 \bibliographystyleThis{alpha}
 \bibliographyThis{
     cryptobib/abbrev3,
@@ -108,11 +105,21 @@ I conclude by describing future directions.
 \input{prelims}
 
 \section{Naysayer Proofs}\label{sec:naysayer}
+\textit{(Parts of this section are taken/adapted from \cite{FC:SerGlaBon24}.)}
+
+\input{naysayer/intro}
+\input{naysayer/related}
+\input{naysayer/model}
+\input{naysayer/definition}
+\input{naysayer/applications}
+\input{naysayer/storage}
 
 \section{On-chain Voting and Auctions}
 % \input{cicada/intro}
 
 \section{{\HCWL}s}\label{sec:hcwl}
+\textit{(Parts of this section are taken/adapted from \cite{GGJLM24}.)}
+
 \input{ksp/intro}
 \input{ksp/results}
 \input{ksp/tech-overview}

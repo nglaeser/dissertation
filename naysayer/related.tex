@@ -1,0 +1,31 @@
+\subsection{Related Work}
+\label{sec:naysayer-related}
+
+\input{naysayer/related-table}
+
+A concept related to the naysayer paradigm is \emph{refereed delegation}~\cite{STOC:FeiKil97}. The idea has found widespread adoption in the form of ``fraud proofs'' or ``fault proofs'' as used in emph{optimistic rollups}~\cite{ethereum_optimistic,arbitrum_nitro,optimism_rollup,ARXIV:TeuRei19}. Like naysayer proofs, fraud proofs work under an optimistic assumption, i.e., a computation is assumed to be correct unless some party challenges it. In case of a challenge, a dispute resolution process ensues between the \emph{challenger} and the \emph{defender}, which can be either non-interactive or interactive. In the former approach, the full computation is re-executed by the on-chain verifier to resolve the dispute. In the latter approach, the challenger and defender engage in a \emph{bisection protocol} to locate a disputed step of the computation, and only that step is re-executed to resolve the dispute. 
+
+%Commented out for flow and space
+%To improve usability and modularity, researchers have even suggested using succinct proofs of the disputed computation or computation step, replacing the potentially costly on-chain re-execution with proof verification~\cite{buckland_fraudproofs}.
+
+% https://medium.com/@cpbuckland88/fraud-proofs-and-virtual-machines-2826a3412099
+% https://www.alchemy.com/overviews/optimistic-rollups
+
+% One major difference between naysayer proofs and fraud proofs is that the latter, despite the name, is not actually a proof system, nor does it depend on any proof system. Instead, a fraud proof is simply an intent to dispute the correctness of some computation (state transition). An interactive process then takes place between the disputing party and the prover to narrow down the particular step of the \emph{prover's computation} which gave rise to the divergence.
+We compare classic verifiable computation, fraud proofs, and our new approach in \Cref{tab:comparison}. 
+At a high level, in the fraud proof paradigm, a ``prover'' performs a provisionally accepted computation without any proof of correctness. Any party can then challenge the correctness of the prover's \emph{computation}. %, potentially by specifying the disputed step of the computation.
+In the naysayer paradigm, by contrast, the prover supplies a proof with the computation output, which is provisionally accepted. Any party can then challenge the correctness of the \emph{proof}. %, potentially by specifying the disputed step of the \emph{verification} computation. 
+The naysayer approach offers significant speedups since the verifier's circuit is typically much smaller than the original computation. 
+Note that there is a slight semantic difference: fraud proofs can definitively show that the computation output is incorrect. In contrast, naysayer proofs can only show that the accompanying proof is invalid---the computation itself may have been correct.
+
+Furthermore, for fraud proofs, the full computation input (the witness) must be made available to the verifier and potential challengers. %and the verifier must be made available to the verifier to settle the dispute. 
+Naysayer proofs, on the other hand, 
+% are completely stateless to verify:
+can be verified using only the statement and proof. 
+%\noemi{We have referred to this as ``stateless'', but it's more like no \emph{private} state (i.e. witness) --- is this a standard interpretation of ``stateless'' or might using that word lead to confusion?}
+%the on-chain verifier only needs the statement and the proof to check that the proof verifies, and both of these are already available on-chain.
+Hence, naysayer proofs work naturally with zero-knowledge proofs.
+This can also lead to crucial savings if the witness is very large %as in many cases, the witness is extremely large and, therefore, costly to store on-chain 
+(e.g., transaction data for a rollup).
+
+The fraud proof design pattern has been applied in an application-specific way in many blockchain applications besides optimistic rollups, including the Lightning Network~\cite{PooDry16}, Plasma~\cite{PooBut17}, cryptocurrency mixers~\cite{EPRINT:SNBB19}, and distributed key generation~\cite{EPRINT:SJSW19}. We view naysayer proofs as a drop-in replacement for the many application-specific fault proofs, offering an alternative which is both more general and more efficient.

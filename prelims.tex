@@ -7,9 +7,22 @@ We use a calligraphic font, e.g., $\mathcal{S}$ or $\mathcal{X}$, to denote sets
 Sampling an element $x$ uniformly at random from a set $\mathcal{X}$ is written as $x \sample \mathcal{X}$. 
 We use $:=$ to denote variable assignment, $y \gets \mathsf{Alg}(x)$ to assign to $y$ the output of some algorithm $\mathsf{Alg}$ on input $x$, and $y \sample \mathsf{Alg}(x)$ if the algorithm is randomized. When we wish to be explicit about the randomness $r$ used, we write $y \gets \mathsf{Alg}(x; r)$. 
 
-For a non-interactive zero-knowledge proof system $\Pi$, we write $\pi \gets \Pi.{\sf Prove}(x; w)$ to show that the proving algorithm takes as input an instance $x$ and witness $w$ and outputs a proof $\pi$. Verification is written as $\Pi.\vrfy(x, \pi)$ and outputs a bit $b$. 
+For a non-interactive zero-knowledge proof system $\Pi$, we write $\pi \gets \Pi.\prove(x; w)$ to show that the proving algorithm takes as input an instance $x$ and witness $w$ and outputs a proof $\pi$. Verification is written as $\Pi.\vrfy(x, \pi)$ and outputs a bit $b$. 
 
 We distinguish the key-pairs used in a signature scheme ($\vk, \sk$ for ``verification'' and ``signing'' key, respectively) from those used in an encryption scheme ($\ek, \dk$ for ``encryption'' and ``decryption'' key, respectively). 
+
+\subsection{Non-interactive proof systems}
+
+\begin{definition}[Non-interactive proof] A non-interactive proof $\Pi$ for some NP relation $\Rel$ is a tuple of PPT algorithms $(\setup, \prove, \vrfy)$:
+    \begin{description}
+        \item[$\setup(\secparam) \rightarrow \crs$:] Given a security parameter, output a common reference string $\crs$. This algorithm might use private randomness (a trusted setup).
+        \item[$\prove(\crs, x, \witness) \rightarrow \pi$:] Given the $\crs$, an instance $x$, and witness $\witness$ such that $(x, \witness) \in \Rel$, output a proof $\pi$.
+        \item[$\vrfy(\crs, x,\pi) \rightarrow \{0,1\}$:] Given the $\crs$ and a proof $\pi$ for the instance $x$, output a bit indicating accept or reject.
+    \end{description}
+\end{definition}
+
+We refer the reader to \cite{Thaler23} for a formal description of the properties of proof systems (e.g., correctness, soundness, zero-knowledge). 
+
 
 \subsection{Bilinear Pairings}\label{sec:pairings}
 
@@ -30,9 +43,9 @@ We distinguish the key-pairs used in a signature scheme ($\vk, \sk$ for ``verifi
 Pairings are divided into types based on the (in)equality of the utilized groups $\GG_1,\GG_2$ and whether there is an efficiently computable homomorphism between the groups. For our purposes, we will use a type-3 pairing: asymmetric ($\GG_1 \neq \GG_2$) and with no such efficiently computable homomorphism. In this case, the Decisional Diffie-Hellman (DDH) assumption is believed to hold in both $\GG_1$ and $\GG_2$; this is referred to as the \emph{symmetric external Diffie-Hellman (SXDH) assumption}.
 
 \subsection{Shamir Secret Sharing}\label{sec:shamir}
-Shamir~\cite{ShamirSS} introduced a scheme to share a secret among $n$ parties such that any $t$ parties can work together to recover the secret, but with any fewer parties the secret remains information-theoretically hidden.
+Shamir~\cite{CACM:Shamir79} introduced a scheme to share a secret among $n$ parties such that any $t$ parties can work together to recover the secret, but with any fewer parties the secret remains information-theoretically hidden.
 
-\begin{construction}[Shamir secret sharing \cite{ShamirSS}]
+\begin{construction}[Shamir secret sharing \cite{CACM:Shamir79}]
 Let $p$ be a prime.
     \begin{itemize}
         \item \underline{$\{s_1, \dots, s_n\} \gets \share(s, t, n)$:} Given a secret $s \in \ZZ_p$ and $t \leq n \in \mathbb{N}$, compute a $t$-out-of-$n$ sharing of $s$ by choosing a random degree-$(t-1)$ polynomial $f(X) \in \ZZ_p[X]$ such that $f(0) = s$. For $i \in [n]$, compute $s_i := (i, f(i))$.
@@ -91,9 +104,9 @@ We give the asymmetric version of KZG below.
 \begin{construction}[KZG polynomial commitments~\cite{AC:KatZavGol10}]
 Let $\GG_1, \GG_2$ be elliptic curve groups of order $p$ with generators $g_1,g_2$ and $e: \GG_1 \times \GG_2 \mapsto \GG_T$ be an elliptic curve pairing. The following is a commitment scheme for polynomials in $\ZZ_p[X]$ with degree at most $d$.
 \begin{itemize}
-    \item \underline{$\crs \gets \setup(d):$} Sample $\tau \sample \ZZ_p$ and output $\crs := \{g_1, g_1^\tau, g_1^{\tau^2}, \dots, g_1^{\tau^d}, g_2, g_2^\tau\}$.
-    \item \underline{$\com_f \gets \Commit(\crs, f(X)):$} Let $f(X) = a_0 + a_1 X + \dots + a_d X^d \in \ZZ_p[X]$. Use $\crs$ to compute and output $g_1^{f(\tau)} = g_1^{a_0} \cdot (g_1^\tau)^{a_1} \dots (g_1^{\tau^d})^{a_d} = g_1^{a_0 + a_1 \tau + \dots + a_d \tau^d} \in \GG_1$.
-    \item \underline{$(f(i), \pi_i) \gets \Open(\crs, f(X), i):$} To open $f(X)$ at $i$, let $q_i(X) := \frac{f(X) - f(i)}{X - i} \in \ZZ_p[X]$\footnote{This is a polynomial by Little Bézout's Theorem.}. Then compute $\com_{q_i} \gets \Commit(\crs, q_i(X))$ and output $(f(i), \com_{q_i}) \in \ZZ_p \times \GG_1$.
+    \item \underline{$\crs \gets \setup(d):$} Sample $\tau \sample \ZZ_p$ and output $\crs := \{g_1, g_1^\tau, g_1^{\tau^2}, \dots, g_1^{\tau^d},\allowbreak g_2, g_2^\tau\}$.
+    \item \underline{$\com_f \gets \Commit(\crs, f(X)):$} Let $f(X) = a_0 + a_1 X + \dots + a_d X^d \in \ZZ_p[X]$. Use $\crs$ to compute and output $g_1^{f(\tau)} = g_1^{a_0} \cdot (g_1^\tau)^{a_1} \dots (g_1^{\tau^d})^{a_d} = g_1^{a_0 + a_1 \tau + \dots + a_d \tau^d}\allowbreak \in \GG_1$.
+    \item \underline{$(f(i), \pi_i) \gets \Open(\crs, f(X), i):$} To open $f(X)$ at $i$, let $q_i(X) := \frac{f(X) - f(i)}{X - i}\allowbreak \in \ZZ_p[X]$\footnote{This is a polynomial by Little Bézout's Theorem.}. Then compute $\com_{q_i} \gets \Commit(\crs, q_i(X))$ and output $(f(i),\allowbreak \com_{q_i}) \in \ZZ_p \times \GG_1$.
     \item \underline{$\{0,1\} \gets \vrfy(\crs, \com_f, i, y, \pi_i):$} To confirm $y = f(i)$, it suffices to check that $q_i(X) = \frac{f(X) - y}{X - i}$ at $X=\tau$. This can be done with a single pairing check:
     \[
         e(\com_f / g_1^y, g_2) \stackrel{?}{=} e(\pi_i, g_2^\tau / g_2^i)
@@ -144,7 +157,7 @@ A PoK of the committed value can be computed using a Sigma protocol due to Okamo
 
 \subsection{Leftover Hash Lemma}\label{sec:lhl}  
 
-We use the presentation of the leftover hash lemma (LHL)~\cite{FOCS:ImpZuc89} from~\cite{EC:AMPR19}.\footnote{We specifically use the improved version from the Journal of Cryptology version of this paper.}  Let $\left(\mathcal{X},\oplus\right)$ be a finite group of size $\left|\mathcal{X}\right|$, and let $n$ be a positive integer. For any fixed $2n$-vector of group elements $\mathbf{x} = \left\lbrace x_{j,b} \right\rbrace_{j\in \left[ n \right],b\in\left\lbrace 0,1 \right\rbrace} \in\mathcal{X}^{2n}$, denote by $\mathcal{S}_{\mathbf{x}}$ the following distribution:
+We use the presentation of the leftover hash lemma (LHL)~\cite{FOCS:ImpZuc89} from \cite{EC:AMPR19}.\footnote{We specifically use the improved version from the Journal of Cryptology version of this paper.}  Let $\left(\mathcal{X},\oplus\right)$ be a finite group of size $\left|\mathcal{X}\right|$, and let $n$ be a positive integer. For any fixed $2n$-vector of group elements $\mathbf{x} = \left\lbrace x_{j,b} \right\rbrace_{j\in \left[ n \right],b\in\left\lbrace 0,1 \right\rbrace} \in\mathcal{X}^{2n}$, denote by $\mathcal{S}_{\mathbf{x}}$ the following distribution:
 \begin{equation}
 	\mathcal{S}_{\mathbf{x}} = \Big\{\bigoplus_{j\in[n]}x_{j,r_j} : \left(r_1,\cdots,r_n\right)\gets\left\lbrace 0,1 \right\rbrace^n\Big\}.\nonumber
 \end{equation}
@@ -185,5 +198,5 @@ The actions each party can take are summarized below:
 \end{itemize}
 
 \begin{definition}
-    We say a protocol $\Pi$ \emph{UC-realizes} an ideal functionality $\F$ if for any PPT adversary $\adv$, there exists a simulator $\Sim$ such that for any environment $\env$, the distribution ensembles $\{ \real_{\Pi,\adv,\env}(\secpar, x) \}_{\secpar \in \mathbb{N}, x \in \bin^*}$ and $\{ \ideal_{\F,\Sim,\env}(\secpar, x) \}_{\secpar \in \mathbb{N},x \in \bin^*}$ are computationally indistinguishable.
+    We say a protocol $\Pi$ \emph{UC-realizes} an ideal functionality $\F$ if for any PPT adversary $\adv$, there exists a simulator $\Sim$ such that for any environment $\env$, the distribution ensembles $\{ \real_{\Pi,\adv,\env}(\secpar, x) \}_{\secpar \in \mathbb{N}, x \in \bin^*}$ and $\{ \ideal_{\F,\Sim,\env}(\secpar,\allowbreak x) \}_{\secpar \in \mathbb{N},x \in \bin^*}$ are computationally indistinguishable.
 \end{definition}

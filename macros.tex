@@ -8,6 +8,9 @@
 \usepackage{pifont}
 \newcommand{\cmark}{\ding{51}}%
 \newcommand{\xmark}{\ding{55}}%
+\newcommand{\no}{\Circle}
+\newcommand{\yes}{\CIRCLE}
+\newcommand{\halfcirc}{\LEFTcircle}
 
 % variables
 % \renewcommand{\epsilon}{\varepsilon}
@@ -26,9 +29,15 @@
 \renewcommand{\vec}[1]{\ensuremath{\mathbf{#1}}}
 
 % theorem, etc. environments
+\newtheorem{definition}{Definition}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
 \newtheorem{construction}{Construction}
 \crefname{construction}{construction}{constructions}
 \Crefname{construction}{Construction}{Constructions}
+\newtheorem{corollary}{Corollary}
+\crefname{corollary}{corollary}{corollaries}
+\Crefname{corollary}{Corollary}{Corollaries}
 
 % primitives
 \newcommand{\ENC}{\ensuremath{\mathsf{E}}}
@@ -48,6 +57,7 @@
 \newcommand{\randout}{\ensuremath{\stackrel{\$}{\to}}}
 \newcommand{\Rel}{\ensuremath{\mathcal{R}}}
 \newcommand{\Lang}{\ensuremath{\mathcal{L}}}
+\newcommand{\witness}{\ensuremath{w}}
 % oracles
 \newcommand{\oracle}{\ensuremath{\mathcal{O}}}
 \newcommand{\oaal}{\ensuremath{\oracle^{\sf A^2L}}}
@@ -59,7 +69,7 @@
 \newcommand{\ext}{\ensuremath{\mathsf{Ext}}}
 \newcommand{\sign}{\ensuremath{\mathsf{Sign}}}
 \newcommand{\vrfy}{\ensuremath{\mathsf{Vrfy}}}
-\newcommand{\prove}{\ensuremath{\mathsf{P}}}
+\newcommand{\prove}{\ensuremath{\mathsf{Prove}}}
 \newcommand{\share}{\ensuremath{\mathsf{Share}}}
 \newcommand{\recon}{\ensuremath{\mathsf{Reconstruct}}}
 \newcommand{\Commit}{\ensuremath{\mathsf{Com}}}
@@ -98,6 +108,12 @@
 \newcommand{\expUnlock}{\ensuremath\mathsf{ExpUnlock}}
 \newcommand{\expSec}{\ensuremath\mathsf{ExpUnforg}}
 \newcommand{\Fbcs}{\ensuremath{\mathcal{F}_{\sf BCS}}}
+
+%%%%% Naysayer %%%%%
+\newcommand{\nay}{\mathsf{nay}}
+\newcommand{\naysecparam}{\secpar_\nay}
+\newcommand{\naysay}{\ensuremath{\mathsf{Naysay}}}
+\newcommand{\vrfynay}{\ensuremath{{\vrfy}\mathsf{Nay}}}
 
 %%%%% Cicada %%%%%
 % HTLPs
