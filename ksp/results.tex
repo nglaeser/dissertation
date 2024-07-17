@@ -11,9 +11,9 @@ This requirement to corrupt a threshold $t$ of hot-cold \emph{pairs} is differen
 % \paragraph{Hot-cold threshold BLS signature with proactive refresh}
 \paragraph{Threshold BLS construction}
 We show how to construct such a hot-cold threshold signing protocol for the BLS signature scheme~\cite{AC:BonLynSha01,PKC:Boldyreva03}. Although ECDSA~\cite{EPRINT:GenGolNar16,SP:DKLs18,CCS:LinNof18,CCS:GenGol18,EPRINT:AumHamShl20,EPRINT:GKSS20,EPRINT:DJNPO20,CCS:CGGMP20,PKC:CCLST20,EPRINT:CCLST21,CANS:Pettit21,SP:ANOSS22} and Schnorr~\cite{SAC:KomGol20,C:BCKMTZ22,EPRINT:BatLonMen22} are the most popular threshold signature schemes in the literature, their more complicated structure makes a threshold signing procedure with offline parties difficult. 
-BLS signatures have the advantage of being simple to understand and deploy. This has led to their widespread use in production systems, including in Ethereum's consensus protocol~\cite[\S2.9.1]{eth2book}, Filecoin~\cite{Filecoin-Spec}, transactions on the Chia Network~\cite{chia-bls}, and a BLS smart contract wallet~\cite{bls-wallet}.
+BLS signatures have the advantage of being simple to understand and deploy. This has led to their widespread use in production systems, including in Ethereum's consensus protocol~\cite[\S2.9.1]{eth2book}, Filecoin~\cite{Filecoin_Spec}, transactions on the Chia Network~\cite{chia_bls}, and a BLS smart contract wallet~\cite{bls_wallet}.
 % \hart{It’s probably worth it to list some more applications/use cases of BLS signatures. This section is probably a little too harsh on us; we can be more enthusiastic about BLS signatures.} 
-With the event of account abstraction on Ethereum~\cite{account-abstraction}, users will be able to specify alternative signature schemes to verify their transactions, further easing the adoption of BLS-based wallets. 
+With the event of account abstraction on Ethereum~\cite{account_abstraction}, users will be able to specify alternative signature schemes to verify their transactions, further easing the adoption of BLS-based wallets. 
 The homomorphic structure of BLS allows us to give a simple non-interactive hot-cold threshold signature protocol. 
 % \paragraph{Hot-only key generation} 
 % \paragraph{Non-interactive cold key generation} 

@@ -1,0 +1,48 @@
+% \begin{figure}[h]
+    % \centering
+    \begin{mdframed}
+    \begin{center}
+        \textbf{Zero-knowledge proof of equality of TLP solutions (\zkposeq)}
+    \end{center}
+    \hfill\\
+    \textbf{Public parameters:} Semiprime $N$ and $h, y \sample \ZZ_N^*$. \hfill\\
+    \textbf{Public input:} Exponential ElGamal TLPs $Z_1 = (u_1, v_1), Z_2 = (u_2, v_2)$ (\Cref{con:exp_elgamalHTLP}).\hfill\\
+    \textbf{Private input:} $s, r_1, r_2 \in \ZZ_N$ such that $v_1 = h^{r_1} y^s$ and $v_2 = h^{r_2} y^s$. (We will prove this by proving knowledge of the discrete log of $v_1/v_2$ wrt $h$.)
+    \begin{enumerate}
+        \item $\mathcal{P}$ samples $\alpha \sample \ZZ_N$ and sends $A := h^\alpha$.
+        \item $\mathcal{V}$ sends a challenge $e \sample \mathsf{Primes}(\secpar)$.
+        \item $\mathcal{P}$ computes $x = (r_1 - r_2) e + \alpha$,
+        which it sends to $\mathcal{V}$.
+    \end{enumerate}
+    $\mathcal{V}$ accepts iff $(v_1/v_2)^e A = h^x$.
+    \end{mdframed}
+%     \label{fig:zkpokseq}
+% \end{figure}
+\noemi{This should generalize to the Paillier-based HTLP too}
+
+%-----------------------------------------------------  BEGIN zkPoKSEq **** OLD **** --------------------------------------------------------------
+% \begin{figure}[h]
+%     \centering
+    % \begin{mdframed}
+    % \begin{center}
+    %     \textbf{Proof of Equality of TLP solutions (\zkposeq)}
+    % \end{center}
+    % \hfill\\
+    % \textbf{Public parameters:} Semiprime $N$ and $h, y \sample \ZZ_N^*$. \hfill\\
+    % \textbf{Public input:} Exponential ElGamal TLPs $Z_1 = (u_1, v_1), Z_2 = (u_2, v_2)$.\hfill\\
+    % \textbf{Private input:} $s, r_1, r_2 \in \ZZ_N$ such that $v_1 = h^{r_1} y^s$ and $v_2 = h^{r_2} y^s$. %(We will prove this by proving knowledge of the solutions of $v_1$ and $v_2$ as well as knowledge of the discrete log of $v_1/v_2$ wrt $h$.)
+    % \begin{enumerate}
+    %     \item $\mathcal{P}$ samples $\alpha_1, \alpha_2, \beta \sample \ZZ_N$ and sends $A_1 := h^{\alpha_1} y^{\beta}, A_2 := h^{\alpha_2} y^{\beta}$ to $\mathcal{V}$.
+    %     \item $\mathcal{V}$ sends a challenge $e \sample \mathsf{Primes}(\secpar)$.
+    %     \item $\mathcal{P}$ computes $w_1 = \alpha_1 + e r_1$, $w_2 = \alpha_2 + e r_2$, and $x = \beta + e s$,
+    %     which it sends to $\mathcal{V}$.
+    % \end{enumerate}
+    % $\mathcal{V}$ accepts iff the following hold:
+    % \begin{align*}
+    %     Z_1^e A_1 = h^{w_1} y^{x} \\
+    %     Z_2^e A_2 = h^{w_2} y^{x}
+    % \end{align*}
+    % \end{mdframed}
+%     \caption{Zero-knowledge proof of equality of two TLP solutions.}
+%     \label{fig:zkposeq}
+% \end{figure}

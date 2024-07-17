@@ -1,0 +1,33 @@
+\begin{figure*}[t!]
+\begin{mdframed}
+\begin{center}
+    \textbf{The Cicada Framework}
+\end{center}
+Let $\Sigma: \X^n \rightarrow \Y$ be the scoring function of a voting/auction scheme
+where $\Score = f \circ t$ for a linear function $t$ and
+% $\Sigma = f \circ g$ for some linear function $g$ and 
+$\X = [0,w]^m$. 
+Let $\htlp$ a linear HTLP, $\Ttime \in \NN$ a time parameter representing the election/auction length, and $(\PSetup, \pack, \unpack)$ a packing scheme.
+Let $\NIZK$ be a NIZKPoK for 
+submission correctness (language depends on $\Sigma, \htlp$; see \Cref{sec:sigmas})
+% the language $\{(i, Z) : \exists x \text{ s.t. } Z \in {\sf Im}(\htlp.{\sf Gen}(\pack(x))) \land\ x \in \X\}$ 
+and \pos\ be a proof of correct HTLP solution (see \Cref{sec:sigmas}). 
+
+\hrulefill %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{description}
+    \item[$\Setup(\secparam, \Ttime, \ell) \randout (\pp, \Z)$.] 
+    Set up the public parameters $\pp_{\NIZK} \sample \NIZK.\Setup(\secparam)$, $\pp_{\sf tlp} \sample \htlp.\Setup(\secparam, \Ttime)$, and $\pp_{\sf pack} \gets \PSetup(\ell, w)$. 
+    Let $\Z = \{Z_j\}_{j \in [m/\ell]}$ where $Z_j \sample \htlp.{\sf Gen}(0)$. Output $\pp := (\pp_{\sf tlp}, \pp_{\sf pack}, \pp_\NIZK)$ and $\Z$.
+    \item[$\Seal(\pp,i, \vec{v}_i) \randout (\Z_i, \pi_i)$.] Parse $\vec{v}_i := \vec{v}_{i,1} || \dots || \vec{v}_{i,m/\ell}$. Compute $Z_{i,j} \gets \htlp.{\sf Gen}(\pack(\vec{v}_{i,j}))~\forall j \in [m/\ell]$ and $\pi_i \gets \NIZK.\prove((i, \Z_i), \vec{v}_i)$.
+    % $s_{i,j} \gets \pack(\vec{v}_{i,j})$ for all $j \in [m/\ell]$. 
+    Output $(\Z_i := \{Z_{i,j}\}_{j \in [m/\ell]}, \pi_i)$ 
+    \item[$\Aggr(\pp,\Z,i,\Z_i,\pi_i) \rightarrow \Z'$.] If $\NIZK.\vrfy((i, \Z_i), \pi_i) = 1$, update $\Z$ to $\Z \boxplus \Z_i$. %, where $\boxplus$ is applied pairwise to elements of $\Z,\Z_i$.
+    \item[$\Open(\pp,\Z) \rightarrow (\mathcal{S}, \pi_{\sf open})$.] Parse $\Z := \{Z_j\}_{j \in [m/\ell]}$ and solve for the encoded tally $\mathcal{S} = \{s_j\}_{j \in [m/\ell]}$ where $s_j \gets \htlp.{\sf Solve}(Z_j)$. Prove the correctness of the solution(s) as $\pi_{\sf open} \gets \pos.{\sf Prove}(\mathcal{S}, \Z, 2^\Ttime)$ and output $(\mathcal{S}, \pi_{\sf open})$.
+    \item[$\Finalize(\pp, \Z, \mathcal{S}, \pi_{\sf open}) \rightarrow \{y,\perp\}$.] If $\pos.{\sf Verify}(\mathcal{S}, \Z, 2^\Ttime, \pi_{\sf open}) \neq 1$, return $\perp$. Otherwise, parse $S := \{s_j\}_{j \in [m/\ell]}$ and let $\Vec{v} := \vec{v}_1 || \dots || \vec{v}_{m/\ell}$, where $\vec{v}_j \gets \unpack(s_j)~\forall j \in [m/\ell]$. Output 
+    % $y = f(\vec{v})$.
+    $y$ such that $y = \Sigma(\vec{v})$.
+\end{description}
+\end{mdframed}
+\caption{The Cicada framework for non-interactive private auctions and elections.}
+\label{fig:cicada}
+\end{figure*}

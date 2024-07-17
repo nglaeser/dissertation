@@ -14,12 +14,7 @@
 \usepackage{mdframed}
 \usepackage[backref=page]{hyperref}
 \renewcommand*{\backref}[1]{}
-\renewcommand*{\backrefalt}[4]{\scriptsize%
-    \ifcase #1%
-          \or \textit{[page~#2.]}%
-          \else \textit{[pages~#2.]}%
-    \fi%
-}
+\renewcommand*{\backrefalt}[4]{}
 \hypersetup{
     colorlinks=true,
     linkcolor=blue,
@@ -35,7 +30,12 @@
 \usepackage[resetlabels]{multibib}
 \newcites{This}{Basis of this Dissertation}
 \newcites{Other}{Other Publications by the Author}
-\usepackage[lambda,keys,sets]{cryptocode}
+\usepackage[
+    lambda,
+    keys,
+    sets,
+    adversary
+]{cryptocode}
 \usepackage{hyphenat}
 \hyphenation{inter-active}
 \hyphenation{block-chain}
@@ -79,7 +79,7 @@ I conclude by describing future directions.
 
 \newpage %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % \section*{Basis of this Dissertation}
-\nociteThis{FC:SerGlaBon24,EPRINT:GSZB23,GGJLM24}
+\nociteThis{FC:SerGlaBon24,CTB:GSZB23,GGJLM24}
 \bibliographystyleThis{alpha}
 \bibliographyThis{
     cryptobib/abbrev3,
@@ -94,6 +94,14 @@ I conclude by describing future directions.
     cryptobib/abbrev3,
     cryptobib/crypto,
     extrarefs
+}
+
+% reactivate backrefs for References at end of doc
+\renewcommand*{\backrefalt}[4]{\scriptsize%
+    \ifcase #1%
+          \or \textit{[p.~#2]}%
+          \else \textit{[pp.~#2]}%
+    \fi%
 }
 
 \newpage %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -115,7 +123,18 @@ I conclude by describing future directions.
 \input{naysayer/storage}
 
 \section{On-chain Voting and Auctions}
-% \input{cicada/intro}
+\textit{(Parts of this section are taken/adapted from \cite{CTB:GSZB23}.)}
+\input{cicada/intro}
+\input{cicada/related}
+\input{cicada/results}
+\input{cicada/model}
+\input{cicada/voting-schemes}
+\input{cicada/syntax}
+\input{cicada/cicada}
+\input{cicada/sigmas}
+\input{cicada/params}
+\input{cicada/eval}
+\input{cicada/extensions}
 
 \section{{\HCWL}s}\label{sec:hcwl}
 \textit{(Parts of this section are taken/adapted from \cite{GGJLM24}.)}

@@ -1,0 +1,24 @@
+% \begin{figure}[h]
+    % \centering
+    \begin{mdframed}
+    \begin{center}
+        \textbf{zkPoK of TLP solution (\zkpoks)}
+    \end{center}
+    \hfill\\
+    \textbf{Public parameters:} $\GG_1, \GG_2 \sample GGen(\secpar)$, $b > 2^{2\secpar}\sizeof{\GG_i}~\forall i \in \{1,2\}$, and $g \in \GG_1, h,y \in \GG_2$. \hfill\\
+    \textbf{Public input:} HTLP $Z = (u,v)$. \hfill\\
+    \textbf{Private input:} $s, r \in \ZZ$ such that $Z = (g^r, h^r y^s)$.
+    \begin{enumerate}
+        \item $\mathcal{P}$ samples $\alpha, \beta \sample [-b,b]$ and sends $A := h^\alpha y^\beta, B := g^\alpha$ to $\mathcal{V}$.
+        \item $\mathcal{V}$ sends a challenge $e \sample [2^\secpar]$. %$e \sample \mathsf{Primes}(\secpar)$.
+        \item $\mathcal{P}$ computes $w = r e + \alpha$ and $x = s e + \beta$,
+        which it sends to $\mathcal{V}$.
+    \end{enumerate}
+    $\mathcal{V}$ accepts iff the following hold:
+    \begin{align*}
+        v^e A = h^w y^x \\
+        u^e B = g^w
+    \end{align*}
+    \end{mdframed}
+%     \label{fig:zkpoks}
+% \end{figure}

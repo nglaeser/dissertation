@@ -1,0 +1,16 @@
+\begin{figure}[htb]
+    \centering
+    \begin{mdframed}
+    \begin{center}
+        \textbf{Borda ballot correctness}
+    \end{center}
+    \todo{incomplete}
+    \begin{enumerate}
+       \item $\mathcal{P}$ sends $(g^a\bmod{N},(1+N)^{a}\bmod{N^2})$ for $a\sample\mathbb{Z}_N$. 
+       \item $\mathcal{V}$ sends a challenge $e\sample[1,n]$.  
+       \item $\mathcal{P}$ sends $(g^{r\cdot e+a},h^{r\cdot N\cdot e+a}(1+N)^{s\cdot e+a}\bmod{N^2})$.
+    $\mathcal{V}$ accepts iff the following hold:
+    \end{enumerate}
+    \end{mdframed}
+    \label{fig:borda-pok}
+\end{figure}

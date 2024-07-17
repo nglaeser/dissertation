@@ -1,0 +1,128 @@
+\subsection{Implementation}\label{sec:implementation} 
+
+% Assuming the off-chain solver has $2^{\tau}$ computational time \noemi{what's a proper unit for this?} on the discrete logarithm computation (e.g., using Pollard's rho algorithm~\cite{pollard1978monte}), the exponential ElGamal HTLP is $(n+1)^m\leq 2^{2\tau}$. Otherwise, the Paillier HTLP is faster. 
+% It is also necessary that $(nw+1)^m< \sizeof{\gp}$ to preserve the correctness of our schemes.
+% % We discuss which HTLP constructions can be used for concrete settings of $(n,m,\tau)$, along with other deployment choices, in \Cref{sec:feasability}. 
+% We detail these limitations and explore the practical parameter range of each HTLP construction in \Cref{sec:feasability}.
+
+%we instantiated our schemes with the exponential ElGamal HTLP for space-efficiency reasons. 
+% Specifically, all ballots/bids and the tally HTLP have the form $Z:=(u,v)=(g^r,\ h^r y^s) \in \ZZ_N^* \times \ZZ_N^*$, where $(g,h,y)\sample(\ZZ_N^*)^3$ (see \Cref{eq:exp_elgamalHTLP}). 
+We implemented our transparent on-chain coordinator as an Ethereum smart contract in Solidity.\footnote{Open-sourced at \url{https://github.com/a16z/cicada}.} 
+For efficiency, we use the exponential ElGamal HTLP with a 1024-bit modulus $N$.
+To enable 1024-bit modular arithmetic in $\ZZ_N^*$, we developed a Solidity library which may be of independent interest. 
+This size of $N$ corresponds to approximately $\secpar=80$ bits of security.
+Although this security level is no longer deemed cryptographically safe, the secrecy of the HTLP solutions is only guaranteed up to time $T$ regardless, so this security level will suffice for our use case as long as the best-known factoring attack takes at least $T$ time. A 2012 estimate for factoring 1024-bit integers is about a year~\cite{facthacks}, which is significantly longer than the typical submission period of a decentralized auction or election.
+
+The main factors influencing gas cost (see \Cref{sec:empirical_performance}) are submission size, correctness proof size, and verification complexity. These factors mainly depend on the packing parameter $\ell\in[m]$, which determines a storage-computation trade-off with the following extremes:
+% For the implementation, our main concern is minimizing the size of the ballots/bids, their correctness proofs, and the verification complexity of the correctness proofs. These metrics influence the gas cost efficiency of our transparent tallying authorities/auctioneers implemented as Ethereum smart contracts in Solidity. Our code is open-sourced.~\footnote{\url{https://github.com/a16z/cicada}\todo{anonymize}}
+
+\begin{description}
+    \item[One aggregate HTLP for all.] If $\ell=m$, the contract maintains a single aggregate HTLP $Z$. This greatly reduces the on-chain space requirements of the resulting voting or auction scheme at the expense of typically more complex and larger submission correctness proofs.
+    \item[One aggregate HTLP per candidate.] If $\ell=1$, the contract must maintain $m$ aggregate HTLPs $\{Z_j\}_{j\in[m]}$. This increases the on-chain storage, but the submissions of correctness proofs become smaller and cheaper to verify.
+\end{description}
+In~\Cref{sec:empirical_performance}, we empirically explore this trade-off space by measuring the gas costs of various deployments of our framework with a range of parameter settings $M,n,m,w,\ell$.
+% \joe{what about other points in the trade-off space?}
+%\noemi{we don't actually measure any ``in-between'' settings of $\ell$ though, can we simulate or at least discuss whether it's linear?}\istvan{should be linear} 
+
+First, we briefly describe the proof systems used for each scheme we implement; detailed descriptions are given in \Cref{app:sigmas}.
+
+\paragraph{Binary voting.} 
+In a binary vote (i.e., approval voting with $m=1$), such as a simple yes/no referendum, users prove that the submitted ballot $Z=(u,v)$ is an exponential ElGamal HTLP with solution $0$ or $1$: $(u=g^r\land v=h^r)\lor(u=g^r\land vy^{-1}=h^r)$. This is achieved via OR-composition~\cite{C:CraDamSch94} of two sigma protocols for discrete logarithm equality~\cite{C:ChaPed92}.
+
+\paragraph{Cumulative voting.}
+In cumulative voting, each user distributes $w$ votes among $m$ candidates. To accommodate a larger number of candidates, our implementation keeps $m$ tally HTLPs $Z_j$, one for each candidate (in other words, $\ell = 1$). Each voter $i$ submits $m$ ballots $Z_{ij} = (g^{r_{ij}},h^{r_{ij}}y^{s_{ij}})$ for all $j\in[m]$. Besides proving (using the protocol \zkpoks) that each HTLP is well-formed (the same $r_{ij}$ is used in both terms), the voter must prove that $0 \leq s_{ij}~\forall\ j\in[m]$ and $\sum^m_{j=1} s_{ij}=w$. The first condition is shown with a proof of positive solution (\zkpopos) via Legendre's three-square decomposition theorem~\cite{ACNS:Groth05}. As a building block, we use a proof of square solution (\zkposqs) to show that a puzzle solution is a square. The second condition is proven by providing the randomness $R_i = \prod_j r_{ij}$ which opens $\prod_{j} Z_{ij}$ to $w$.
+
+\paragraph{Sealed-bid auction.}
+To illustrate two extremes of the packing spectrum, we implement two flavors of sealed-bid auctions. The first uses a single aggregate HTLP as described in \Cref{sec:constructions} (this can be viewed as $\ell = b$, where $b = \ceil{\log_2(M)}$ is the bit-length of a bid): Bidder $i$ submits a single HTLP $Z_i = (g^{r_i},h^{r_i} y^{s_i})$, proving well-formedness with \zkpoks and two \zkpopos to show $0\leq s\leq M$. The coordinator aggregates the $i$th bidder's bid by adding $M^{i-1} \cdot Z_i$ to its tally.
+% The coordinator will aggregate the $i$th bidder's bid by multiplying it by $2^{ib}$, where $b = \ceil{\log_2(M)}$ is the bit-length of the max bid $M$. That is each $b$-bit segment of the aggregate HTLP stores one bid. 
+
+The second approach applies $b$ aggregate HTLPs (i.e., $\ell = 1$): Each bidder $i$ submits $b$ HTLPs $\{Z_{ij}\}_{j \in [b]}$ and uses the same proof system as in binary voting to prove their well-formedness, i.e., the user inserted for each bit of the bid $0$ or $1$. The coordinator adds $2^i \cdot Z_{ij}$ to each corresponding aggregate HTLP $Z_j$.%\footnote{We implement\noemi{check this} an optimization in which the bidders perform the scalar multiplication on behalf of the coordinator, proving instead $\forall j\in[b]$, $(u=g^r\land v=h^r)\lor(u=g^r\land vy^{-2^i}=h^r)$.\noemi{not sure if it's easy to discuss at which $M > 2$ this stops being more efficient than having the contract do the multiplication?}\istvan{doesn't the contract need to do the multiplication anyways because of security reasons? You cannot trust the user computing $y^{-2^i}$.}}\istvan{see signal conversation for more discussion on this.}
+% We also describe the proof systems used for the implemented schemes in the full version.
+
+% \subsection{Empirical Performance Evaluation}\label{sec:empirical_performance}
+
+\begin{table*}[tb!]
+    \makebox[\linewidth]{
+    \centering
+    \setlength{\tabcolsep}{6pt}
+    \setlength{\belowbottomsep}{6pt}
+    \begin{tabular}{l c ccccc}
+        \toprule
+        % \multicolumn{6}{c}{\textbf{Approval vote} ($\ell=1$)} & \\\midrule
+        %$m$             & $2$ (binary) & $3$ & $4$ & $5$ & $6$ & \\\midrule
+        %\Aggr      & $418,358$ & - & - & - & - & \\
+        %\Finalize  & $115,690$ & & & & & \\
+        %\midrule
+        & \textbf{Binary vote} & \multicolumn{5}{c}{\textbf{Cumulative vote} ($\ell=1$)} \\\midrule
+        $m$             & $1$ & $2$ & $3$ & $4$ & $5$ & $6$ \\\midrule
+        \Aggr      & $418,358$ & $3,391,514$ & $5,081,542$ & $6,781,389$ & $8,489,786$ & $10,208,185$ \\
+        \Finalize  & $115,690$ & $269,505$ &$397,789$&$521,895$&$644,814$&$770,934$ \\
+        % \bottomrule
+    % \end{tabular}
+    %
+    % \begin{tabular}{l ccccc c}
+        % \toprule
+        \midrule
+        %
+        & \textbf{Sealed-bid auction} ($\ell = b$) & \multicolumn{5}{c}{\textbf{Sealed-bid auction} ($\ell=1$)} \\\midrule
+        $b$                  & any & $8$ & $10$ & $12$ & $14$ & $16$ \\\midrule
+        %\Aggr ($\ell=b$)       & $3,055,107$ &&&&\\
+        %\Finalize ($\ell=b$)   & $147,634$ &&&&\\
+        \Aggr                & $3,055,107$ & $3,586,022$ & $4,488,050$ & $5,394,047$ & $6,304,164$ & $7,218,905$ \\
+        \Finalize            & $147,634$ & $1,005,208$ & $1,253,119$ & $1,497,760$ & $1,749,489$ & $2,003,282$ \\
+        \bottomrule
+    \end{tabular}
+    }
+    \caption{Gas costs for Cicada cumulative voting and sealed-bid auctions with various numbers of candidates $m$, bid bit-lengths $b$ (max. bid $M = 2^{b-1}$), and packing parameters $\ell$.} %We discuss the cost of a maximally packed auction ($\ell=b$) in the text since it is independent of $b$.}
+    \label{tab:gas_table}
+\end{table*}
+
+%\begin{figure}[tb]
+    %\centering
+    %\includegraphics[width=9cm]{Figures/GasCosts.pdf}
+    %\caption{Gas costs of sealed-bid auction and cumulative voting as implemented in an Ethereum smart contract. %\todo{[Istvan] make this a table}}\label{fig:gas_costs}
+%\end{figure}
+
+%% This is what I have used for Gas to USD conversion: https://www.rareskills.io/ethereum-gas-price-calculator
+
+\paragraph{Submission costs.} 
+The on-chain cost of submitting a bid/ballot is the cost of running the $\sf Aggr$ function by the contract, i.e., the verification of the well-formedness proofs plus adding the users' submissions to the tally HTLPs (if and only if they verify). We report our measurements without packing (i.e., $\ell=1$) in \Cref{tab:gas_table}. Submitting a binary vote ballot costs $418,358$ gas ($\approx 11.02$ USD on Ethereum).\footnote{We can estimate gas costs for approval voting using the cost of binary voting, as the former uses a disjunction of $m$ copies of the same NIZK and thus scales linearly.
+% \noemi{Maybe we should include these in the table, for completeness}
+} 
+For cumulative voting, the submission cost scales linearly in $m$: with $m=2$ candidates, submitting a ballot costs 
+$3,391,514$ gas ($\approx94.49$ USD), 
+and each additional candidate adds $\approx 1,699,847$ gas ($\approx 44.79$ USD).
+
+An auction with a single HTLP for each bit of the bid (the $\ell=1$ case) requires a submission cost of $3,586,022$ gas ($\approx94.49$ USD) for an $8$-bit bid. Every additional bit in the submitted bid burns $\approx451,014$ gas ($\approx 11.89$ USD). 
+On the other hand, if one applies packing, i.e., $\ell=b$, then the cost of submitting a sealed bid is constant at $3,055,107$ gas ($\approx80.50$ USD). As seen in~\Cref{tab:gas_table}, with bid-space $M=2^7$ it is already more economical to have a single aggregate HTLP and use a packing scheme, despite more complex bid-correctness proofs.
+
+% \joe{Where is the evaluation of brute-force costs for El Gamal?}\istvan{it happens off-chain...do we need an evaluation for that?}\todo{move some of the discussion about this from appendix}
+
+\paragraph{Finalization costs.} 
+Our voting and auction schemes end with solving the tally HTLP(s) off-chain, i.e., computing $(g^r)^{2^{\Ttime}}(=h^r)$. With exponential ElGamal, solving the puzzle also requires a brute-force discrete logarithm computation by the off-chain solver. The correctness of this computation is proven to the contract with Wesolowski's \poe~\cite{EC:Wesolowski19} (recalled in \Cref{app:sigmas}). The $\Finalize$ cost comes from verifying the \poe(s) on-chain, which burns $101,066$ gas ($\approx2.66$ USD) per proof. Without packing, the untrusted solver must provide a Wesolowski proof per tally HTLP, so the $\Finalize$ gas cost is linear in the number of tally HTLPs, as evidenced by \Cref{tab:gas_table}. A portion of the Wesolowki verification cost comes from checking that the challenge is a prime number. In our implementation, the prover provides a Baillie-PSW~\cite{PomSelWag80} primality certificate, whose verification cost is $44,972$ gas ($\approx1.18$ USD). 
+
+\paragraph{Verification costs.}
+We implemented the sigma protocols described in \Cref{app:sigmas} in Solidity and report their verification costs in~\Cref{tab:sigma_verification_gas_costs}. With Groth's trick~\cite{ACNS:Groth05} in the proof of positivity (\zkpopos), we must decompose the integer solution into the sum of only three squares. Therefore, the gas cost of verifying \zkpopos equals the cost of verifying three proofs of knowledge of square solutions (\zkposqs) and one proof of knowledge of equal solution (\zkposeq).
+
+\begin{table}[ht]
+    \centering
+    \setlength{\tabcolsep}{6pt}
+    \setlength{\belowbottomsep}{6pt}
+    \begin{tabular}{l r}
+       \toprule
+       \textbf{Sigma protocol}  & \textbf{Verification gas cost}\\
+       \midrule
+       Proof of Exponentiation (\poe~\cite{EC:Wesolowski19})& $101,066$\\
+        PoK of solution (\zkpoks) & $266,096$ \\
+        Proof of solution equality (\zkposeq) & $336,155$ \\
+        Proof of square solution(\zkposqs) & $336,168$ \\
+        Proof of positive solution (\zkpopos) & $1,351,958$ \\
+        \bottomrule
+    \end{tabular}
+    \caption{EVM gas costs of verification for the proof systems described in~\Cref{app:sigmas}.}
+    \label{tab:sigma_verification_gas_costs}
+\end{table}
+
+\hfill\\
+In the short-term, deploying on Layer 2 (L2) already brings these costs down by 1--2 orders of magnitude. For example, when deploying our implementation on the Optimism L2 rollup, casting a binary vote would cost less than 0.30 USD.
+Further optimizations (e.g., Karatsuba multiplication~\cite{KarOfm62}, batched Wesolowski proof verification~\cite{TCC:Rotem21}, or verification via efficient zkSNARKs~\cite{EC:Groth16,EPRINT:GabWilCio19}) can bring the costs down even more.

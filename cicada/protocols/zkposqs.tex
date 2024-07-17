@@ -1,0 +1,24 @@
+% \begin{figure}[h]
+    % \centering
+    \begin{mdframed}
+    \begin{center}
+        \textbf{Proof of square solution (\zkposqs)}
+    \end{center}
+    \hfill\\
+    \textbf{Public parameters:} $\GG_2 \sample GGen(\secpar)$, $b > 2^{2\secpar}\sizeof{\GG_2}$, and $h,y \in \GG_2$. \hfill\\
+    \textbf{Public input:} $v_1, v_2 \in \GG_2$. \hfill\\
+    \textbf{Private input:} $s, r_1, r_2 \in \ZZ$ such that $v_1 = h^{r_1} y^s$ and $v_2 = h^{r_2} y^{s^2} = h^{r_2 - r_1 s} v_1^s$.
+    \begin{enumerate}
+        \item $\mathcal{P}$ samples $\alpha_1, \alpha_2, \beta \sample [-b,b]$ and sends $A_1 := h^{\alpha_1} y^\beta,\allowbreak A_2 := h^{\alpha_2} v_1^\beta$ to $\mathcal{V}$.
+        \item $\mathcal{V}$ sends a challenge $e \sample [2^\lambda]$. %$e \sample \mathsf{Primes}(\secpar)$.
+        \item $\mathcal{P}$ computes $w_1 = r_1 e + \alpha_1, w_2 = (r_2 - r_1 s)e + \alpha_2$, and $x = s e + \beta$, which it sends to $\mathcal{V}$.
+    \end{enumerate}
+    $\mathcal{V}$ accepts iff the following hold:
+    \begin{align*}
+        v_1^e A_1 = h^{w_1} y^x \\
+        v_2^e A_2 = h^{w_2} v_1^x
+    \end{align*}
+    \end{mdframed}
+    % \caption{Proof of square relationship of puzzle solutions. This is a special case of {\sf zk-PoKSEq}. \todo{check this}}
+    % \label{fig:zkposqs}
+% \end{figure}

@@ -1,0 +1,22 @@
+% \begin{figure}[h]
+\begin{mdframed}
+\begin{center}
+    \textbf{The $\pokcsmon$ protocol}
+\end{center}
+\textbf{Params:} $\GG \sample\mathit{GGen}(\secpar),g,o\sample\GG$, $h = g^{2^\Ttime}$.\hfill\\
+\textbf{Inputs:} Odd prime $n, w, \hat{X}$. \hfill\\
+\textbf{Witness:} $x,\hat{x},r' \in \ZZ$ such that $g^x=w\land \hat{x} \equiv x \bmod{n} \land \hat{X} = g^{\hat{x}} o^{r'}$.
+\hfill\\\todo{modify/update for puzzle solution}
+\begin{enumerate}
+    \item $\mathcal{V}$ sends $\ell \sample\mathsf{Primes}(\secpar)$ to $\mathcal{P}$.
+    \item $\mathcal{P}$ computes $q\in\ZZ, r\in[\ell \cdot n]$, where $x=q(\ell \cdot n)+r$. It sends $Q=g^q\in\GG,R:=g^r,s:=\frac{r}{\hat{x}}\in\ZZ$ and $S':=(o^{r'})^s$ to $\mathcal{V}$, i.e., $\pi_{\pokemocn}=(Q,R,s,S')$.
+\end{enumerate}
+$\mathcal{V}$ accepts iff the following hold:
+\begin{align*}
+    w = Q^{\ell \cdot n}R\\
+    R\cdot S'=\hat{X}^s\\
+    r \in [\ell \cdot n]
+\end{align*}
+\end{mdframed}
+% \label{fig:pokcsmon_protocol}
+% \end{figure}

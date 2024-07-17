@@ -1,0 +1,109 @@
+\subsection{Our Results}
+We aim to build voting and auction protocols that possess the following distinguishing features compared to prior work.
+\begin{description}
+    \item[Trust-minimization.] In our protocols, we do not want to assume (a quorum of) trusted third parties. The cryptographic voting literature extensively applies trusted parties, for example, to operate a public bulletin board or tally votes. The classic tools used in prior work, e.g. (fully) homomorphic encryption, inherently imply a handful of trusted parties to decrypt the ballots/bids. Apart from the liveness and safety of the blockchain consensus, we solely employ standard cryptographic assumptions.
+
+    \item[One-round protocol.] We argue that usability is one of the major challenges of deploying privacy-preserving voting and auction protocols in practice. Multi-round protocols, e.g., commit-reveal-style protocols, have incentive issues and considerable usability hurdles. We solve these pressing issues with efficient one-round protocols.  
+
+    \item[Ballot/bid privacy.] Last but not least, we want to achieve ballot/bid privacy. Our approach naturally provides privacy until the end of the voting/bidding phase. This is sufficient for avoiding selective aborts and censorship, thereby ensuring fairness. Limited privacy can also be a desideratum in certain settings, e.g. in representative democracies where delegates' votes are published to encourage accountability.
+    Alternatively, we show in~\Cref{sec:everlasting_ballot_privacy} how we can add everlasting ballot/bid privacy to our protocol without sacrificing our two previously stated goals. 
+\end{description}
+
+Coercion-resistance, i.e., the adversary's inability to coerce voters to cast specific ballots demanded by the adversary, is a crucial property of voting schemes. In the privacy-respecting e-voting literature, it is well-known that receipt-freeness (since the voters cannot prove how they voted) implies coercion-resistance~\cite{STOC:BenTui94}. However, we consider receipt-freeness as a non-goal in our protocol design. Still, we sketch an extension to our framework in~\Cref{sec:extension_coercion_resistance}, where we achieve coercion-resistance via a different pathway than receipt freeness. We leave it to future work to achieve the property of receipt freeness for on-chain voting schemes.%\noemi{Mention non-goals (e.g., receipt-freeness)}
+
+We introduce Cicada, a general framework for practical, privacy-preserving, and trust-minimized protocols for both auctions and voting. 
+Cicada uses time-lock puzzles (TLPs)~\cite{RivShaWag96} to achieve \emph{privacy and non-interactivity} in a trustless and efficient manner.
+A TLP allows a party to ``encrypt'' a message to the future. Specifically, to recover the solution, one needs to perform a computation that is believed to be inherently sequential, with a parameterizable number of steps.
+Intuitively, the TLPs play the role of commitments to bids/ballots that any party can open after a predefined time, avoiding the reliance on a second \emph{reveal} round. 
+
+% \paragraph{(Homomorphic) Time-lock puzzles}
+% A time-lock puzzle (TLP) allows a party to ``encrypt'' a message to the future. Specifically, to recover the solution, one needs to perform a computation that is believed to be inherently sequential, with a parameterizable number of steps.
+
+% \begin{definition}[Time-lock puzzle~\cite{RSW96}] A time-lock puzzle scheme $\sf TLP$ consists of the following three efficient algorithms:
+%     \begin{description}
+%         \item[$\mathsf{TLP.Setup}(\secparam, \Ttime) \randout \pp$.] The (potentially trusted) setup algorithm takes as input a security parameter $\secparam$ and a difficulty (time) parameter $\Ttime$, and outputs public parameters $\pp$. % (usually a group $\mathbb{G}$ with $\lambda$ bits of security). 
+%         % Typically $\mathbb{G}$ is a group of unknown order, e.g., the group $\mathbb{Z}^{*}_N$. 
+%         \item[$\mathsf{TLP.Gen}(\pp, s) \randout Z$.] Given a solution $s\in\ZZ$, the puzzle generation algorithm efficiently computes a time-lock puzzle $Z\in\mathbb{G}$.
+%         \item[$\mathsf{TLP.Solve}(\pp, Z) \rightarrow s$.] Given a TLP $Z$, the puzzle solving algorithm requires at least $\Ttime$ sequential steps to output the solution $s$.
+%     \end{description}
+% \end{definition}
+% Informally, we say that a TLP scheme is \emph{correct} if $\mathsf{TLP.Gen}$ is efficiently computable and $\tlp.{\sf Solve}$ always recovers the original solution $s$ to a validly constructed puzzle. A TLP scheme is \emph{secure} if $Z$ hides the solution $s$ and no adversary can compute $\mathsf{TLP.Solve}$ in fewer than $\Ttime$ steps with non-negligible probability. For the formal definitions, we refer the reader to~\cite{C:MalThy19}.
+
+Since solving a TLP is computationally intensive, ideally, an efficient protocol would require solving only a sublinear number of TLPs (in the number of voters/bidders). Cicada achieves this via \emph{homomorphic} TLPs (HTLPs): bids/ballots encoded as HTLPs can be ``squashed'' into a sublinear number of TLPs. Fully homomorphic TLPs are not practically efficient, but Malavolta and Thyagarajan~\cite{C:MalThy19} introduced efficient additively and multiplicatively homomorphic TLP constructions which we will describe below. This is clearly enough for simple constructions like first-past-the-post (FPTP) voting, but it remained an open problem how to apply HTLPs to realize more complicated auction and voting protocols, e.g., cumulative voting.
+% $\htlp$s allow an evaluator to compute a function $f$ homomorphically on TLPs  $Z_0,\dots,Z_k$ to obtain a puzzle $Z^* = f(Z_0,\dots,Z_k)$ such that for the corresponding puzzle solutions $s_0, \dots, s_k, s^*$, it holds that $f(s_0,\dots,s_k)=s^{*}$. Concretely efficient $\htlp$ constructions are known for addition, multiplication, and XOR. These are already powerful building blocks for first-past-the-post, range and approval voting, which only require adding together votes. 
+% Linearly homomorphic TLPs are practical by instantiating them with an elegant scheme derived from the Paillier-encryption scheme~\cite{paillier1999public}.
+% ~\cite{malavolta2019homomorphic} showed how to conduct private auctions using a fully-homomorphic TLP. Sadly, fully homomomorphic TLPs are currently not practically efficient and therefore are primarily of theoretical interest. They left devising efficient auction and voting protocols using their techniques to future work. 
+
+We show how to use HTLPs to build practically efficient, private, and non-interactive protocols for a special class of auction and voting schemes where the tallying procedure can be expressed as a linear function. We show that this limited class nonetheless includes many schemes of interest.
+
+Moreover, we introduce a novel linear HTLP based on the exponential ElGamal cryptosystem~\cite{EC:CraGenSch97} over a group of unknown order. This construction is more efficient than the Paillier-based construction~\cite{C:MalThy19} for a small solution space $\mathcal{S} \subset \ZZ_N$, i.e., $\mathcal{S} = \{ s : s \in \JJ_N \land\ s \ll N \}$. Here a puzzle $Z$ is constructed as
+\begin{equation}\label{eq:exp_elgamalHTLP}
+(g^r, h^r y^s) \in (\ZZ_N^*)^2
+\end{equation}
+where $g,y \sample \ZZ_N^*$ and again $h = g^{2^\Ttime}$. This scheme is only practical for small $\mathcal{S}$ since, in addition to recomputing $h^r$, recovering $s$ requires brute-forcing the discrete modulus of $y^s$. We discuss the efficiency trade-off between these two constructions in \Cref{sec:implementation}.
+
+\renewcommand{\change}[1]{\textcolor{blue}{#1}}
+\begin{figure}[tb]
+    \centering
+    \begin{mdframed}
+    \begin{construction}[Efficient linear HTLP.]\label{con:exp_elgamalHTLP}
+    \hfill
+    \begin{description}
+        \item[$\htlp.\Setup(\secparam, \Ttime) \randout \pp$.] Output $\pp := (N, g, h, y)$, where $y \sample \ZZ_N^*$ and the remaining parameters are the same as in \cref{con:paillierHTLP,con:multHTLP}.
+        \item[$\htlp.{\sf Gen}(\pp, s; r) \rightarrow Z$.] Given a value $s \in \change{\mathcal{S} \subset \ZZ_N}$, use randomness $r \in \ZZ_{N}$ to compute and output
+            $$Z := (g^r \mod{N},\ h^r \cdot \change{y^s} \mod{N}) \in \ZZ_N^* \times \ZZ_N^*$$
+        \item[$\htlp.\Open(\pp, Z, r) \rightarrow s$.] Parse $Z := (u,v)$ and compute $w := u^{2^T} \mod{N} \allowbreak= h^r$ via repeated squaring. \change{Compute $S := v/w$ and brute force the discrete logarithm of $S$ w.r.t. $y$ to obtain $s$.}
+        % \item[$\htlp.{\sf Eval}(\pp, f, Z_1, Z_2) \rightarrow Z$.] To evaluate a multiplicative function $f(x_1, x_2) \allowbreak= a x_1 x_2$ homomorphically on puzzles $Z_1 := (u_1, v_1)$ and $Z_2 := (u_2, v_2)$, return
+        % $$Z = (u_1 \cdot u_2 \mod{N}, a \cdot v_1 \cdot v_2 \mod{N})$$
+        \item[$\htlp.{\sf Eval}(\pp, f, Z_1, Z_2) \to Z$.] To evaluate a \change{linear function $f(x_1, x_2) = b + a_1 x_1 + a_2 x_2$} homomorphically on puzzles $Z_1 := (u_1, v_1)$ and $Z_2 := (u_2, v_2)$, return
+        \change{$$Z = (u_1^{a_1} \cdot u_2^{a_2} \mod{N}, v_1^{a_1} \cdot v_2^{a_2} \cdot y^b \mod{N}).$$}
+    \end{description}
+    \end{construction}
+    \end{mdframed}
+    \caption{Efficient linear HTLP for small solution space.}
+    \label{fig:exp_elgamalHTLP}
+\end{figure}
+
+Lifting the multiplicative HTLP of \cite{C:MalThy19} (\Cref{con:paillierHTLP}) to put $s$ in the exponent yields a more efficient linear HTLP for a small solution space $\X \subset \ZZ_N$, where $\X = \{ s : s \in \JJ_N \land\ s \ll N \}$ (\Cref{fig:exp_elgamalHTLP}, changes shown in \change{blue}). This can be viewed as a construction based on exponential ElGamal encryption over $\ZZ_N^*$.
+
+
+\paragraph{Efficient vector encoding for HTLPs.}
+In many voting schemes, a ballot consists of a vector indicating the voter's relative preferences or point allocations for all $m$ candidates. To avoid solving many HTLPs, it is desirable to encode this vector into a single HTLP, which requires representing the vector as a single integer. % This motivates the following definition.
+
+Note that as in the PNS approach, we set $M = nw + 1$ to accommodate homomorphic addition of submissions; homomorphic multiplication, however, would require $M = w^n+1$, and the primes in $\vec{p}$ would therefore be larger as well.
+Although the RNS has found application in error correction~\cite{KPTOC22,TaiCha14}, side-channel resistance~\cite{TCHES:PFPB18}, and parallelization of arithmetic computations~\cite{AsiHosKon17,BajDuqMel06,GomTyaNam11,VNLVC20}, to our knowledge it has not been applied to voting schemes. We will show that RNS is in fact a natural fit for some voting schemes, in particular quadratic voting, where it results in more efficient proofs of ballot correctness. 
+
+\paragraph{Applied NIZKs in Groups of Unknown Order.}
+We will use \emph{non-interactive zero-knowledge} proofs (NIZKs) to enforce well-formedness of user submissions while maintaining their secrecy. This prevents users from ``poisoning'' the aggregate HTLP maintained by the on-chain coordinator. For efficiency, we make use of custom NIZKs (see \Cref{app:sigmas}).
+% All our schemes will have a non-interactive bidding/voting phase, meaning users will submit their bids/ballots (in the form of HTLPs) to a coordinator (implemented as a smart contract). To avoid ``poisoning'' the running tally, the coordinator must be convinced of each submission's well-formedness before including it. 
+
+%\todo{May need to cite the following: Arithmetic sketching (bounded Hamming weight and norm)~\cite{boneh2023arithmetic}, Ballot well-formedness for various schemes~\cite{groth2005voting}, PoEqDLog~\cite{cryptoeprint:2020/1617}}
+
+
+%\noemi{Maybe talk about what the differences are (mostly, sampling challenge so it is not smooth to avoid soundness issues). Reference some work on this~\cite{boneh2019batching,thakur2020arguments}. Note that these works are optimizing for large witnesses, which is not relevant in our case so we can use regular Sigma protocols and only change the challenge space.}
+Since submissions will be instantiated as HTLPs in our application and all known HTLP constructions use groups of unknown order, our proofs of well-formedness must also operate over these groups.
+% In our application, submissions are instantiated as HTLPs in groups of unknown order. Efficiently proving the correctness and well-formedness of these submissions will therefore require efficient proof systems in groups of unknown order \joe{couldn't parse this}\noemi{better?}. 
+Previous ballot correctness proofs~\cite{ACNS:Groth05} and sigma protocols~\cite{C:Schnorr89,C:ChaPed92} generally operate in groups of prime order and cannot directly be applied in groups of unknown order~\cite{PKC:BanCamMau05}.
+% Care must be taken when applying classical ballot correctness proofs~\cite{groth2005voting} or other $\Sigma$-protocols in groups of unknown order. 
+% As shown in~\cite{bangerter2005efficient}, certain impossibility results apply to the knowledge soundness of $\Sigma$-protocols instantiated in groups of unknown order. 
+To circumvent these impossibility results, we follow the blueprint of \cite{C:BonBunFis19} and instantiate our protocols in generic groups of unknown order~\cite{EC:DamKop02} with a common reference string.
+% and a non-smooth challenge sampled by the verifier~\cite{boneh2019batching}, often prime numbers for simplicity. On the other hand, one can also use random integers if they are sufficiently long to ensure they have at least one large prime factor to avoid ``smoothing'' attacks. % not true, this is not to avoid the impossibility result but specific to soundness of PoE-style proofs, see comment later
+We detail our protocols in \Cref{app:sigmas}.
+
+Our protocols are both practically efficient, private until the end of the voting/bidding phase, and provably secure, overcoming the following challenges:
+% aim to close these gaps in the literature. To the best of our knowledge, we are the first to suggest and implement practical, privacy-preserving, trust-minimized, non-interactive auction and voting protocols using $\htlp$s. Towards our goal, we face the following main technical challenges:
+
+% \begin{description}
+%     %\item[Malleability of HTLPs] Homomorphism introduces the issue of malleability. For example, the adversary in an auction could add all the HTLP bids together along with an HTLP encoding a small amount $\epsilon>0$; even though the adversary does not know the underlying bids, it still wins the auction. Because of the apparently inherent trade-off between malleability and homomorphism~\cite{freitag2021nonmalleable}, we use simulation-extractable NIZKs to ensure the non-malleability of the homomorphic puzzles.\noemi{idk if we want to keep this item because we barely talk about non-malleability in the main body...}
+%     \item[Efficient proofs for bid/ballot correctness.] Users need to prove that their bids/ballots are well-formed according to the auction/voting protocol rules. Designing protocols that admit concretely efficient proofs for bid/ballot correctness is challenging as we work in groups of unknown order, e.g., $\mathbb{Z}^{*}_N$. In particular, we wish to minimize the proof size and the verification cost since proofs are stored and verified on-chain.
+%     \item[EVM-friendliness.] We provide open-source, freely available implementations tailored to the popular Ethereum Virtual Machine (EVM) with word size $256$ bits. Our most efficient protocols work in $\mathbb{Z}^{*}_{N}$ for $N\approx 2^{1024}$, groups which are not natively supported by EVM. We implement several gas-efficient libraries to support modular arithmetic in such groups of unknown order. We demonstrate in~\Cref{sec:performance} that these protocols can be run today on Ethereum Layer 1. Our non-interactive protocols are particularly well-suited to the EVM since, unlike prior works, we do not need to keep bids, ballots, and proofs in persistent storage as they are not required for any subsequent round. 
+% \end{description}
+
+    % \item[One-round protocol.] We argue that usability is one of the major challenges of deploying privacy-preserving voting and auction protocols in practice. Multi-round protocols, e.g., commit-reveal-style protocols, have incentive compatibility issues and considerable usability hurdles. We solve these pressing issues with efficient one-round protocols.  
+
+    % \item[Ballot/bid privacy.] Last but not least, we want to achieve ballot/bid privacy. Our approach naturally provides ballot/bid privacy till the end of the voting/bidding phase. Additionally, we show novel cryptographic techniques in~\Cref{sec:everlasting_ballot_privacy} how we can achieve everlasting ballot and bid privacy without sacrificing our two previously stated goals. 
+
+% \input{voting-table}
+
+% Malavolta and Thyagarajan~\cite{C:MalThy19} introduce \emph{homomorphic} TLPs (HTLPs). An HTLP is defined with respect to a class $\mathcal{C}$ of circuits which can be homomorphically evaluated over puzzle solutions, i.e., $\htlp.{\sf Eval}(\pp, C, Z_1, \dots, Z_m) \rightarrow Z_*$ where $Z_*$ contains the application of $c \in \mathcal{C}$ to the solutions in $Z_1, \dots, Z_m$. Moving forward, 
+% we will use $\boxplus$ for homomorphic addition and $\cdot$ for scalar multiplication of HTLPs. For the homomorphic application of a linear function $f$, we write $f(Z_1, \dots, Z_m)$.

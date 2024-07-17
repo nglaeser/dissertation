@@ -1,0 +1,22 @@
+% \begin{figure}[h]
+\begin{mdframed}
+\begin{center}
+    \textbf{The $\pokemon$ protocol}
+\end{center}
+\noindent\textbf{Params:} $\GG \sample \mathit{GGen}(\secpar), g \sample \GG$.\hfill\\
+\textbf{Inputs:} Odd prime $n$, $w\in\GG$, and $\hat{x} \in [n]$.\hfill\\
+\textbf{Witness:} $x\in\ZZ$ such that $g^x=w\land \hat{x} \equiv x\bmod{n}$.
+\begin{enumerate}
+    \item $\mathcal{V}$ sends $\ell \in_{R}\mathsf{Primes}(\secpar)$ to $\mathcal{P}$.
+    \item $\mathcal{P}$ computes $q\in\ZZ, r\in[\ell \cdot n]$ such that $x=q(\ell \cdot n)+r$. It sends $Q=g^q\in\GG$ and $r$ to $\mathcal{V}$, i.e., $\pi_{\pokemon}=(Q,r)$.
+\end{enumerate}
+$\mathcal{V}$ accepts iff the following hold:
+\begin{align*}
+    r\equiv\hat{x}\bmod{n} \\
+    w = Q^{\ell \cdot n}g^{r}\\
+    r\in[\ell \cdot n]
+\end{align*}
+\end{mdframed}
+% \caption{The $\pokemon$ protocol.}
+% \label{fig:pokemon_protocol}
+% \end{figure}

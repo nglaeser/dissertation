@@ -1,0 +1,21 @@
+%-----------------------------------------------------------BEGIN Preprocessing Ballots --------------------------------------------------------------
+\begin{figure}
+    \centering
+    \begin{mdframed}
+    \begin{center}
+        \textbf{Preprocessing ballots for succinct ballot-correctness proofs}
+    \end{center}
+    \hfill\\
+    \textbf{Public parameters:} The common reference string $\mathsf{crs}:=\{g_1^{\tau^{j}}\}^{d}_{j=1}\in\mathbb{G}_1^{d}$. A semiprime $N$ and $h, y \in \ZZ_N^*$. A voting scheme $\Sigma : \X^n \rightarrow \Y$, e.g., approval voting. \hfill\\
+    \begin{enumerate}
+        \item Let $\X$ be the set of correct ballots and $\vert\X\vert=d$
+        \item Let $f(x)\in\mathbb{F}^{\leq d}_p[x]$ be a univariate polynomial s.t. $\forall s_i\in\X:f(i):=\pack(s_i)$. The polynomial $f(x)$ could be computed using Lagrangian interpolation.
+        \item Let $\mathsf{com}$ be the KZG commitment to the polynomial $f$.
+    \end{enumerate}
+    \textbf{Output}:~$\mathsf{com}$.
+    
+    \end{mdframed}
+    \caption{Preprocessing ballots to enable succinct ballot-correctness proofs.}
+    \label{fig:preprocessing_ballots}
+\end{figure}
+%-----------------------------------------------------------END Preprocessing Ballots --------------------------------------------------------------

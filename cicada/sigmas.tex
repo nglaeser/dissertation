@@ -1,0 +1,225 @@
+\subsection{Ballot/bid correctness proofs}\label{sec:sigmas}
+
+For our proofs, we assume HTLPs are of the form $(u,v) = (g^r, h^r y^s) \in \GG_1 \times \GG_2$, where $\GG_1, \GG_2$ are groups of unknown order. 
+This captures all known constructions of HTLPs: in the case of the Paillier HTLP (\Cref{con:paillierHTLP}), $\GG_1 = \mathbb{J}_N$, $\GG_2 = \ZZ_{N^2}^*$, $h = (g^{2^\Ttime})^N$, and $y = 1+N$. For the exponential ElGamal HTLP (\Cref{con:exp_elgamalHTLP}), $\GG_1 = \GG_2 = \ZZ_N^*$, $h = g^{2^\Ttime}$, and $y \in \GG_1$. And for the class group HTLP~\cite{CCS:TCLM21}, $\GG_1,\GG_2$ are cyclic subgroups of the respective class groups $Cl(\Delta_K), Cl(q^2\Delta_K)$, respectively, $h = \psi_q(G^{2^\Ttime})$ where $G$ is a generator of $\GG_1$ and $\psi_q : Cl(\Delta_K) \to Cl(q^2 \Delta_K)$ is an injective map, and $y \in \GG_2$ is the generator of a subgroup in which the discrete logarithm problem is easy (see \cite{CCS:TCLM21} for details).
+% \noemi{what about HTLP from class groups?} % see this paper https://inria.hal.science/hal-03466495/document % diff link https://eprint.iacr.org/2021/1272
+
+\paragraph{Proof of solution.}
+
+% The discrete logarithm proof can be instantiated with the classic sigma protocol by Schnorr~\cite{CRYPTO:Schnorr89} in a group of unknown order, where the challenge should be a prime (see \Cref{sec:nizks}):
+
+% \input{cicada/protocols/zkpokdlog}
+
+During the finalization phase of our protocol, any party can solve the final HTLP off-chain and submit a solution to the contract. To enforce the correctness of this solution we require the solver to include a proof of the following relation:
+\begin{equation}
+    \mathcal{R}_{\pos}=\{((y,u,v,w\in\mathbb{G},s\in\mathbb{Z});\bot): w = u^{2^\Ttime} \land\ v = w y^s \in \GG\}
+\end{equation}
+
+We call such a proof system $\pos = (\mathsf{Prove}, \mathsf{Verify})$. It can be realized as the conjunction of two proofs of exponentiation ($\poe$)~\cite{ITCS:Pietrzak19b,EC:Wesolowski19} for $w = u^{2^T}$ and $y^s = v/w$.
+A \poe\ is a proof for the following relation:
+\[
+    \mathcal{R}_{\poe}=\{((u,w\in\mathbb{G},x\in\mathbb{Z});\bot):w=u^{x}\in\mathbb{G}\}
+\]
+
+Note that there is no witness in the $\mathcal{R}_{\poe}$ relation, i.e., the verifier knows the exponent $x$. The primary goal of the \poe\ proof system for the verifier is to outsource a possibly large exponentiation in a group $\mathbb{G}$ of unknown order.
+
+\input{cicada/protocols/wesolowski-poe}
+
+Observe that the verifier sends a prime number as a challenge. When we make this protocol non-interactive via the Fiat-Shamir transform, we use a standard $\textsf{HashToPrime}(\cdot)$ function to generate the correct challenge for the prover. In our implementation, we use the Baillie-PSW primality test~\cite{PomSelWag80} to show that a randomly hashed challenge is indeed prime. 
+
+% Boneh, B\"unz, and Fisch~\cite{C:BonBunFis19} show how to prove exponentiation in a group $\GG$ of unknown order:
+% % the related relation $\Rel_{\poke}$ where the exponent is the witness:
+% \[
+%     \mathcal{R}_{\poke}=\{((u,w\in\mathbb{G});x\in\mathbb{Z}):w=u^{x}\in\mathbb{G}\}
+% \]
+% They also give a zero-knowledge variant (\zkpoke). For our purposes, we are interested in a variant of \poke\ where the residue of the exponent is public (Proof of Knowledge of Exponent Modulo $n$, or \pokemon):
+% \begin{equation}
+%     \mathcal{R}_{\pokemon}=\{((w,g \in \GG, \hat{x} \in [n]); x \in \ZZ) : 
+%     w=g^x \in \GG, x \bmod{n} = \hat{x}\}.
+% \end{equation}
+
+% Their efficient protocol with constant proof size ($1$ group element and a small integer) works as follows:
+
+% \input{cicada//protocols/pokemon}
+
+% Next, we generalize the $\pokemon$ proof system for the following language, where we allow the residue $\hat{x}\equiv x\mod{n}$ to be Pedersen-committed. Specifically, we consider the following NP language:
+% \begin{equation}\label{eq:pokemocn_language}
+%     \mathcal{R}_{\pokemocn}=\{((w,\hat{X}=g^{\hat{x}}h^r,n)\in\GG^2\times\ZZ;x,\hat{x},r\in\ZZ):w=g^{x}\in\GG,x\bmod{n}=\hat{x}\}.
+% \end{equation}
+% A slight modification of the original $\pokemon$ protocol also yields an efficient, constant-size proof system for $\mathcal{R}_{\pokemocn}$:
+
+% \input{cicada/protocols/pokemocn}
+
+% In our case, we may want to hide the witnesses: $x$ in an HTLP and $\hat{x}$ in a Pedersen commitment, giving rise to three other desirable relations: a proof of knowledge of \emph{solution} modulo $n$ (\poksmon), proof of knowledge of \emph{committed} exponent modulo $n$ (\pokemocn), and a proof of knowledge of \emph{committed} \emph{solution} modulo $n$ (\pokcsmon).
+% \begin{align}
+%     \label{eq:poksmon_language}
+%     \Rel_{\poksmon}  &= \{((Z,\hat{x},n); x,\hat{x}) :       &&Z = h^r g^x  &&                                 &&\land~\hat{x} = x\bmod{n}\}\\
+%     \label{eq:pokemocn_language}
+%     \Rel_{\pokemocn} &= \{((w,\hat{X}, n); x,\hat{x},r):     &&w = g^{x}    &&\land \hat{X}=g^{\hat{x}} o^r    &&\land~\hat{x} = x\bmod{n}\}\\
+%     \label{eq:pokcsmon_language}
+%     \Rel_{\pokcsmon} &= \{((Z,\hat{X},n); x,\hat{x},r, r') : &&Z = h^r g^x  &&\land \hat{X}=g^{\hat{x}} o^{r'} &&\land~\hat{x} = x\bmod{n}\}
+% \end{align}
+
+% Below we give a modified version of the original $\pokemon$ protocol which is an efficient, constant-size proof system for the most complex case (\pokcsmon):
+
+% \input{cicada/protocols/pokcsmon}
+
+\paragraph{Proofs of well-formedness.}
+
+To prove that HTLP ballots are well-formed during the submission phase, we will use several different proofs of knowledge about TLP solutions. 
+Most of our protocols make use of the fact that for such HTLPs, $v$ has the same structure as a Pedersen commitment~\cite{C:Pedersen91}.
+
+% \footnote{To be precise, one must actually use $\ZZ_N^* / \{\pm 1\}$ to remove any non-identity elements of known order (namely $-1$).}
+
+Since we are operating in groups of unknown order, to circumvent the impossibility result of \cite{TCC:BanCamKre10} and achieve negligible soundness error for Schnorr-style sigma protocols, we assume access to some public element(s) of $\GG_1, \GG_2$ whose representations are unknown. We prove security assuming $\GG_1, \GG_2$ are generic groups output by some randomized algorithm $GGen(\secpar)$.
+% Due to this change, the verifier's challenges must also be sampled from the set of $\secpar$-bit primes, denoted ${\sf Primes}(\secpar)$. \noemi{Actually, this is specific to Wesolowski and other \emph{efficient} dlog proofs in groups of unknown order, e.g. \poke.}
+For more on instantiating Schnorr-style protocols in groups of unknown order while maintaining negligible soundness error, see \cite{C:BonBunFis19}.
+
+\paragraph{Well-formedness and knowledge of solution.} 
+To prove knowledge of a puzzle solution in zero-knowledge, our starting point is the folklore Schnorr-style protocol for knowledge of a Pedersen-committed value. Our protocol \zkpoks is shown below.
+
+\input{cicada/protocols/zkpoks}
+ 
+\paragraph{Equality of solutions.} 
+Again, our starting point is the folklore protocol of equality of Pedersen-committed values: given two HTLPs with second terms $v_1, v_2$, if the solutions are equal the quotient is $v_1/v_2 = h^{r_1-r_2}$. To prove the equality of the solutions, it therefore suffices to show knowledge of the discrete logarithm of $v_1/v_2$ with respect to $h$ using Schnorr's classic sigma protocol~\cite{C:Schnorr89} with the previously described adjustments. Because of its simplicity we do not explicitly write out the protocol, which we will refer to as \zkposeq.
+
+% \input{cicada/protocols/zkpokseq}
+
+\paragraph{Binary solution.} 
+In an FPTP vote for $m=2$ candidates, users only need to prove that their ballot $(g^r,h^ry^s)$ encodes $0$ or $1$. More formally, users prove the statement $(u=g^r\land v=h^r)\lor(u=g^r\land vy^{-1}=h^r)$. This can be proved using the OR-composition~\cite{C:CraDamSch94} of two discrete logarithm equality proofs~\cite{C:ChaPed92} with respect to bases $g$ and $h$ and discrete logarithm $r$. A similar proof strategy could be applied if the user has multiple binary choices, e.g., approval and range voting. The OR-composition of multiple discrete logarithm equality proofs yields a secure ballot correctness proof for those voting schemes. 
+
+\paragraph{Positive solution.} 
+We use Groth's trick~\cite{ACNS:Groth05}, based on the classical Legendre three-square theorem from number theory, to show that a puzzle solution $s$ is positive by showing that $4s+1$ can be written as the sum of three squares. Our protocol deals only with the second component of the TLP, making use of the proof of solution equality (\zkposeq) described above and a proof that a TLP solution is the square of another (\zkposqs, described next).
+
+\input{cicada/protocols/zkpopos}
+
+\paragraph{Square solution.} 
+To prove that a puzzle solution is the square of another, we use a conjunction of two \zkpoks variants which proves knowledge of the same solution with respect to different bases. In particular, we consider only the second terms $v_1 = h^{r_1} y^s$ and $v_2 = h^{r_2} y^{s^2}$. We use the fact that $v_2$ can be rewritten as $h^{r_2 - r_1 s} v_1^s$ and prove that its opening w.r.t. base $v_1$ equals the opening of $v_1$.
+
+\input{cicada/protocols/zkposqs}
+
+% \input{cicada/protocols/podleq}
+
+%\paragraph{Ranked choice.} \todo{[Istvan] finish or comment :)} Finally, we give an honest-verifier zero-knowledge (HVZK) sigma protocol that proves ballot correctness for the Borda ranked-choice voting protocol (see \Cref{app:auction_voting_schemes}), i.e., for the following relation:
+%\begin{multline}\label{eq:ballot_correctness_borda_count}
+    %\mathcal{R}^{Borda}_{corr}:=\{(Z,\mathbf{p};\mathbf{q})\vert Z=(g^r\bmod{N},h^{r\cdot N}(1+N)^s\bmod{N^2})\land\mathbf{p}=(p_1,\dots,p_k);\\ \mathbf{q}=(q_1,\dots,q_k) s.t.\forall i,j: s\equiv q_i\bmod{p_i}\land q_i\neq q_j \land q_i\in[0,m-1] \}.
+%\end{multline}
+
+\input{cicada/protocols/borda}
+
+\paragraph{Quadratic voting~\cite{LalWey18}.}
+
+Each voter $i$ submits two linear HTLPs: $Z_i^{\sf tally}$ containing $s_i$ and $Z_i^{\sf norm}$ containing $s_i^2$, where $s_i$ is an encoding of the ballot $\vec{b}_i$. $Z_i^{\sf tally}$ will be accumulated into the running tally as usual, and $Z_i^{\sf norm}$ will be used to enforce the norm bound. A well-formed sealed ballot is therefore of the form $Z_i = (Z_i^{\sf tally}, Z_i^{\sf norm})$ such that:
+\begin{description}
+    % \item $Z_i^{+}$ and $Z_i^{\times}$ enclose the same plaintext (via proof of plaintext equality~\cite[\S5.2]{blazy2021generic})
+    \item[Check \#1.] The vector entries enclosed in $Z_i^{\sf norm}$ are the squares of those enclosed in $Z_i^{\sf tally}$.
+    \item[Check \#2.] $Z_i^{\sf norm}$ has $\ell_1$ norm strictly equal to $w$.\footnote{We make this stricter requirement to simplify the norm check. Note that voters should be incentivized to submit such votes, since it maximizes their voting power.}
+\end{description}
+
+The first check is much simpler and more efficient when using RNS packing. Recall that with this packing, a solution $s$ encodes the ballot $(b_1, \dots, b_m)$ as $s \mod{p_j} \equiv b_j\ \forall j \in [m]$, and that this encoding is fully SIMD homomorphic. It follows that $s^2 \mod{p_j} \equiv b_j^2$ for all $j \in [m]$.\footnotemark\ With the RNS packing it therefore suffices to prove a square relationship \emph{once} for the puzzles encoding $s$ and $s^2$ (e.g., using \zkposqs) rather than $m$ times for all the vector entries. This is in contrast to the PNS packing used by all previous private voting schemes in the literature, where the absence of a multiplicative homomorphism would require proving the square relationship for every vector entry \emph{individually}.
+\footnotetext{Assuming $s_j^2 < p_j$ for all $j$, which in our case will hold regardless, we set each $p_j < nw$ to avoid overflow when adding ballots and $s_j^2 \leq w < nw$.}
+
+Regardless of the vector encoding, the second check is more involved: the user needs to open a sum of vector entries (the residues) without revealing the entries (residues) themselves. One approach is for the user to commit to each vector entry in $Z_i^{\sf norm}$, i.e., $a_{ij} = s_i^2 \mod p_j$, with a Pedersen commitment, and use a variant proof of knowledge of exponent modulo $p_j$ (\pokemon~\cite{C:BonBunFis19}) to show the commitments contain the appropriate values $a_{ij}$. Then, it can open the sum of the commitments. \pokemon\ proofs are batchable, so the contract can verify them efficiently and check that the sum of the commitments opens to $w$.
+% \noemi{user gives commitments to each vector entry + \pokcsmon\ proofs to show they are the correctly computed vector entries + randomness to open the sum of the Pedersen commitments, the contract batch checks the proofs + that the sum of the Pedersen commitments opens to $w$.}
+
+% \todo{[Noemi] finish description and \pokcsmon}
+
+\paragraph{Security proofs.}
+Finally, we prove special-soundness and honest-verifier zero-knowledge (HVZK) of the above sigma protocols. Any such protocol can be made into a non-interactive zero-knowledge proof of knowledge (NIZKPoK) via the Fiat-Shamir transform~\cite{C:FiaSha86}.
+
+\begin{theorem}[\zkpoks]\label{thm:poks}
+    The protocol \zkpoks is a special sound and HVZK proof system in the generic group model.
+\end{theorem}
+\begin{proof}
+    For special soundness, we show that given two distinct accepting transcripts with the same first message, i.e., $(A, B, e, w, x)$ and $(A, B, e', w', x')$ where $e \neq e'$, we can extract the witnesses $r, s$. The proof follows the blueprint of the proof of Theorem 10 in \cite{C:BonBunFis19}. Since the transcripts are accepting, we have
+    \begin{align*}
+        h^w y^x &= v^e A               & h^{w'} y^{x'} &= v^{e'} A \\
+                &= h^{r e + \alpha} y^{s e + \beta} &  &= h^{r e' + \alpha} y^{s e' + \beta}
+    \end{align*}
+    Combining the two equations we get 
+    \begin{align}
+         h^{r \Delta e} y^{s \Delta e} &= h^{\Delta w} y^{\Delta x} \nonumber \\
+    \iff \hspace{2em} v^{\Delta e} &= h^{\Delta w} y^{\Delta x} \label{eq:combo}
+    \end{align}
+    where $\Delta e = e-e'$ and $\Delta y, \Delta x$ are defined similarly. 
+    Then with overwhelming probability, $r \Delta e = \Delta w$ and $s \Delta e = \Delta x$ (cf. Lemma 4 of \cite{C:BonBunFis19}), so $\Delta e \in \ZZ$ divides $\Delta w \in \ZZ$ and $\Delta x \in \ZZ$ and we can extract $r,s \in \ZZ$ as $r = \Delta w / \Delta e$ and $s = \Delta x/\Delta e$.
+    
+    We will now show that these values are correct, i.e., $v = h^{\Delta w/\Delta e} y^{\Delta x/\Delta e}$. Assume towards a contradiction that this does not hold and $\mu = h^{\Delta w/\Delta e} y^{\Delta w/\Delta e}\allowbreak \neq v$. Since $\mu^{\Delta e} = v^{\Delta e}$ by \Cref{eq:combo}, this must mean that $(\mu/v)^{\Delta e} = 1$ and therefore $\mu/v \in \GG_2$ is an element of order $\Delta e > 1$. Since $\Delta e$ is easy to compute and $\mu/v$ is a non-identity element of $\GG_2$, this contradicts the assumption that $\GG_2$ is a generic group (specifically, it contradicts non-trivial order hardness \cite[Corollary 2]{C:BonBunFis19}). We thus conclude that our extractor successfully recovers the witnesses $r$ and $s$.
+    
+    We still need to verify that the $r^*$ we can extract from $u$ will be consistent with the one extracted from $v$, i.e., $r^* = r$. Again we know
+    \begin{align*}
+             g^w &= u^e B            & g^{w'} &= u^{e'} B \\
+                 &= g^{r^* e + \alpha^*} &    &= g^{r^* e' + \alpha^*}
+    \end{align*}
+    so by a similar argument $r^* = \Delta w/\Delta e$, which equals $r$.
+    Thus the protocol satisfies special soundness.
+    
+    To prove HVZK, we give a simulator which produces an accepting transcript $(\tilde{A}, \tilde{B}, \tilde{e}, \tilde{w}, \tilde{x})$ that is perfectly indistinguishable from an honest transcript $(A, B, e, w, x)$. The simulator is quite simple: it samples $\tilde{e} \sample [2^\secpar]$ identically to an honest verifier, then samples $\tilde{w}, \tilde{x} \sample \ZZ$ and sets $\tilde{A} := h^{\tilde{w}} y^{\tilde{x}} v^{-\tilde{e}}$ and $\tilde{B} := g^{\tilde{w}} u^{-\tilde{e}}$. It follows by inspection that the transcript is an accepting one. Furthermore, notice that $\tilde{A}$ and $\tilde{B}$ are uniformly distributed in $\GG_2$ and $\GG_1$, respectively, just like $A, B$ in the honest transcript. Also, both $\tilde{x}$ and $x$ are uniform in $\ZZ$. Thus the simulated transcript is perfectly indistinguishable from an honest one.
+\end{proof}
+
+
+% \begin{theorem}[\zkposeq]
+%     The protocol \zkposeq is special sound and HVZK.
+% \end{theorem}
+% \begin{proof}
+%     Given two distinct accepting transcripts with the same first message, i.e., $(A, e, x)$ and $(A, e', x')$ where $e \neq e'$, we can extract the witness $\rho$ (which in an honest execution equals $r_1 - r_2$). Since the transcripts are accepting, we have
+%     \begin{align*}
+%              & (v_1/v_2)^e A = h^x \\
+%         \iff & (h^\rho)^e A = h^x \\
+%         \iff & \rho e + \alpha \equiv x \pmod{N}
+%     \end{align*}
+%     Similarly, $x' \equiv \rho e' + \alpha \pmod{N}$.
+%     Therefore $x-x' = \rho (e-e')$.
+%     Since $e - e' \neq 0$, we can extract the witness $\rho$ and the protocol is special sound.
+    
+%     To prove HVZK, we give a simple simulator which, given and arbitrary challenge $e$, produces an accepting transcript $(A, e, x)$. The simulator samples $x \sample \GG$ and sets $A := h^x (v_1/v_2)^{-e}$. It follows by inspection that the transcript is an accepting one.
+    % \iffc\qed\fi
+% \end{proof}
+
+\begin{theorem}[\zkposqs]\label{thm:posqs}
+    The protocol \zkposqs is a special sound and HVZK proof system in the generic group model.
+\end{theorem}
+\begin{proof}
+    For special soundness, we show that given two distinct accepting transcripts with the same first message, i.e., $(A_1, A_2, e, w_1,\allowbreak w_2, x)$ and $(A_1, A_2, e', w_1',\allowbreak w_2', x')$ where $e \neq e'$, we can extract the witnesses $r_1, r_2, s$. Notice that $v_2$ is not guaranteed to encode the square of $s_1$, so $v_2 = h^{r_2 - r_1 s_2/s_1} v_1^{s_2/s_1}$. Let $\sigma_2 = s_2/s_1$ and $\rho_2 := r_2 - r_1 s_2/s_1 = r_2 - r_2 \sigma_2$. 
+
+    Using the same extractor as in the proof of \Cref{thm:poks}, we can extract correct integers $r_1 = \Delta w_1 / \Delta e$, $s_1 = \Delta x/\Delta e$, $\rho_2 = \Delta w_2 / \Delta e$, and $\sigma_2 = \Delta x/\Delta e$. Notice $s_1 = \sigma_2$, which implies $\sigma_2 = s_1^2$. Finally we use $r_1, s_1, \rho_2 \in \ZZ$ to recover $r_2 := \rho_2 + r_1 s_1 \in \ZZ$. 
+    Thus the protocol is special sound.
+    % Since the transcripts are accepting, we have
+    % \begin{align*}
+    %          & v_1^e A_1 = h^{w_1} y^x \\
+    %     \iff & h^{r_1 e + \alpha_1} y^{s_1 e + \beta} = h^{w_1} y^x \\
+    %     \iff & r_1 e + \alpha_1 \equiv w_1 \pmod{N} \land\ s_1 e + \beta \equiv x \pmod{N}
+    % \end{align*}
+    % and
+    % \begin{align*}
+    %          & v_2^e A_2 = h^{w_2} v_1^x \\
+    %     \iff & h^{\rho_2 e + \alpha_2} v_1^{s_2 s_1^{-1} e + \beta} = h^{w_2} v_1^x \\
+    %     \iff & \rho_2 e + \alpha_2 \equiv w_2 \pmod{N} \land\ s_2 s_1^{-1} e + \beta \equiv x \pmod{N}
+    % \end{align*}
+    % Notice that the two constraints on $x$ imply $s_2 \equiv s_1^2 \pmod{N}$.
+    
+    % Similarly, $w_1' = r_1 e' + \alpha_1$, $w_2' = \rho_2 e' + \alpha_2$, and $x' = s_1 e' + \beta$ in $\ZZ_N$.
+    % Therefore $w_1-w_1' = r_1(e-e')$, $w_2-w_2' = \rho_2(e-e')$, and $x-x' = s_1(e-e')$.
+    % Since $e - e' \neq 0$, we can extract $r_1, \rho_2, s_1$ and compute $r_2 := \rho_2 + r_1 s_1$. 
+    % Thus the protocol is special sound.
+    
+    To prove HVZK, we give a simulator which produces an accepting transcript $(\tilde{A}_1, \tilde{A}_2, \tilde{e}, \tilde{w}_1, \tilde{w}_2, \tilde{x})$ that is perfectly indistinguishable from an honest transcript $(A_1, A_2, e, w_1, w_2, x)$. The simulator is quite simple: it samples $\tilde{e} \sample [2^\secpar]$ identically to an honest verifier, then samples $\tilde{w}_1, \tilde{w}_2, \tilde{x} \sample \ZZ$ and sets $\tilde{A}_1 := h^{\tilde{w}_1} y^{\tilde{x}} v_1^{-\tilde{e}}$ and $\tilde{A}_2 := h^{\tilde{w}_2} v_1^{\tilde{x}} v_2^{-\tilde{e}}$. It follows by inspection that the transcript is an accepting one. Furthermore, notice that $\tilde{A}_1, \tilde{A}_2$ are uniformly distributed in $\GG_2$, respectively, just like $A_1, A_2$ in the honest transcript. Also, both $\tilde{w}_1,\tilde{w}_2,\tilde{x}$ are uniform in $\ZZ$ just like $w_1, w_2, x$. Thus the simulated transcript is perfectly indistinguishable from an honest one.
+    %
+    % The HVZK simulator is very simple: given an arbitrary challenge $e$, it samples $w_1, w_2, x \sample \GG$ and sets $A_1 := h^{w_1} y^x v_1^{-e}$ and $A_2 := h^{w_2} v_1^x v_2^{-e}$. Again, it follows by inspection that the transcript is an accepting one.
+\end{proof}
+
+\begin{theorem}[\zkpopos]
+    The protocol \zkpopos is sound and HVZK.
+\end{theorem}
+\begin{proof}
+    Soundness follows directly from the (knowledge) soundness of \zkposqs and \zkposeq as well as Legendre's three-square theorem~\cite{ACNS:Groth05}.
+
+    For HVZK, note that an honest \zkpopos transcript has the form $( \{A_{1,j},\allowbreak A_{2,j}\}_{j\in[3]},\allowbreak R, e, \{w_{1,j}, w_{2,j}, x_j\}_{j\in[3]})$, where $(R, e, x)$ is an honest \zkposeq transcript and $(A_{1,j}, A_{2,j}, e, w_{1,j}, w_{2,j}, x_j)$ for $j=1,2,3$ are honest \zkposqs transcripts. Given the instance $v$, our \zkpopos simulator first computes some random HTLPs $(\tilde{u}_j, \tilde{v}_j), (\tilde{u}_j', \tilde{v}_j') \sample \htlp.{\sf Gen}(0)$ for $j=1,2,3$. These simulated underlying instances are indistinguishable from the honest instances an honest prover would use. This follows from the security of \htlp.
+    
+    Next, our simulator samples $\tilde{e} \sample [2^\secpar]$ identically to an honest verifier and uses the simulators of the proof systems, always with the same challenge $\tilde{e}$, to produce a simulated transcript: 
+    \begin{align*}
+    (\tilde{A}_{1,j}, \tilde{A}_{2,j}, \tilde{e}, \tilde{w}_{1,j}, \tilde{w}_{2,j}, \tilde{x}_j) &\gets \Sim_{\zkposqs}(\tilde{v}_j, \tilde{v}_j'; \tilde{e}) ~\forall j=1,2,3\\
+    (\tilde{R}, \tilde{e}, \tilde{x}) &\gets \Sim_{\zkposeq}\left(\frac{4 \cdot v \boxplus 1}{\tilde{v}_1' \boxplus \tilde{v}_2' \boxplus \tilde{v}_3'}; \tilde{e}\right)
+    \end{align*}
+    By HVZK of \zkposqs and \zkposeq, these transcripts are accepting and indistinguishable from an honestly generated transcript.
+\end{proof}

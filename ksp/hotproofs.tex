@@ -2,7 +2,7 @@
 
 % \subsection{Zero-knowledge proofs}\label{sec:zkp}
 
-We will use non-replayable zero-knowledge proofs of knowledge (ZKPoKs) for two languages. We refer the reader to \cite{Thaler22} for the definition of a ZKPoK. The PoKs for both our hot and cold parties are Sigma protocols, made non-interactive via the Fiat-Shamir transform~\cite{C:FiaSha86}. Non-replayability is enforced by including some unpredictable timestamp (e.g., current block number of some blockchain) in the payload of the Fiat-Shamir hash.
+We will use non-replayable zero-knowledge proofs of knowledge (ZKPoKs) for two languages. We refer the reader to \cite{Thaler23} for the definition of a ZKPoK. The PoKs for both our hot and cold parties are Sigma protocols, made non-interactive via the Fiat-Shamir transform~\cite{C:FiaSha86}. Non-replayability is enforced by including some unpredictable timestamp (e.g., current block number of some blockchain) in the payload of the Fiat-Shamir hash.
 
 % The first protocol we require is a simple proof of knowledge of discrete logarithm, denoted $\Pi_{\sf DL}$. It can be instantiated with a simple Schnorr protocol~\cite{C:Schnorr89} and made non-interactive with the Fiat-Shamir transform~\cite{C:FiaSha86}. The second language and thus its PoK are more complex, and we defer its description to \Cref{subsec:enc_pok}. 
 

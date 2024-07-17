@@ -1,0 +1,49 @@
+% % \begin{figure}[h]
+% \begin{mdframed}
+% \begin{center}
+%     \textbf{The $\pokemocn$ protocol}
+% \end{center}
+% \noindent\textbf{Params:} $\GG \sample\mathit{GGen}(\secpar),g,h\sample\GG$.\hfill\\
+% \textbf{Inputs:} Odd prime $n, w, \hat{X}$. \hfill\\
+% \textbf{Witness:} $x,\hat{x},r' \in \ZZ$ such that $g^x=w\land \hat{x} \equiv x \bmod{n} \land \hat{X} = g^{\hat{x}} h^{r'}$.
+% \begin{enumerate}
+%     \item $\mathcal{V}$ sends $\ell \sample\mathsf{Primes}(\secpar)$ to $\mathcal{P}$.
+%     \item $\mathcal{P}$ computes $q\in\ZZ, r\in[\ell \cdot n]$, where $x=q(\ell \cdot n)+r$. It sends $Q=g^q\in\GG,R:=g^r,s:=\frac{r}{\hat{x}}\in\ZZ$ and $S':=(h^{r'})^s$ to $\mathcal{V}$, i.e., $\pi_{\pokemocn}=(Q,R,s,S')$.
+% \end{enumerate}
+% $\mathcal{V}$ accepts iff the following hold:
+% \begin{align*}
+%     w = Q^{\ell \cdot n}R\\
+%     R\cdot S'=\hat{X}^s\\
+%     r \in [\ell \cdot n]
+% \end{align*}
+% \end{mdframed}
+% % \label{fig:pokemocn_protocol}
+% % \end{figure}
+
+% \begin{figure}[h]
+\begin{mdframed}
+\begin{center}
+    \textbf{The $\pokemocn$ protocol \textcolor{blue}{(Noemi's version)}}
+\end{center}
+\textbf{Params:} $\GG \sample\mathit{GGen}(\secpar),g,o\sample\GG$.\hfill\\
+\textbf{Inputs:} Odd prime $n, w, \hat{X}$, and commitment $\hat{Y}$ with opening $\hat{y}, \rho'$. \hfill\\
+\textbf{Witness:} $x,\hat{x},\rho,s \in \ZZ$ such that $w = g^x \land \hat{x} \equiv x \bmod{n} \land \hat{X} = g^{\hat{x}} o^{\rho} \land \hat{y} = \hat{x} s$.
+\begin{enumerate}
+    \item $\mathcal{P}$ sends $\overline{w} = w^s, S = g^s$.
+    \item $\mathcal{V}$ sends $\ell \sample\mathsf{Primes}(\secpar)$ to $\mathcal{P}$.
+    \item $\mathcal{P}$ computes $q,q'\in\ZZ, r\in[\ell \cdot n],r' \in [\ell]$, where $xs=q(\ell \cdot n)+r$ and $s = q' \ell + r'$. It sends $Q=g^q, Q' = g^{q'}, Q_1' = \hat{X}^{q'}, Q_2' = w^{q'} \in\GG,r, r'\in\ZZ$ to $\mathcal{V}$, i.e., $\pi_{\pokemocn}=(Q,r,Q',Q_1',Q_2',r')$.
+\end{enumerate}
+$\mathcal{V}$ accepts iff the following hold:
+\begin{align*}
+    r \equiv \hat{y} \bmod{n}\\
+    \overline{w} = Q^{\ell \cdot n} g^r\\
+    r \in [\ell \cdot n]\\
+    \hat{Y} = (Q_1')^e \hat{X}^{r'}\\
+    \overline{w} = (Q_2')^e w^{r'}\\
+    S = (Q')^e g^{r'}\\
+    r' \in [\ell]
+\end{align*}
+\end{mdframed}
+% \label{fig:pokemocn_protocol}
+% \end{figure}
+\noemi{This is an AND composition of \pokemon\ for $(\overline{w}, \hat{y})$ and sigma protocol for DLEq $\hat{Y} = \hat{X}^s$ and $\overline{w} = w^s$.} \todo{revisit this}

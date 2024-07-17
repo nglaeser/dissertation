@@ -1,0 +1,15 @@
+\begin{mdframed}
+\begin{center}
+        \textbf{Wesolowski's proof of exponentiation  protocol (\poe)}
+    \end{center}
+\hfill\\    
+\textbf{Public parameters:} $\mathbb{G}\sample\mathit{GGen}(\lambda)$.\hfill\\
+\textbf{Public inputs:} $u,w\in\mathbb{G},x\in\mathbb{Z}$.\hfill\\
+\textbf{Claim:} $u^x=w$.
+\begin{enumerate}
+    \item $\mathcal{V}$ sends $l\sample\mathsf{Primes}(\lambda)$ to $\mathcal{P}$.
+    \item $\mathcal{P}$ computes $q=\lfloor\frac{x}{l}\rfloor\in\mathbb{Z}\land r\in[l]$, where $x=ql+r$. $\mathcal{P}$ sends $Q=u^q\in\mathbb{G}$ to $\mathcal{V}$.
+    \item $\mathcal{V}$ computes $r=x\bmod{l}$.
+\end{enumerate}
+    $\mathcal{V}$ accepts iff $w=Q^{l}u^{r}$.
+\end{mdframed}

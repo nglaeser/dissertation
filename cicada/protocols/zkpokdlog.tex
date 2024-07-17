@@ -1,0 +1,20 @@
+% \begin{figure}[h]
+    % \centering
+    \begin{mdframed}
+    \begin{center}
+        \textbf{Zero-knowledge proof of knowledge of discrete logarithm (\podlog)}
+    \end{center}
+    \hfill\\
+    \textbf{Public parameters:} Group of unknown order $\GG$ with generator $g$. \hfill\\
+    \textbf{Public input:} $u,w \in gp$. \hfill\\
+    \textbf{Private input:} $x \in \ZZ$ such that $w = u^x$.
+    \begin{enumerate}
+        \item $\mathcal{P}$ samples $\alpha \sample \ZZ$ and sends $A := u^\alpha$.
+        \item $\mathcal{V}$ sends a challenge $e \sample \mathsf{Primes}(\secpar)$.
+        \item $\mathcal{P}$ computes $z = x e + \alpha$,
+        which it sends to $\mathcal{V}$.
+    \end{enumerate}
+    $\mathcal{V}$ accepts iff $u^e A = w$.
+    \end{mdframed}
+%     \label{fig:zkpokdlog}
+% \end{figure}

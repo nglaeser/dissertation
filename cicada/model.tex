@@ -1,0 +1,15 @@
+\subsection{System Model}\label{sec:model}
+
+\input{cicada/figs/cicada-explainer}
+
+Our system design is illustrated in \Cref{fig:cicada-explainer}. We envision three types of participants:
+% \ifctb
+% \emph{users}, who submit bids or ballots; an \emph{on-chain coordinator}, typically implemented as a smart contract, who collects submissions (bids or ballots) and transparently calculates the winner(s); and an \emph{off-chain solver}, who unlocks the final HTLP(s) off-chain and submits the solution(s) to the coordinator along with a proof of correctness.
+% \else
+\begin{description}
+    \item[Users.] We simply refer to voters or bidders as \emph{users}. Users submit bids or ballots, which we generically call \emph{submissions}. We assume some external process to establish the set of authorized users (which may be open to all).  Once users place their submissions, no further action is required of them. 
+    \item[On-chain coordinator.] We refer to the tallier/auctioneer as the \emph{coordinator}, typically implemented as a smart contract that collects submissions. The coordinator transparently calculates the winner(s). In the case of an auction, they might also transfer (digital) assets to the winner(s). In an election, they might grant special privileges to the winner.%'s public key.
+    \item[Off-chain solver.] Since our protocols apply HTLPs, we assume an untrusted \emph{solver} who unlocks the final HTLP(s) off-chain and submits the solution(s) to the coordinator with proofs of correct opening attached. This could, in principle, be any party, although, in practice, it will likely be one of the parties participating in (or administering) the vote/auction, or a paid marketplace~\cite{EPRINT:Abadi23,CCS:TGBKS21}.
+\end{description}
+
+An adversary may attempt to read ballots/bids before the submission phase is complete. This is prevented by the security properties of (H)TLPs (\Cref{sec:background_tlp}) assuming the delay $\Ttime$ is longer than the submission phase.

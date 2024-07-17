@@ -1,0 +1,26 @@
+\begin{figure}
+    \centering
+    \begin{mdframed}
+    \begin{center}
+        \textbf{Discrete log equality ({\sf PoEqDLog})~\cite{cryptoeprint:2020/1617}}
+    \end{center}
+    \hfill\\
+    \textbf{Public parameters:} Group of unknown order $\GG$ and $g,h\sample\GG$.\hfill\\
+    \textbf{Public input:} $a_1, a_2, b_1, b_2$.\hfill\\
+    \textbf{Private input:} $d \in \ZZ$ such that $a_1^d = b_1$ and $a_2^d = b_2$.
+    \begin{enumerate}
+        \item $\mathcal{P}$ sends $D = g^d$.
+        \item $\mathcal{V}$ sends a challenge $e \sample {\sf Primes}(\secpar)$.
+        \item $\mathcal{P}$ finds $q \in \ZZ_p$ and $r \in [e]$ such that $d = qe + r$. It sends $Q_1 := a_1^q, Q_2 := a_2^q, Q = g^q, r$.
+    \end{enumerate}
+    $\mathcal{V}$ accepts iff the following hold:
+    \begin{align*}
+        Q_1^e a_1^r = b_1\\
+        Q_2^e a_2^r = b_2\\
+        Q^e g^r = D\\
+        r \in [e]
+    \end{align*}
+    \end{mdframed}
+    \caption{Caption}
+    \label{fig:podleq}
+\end{figure}

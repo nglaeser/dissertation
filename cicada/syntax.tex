@@ -1,0 +1,102 @@
+\subsection{Formalizing Time-Locked Voting and Auction Protocols}\label{sec:syntax}
+
+We introduce a generic syntax for a time-locked voting/auction protocol. Any such protocol is defined for a base \emph{scoring function} $\Score: \X^n \to \Y$ (e.g., second-price auction, range voting), which takes as input $n$ submissions (bids/ballots) $s_1, \dots, s_n$ in the submission domain $\X$ and computes the election/auction result $\Score(s_1, \dots, s_n) \in \Y$. It is useful to break down the scoring function into the ``tally'' or aggregation function $\tally: \X^n \to \X'$ and the finalization function $\final: \X' \to \Y$, i.e., $\Score = \final \circ \tally$.
+For example, in first-past-the-post voting, the tally function $t$ is addition, and the finalization function $f$ is $\argmax$ over the final tally/bids.
+%$\Sigma : \mathcal{X}^n \rightarrow \Y$ which operates over submissions in the clear. 
+
+% \noemi{I think the following is actually unnecessary and I'm not even sure what it was going for...} In the case of an auction, $\Y\subseteq [n]\times\mathbb{Z}^m$. Intuitively, $\Y$ provides the aggregate result of how users voted for the candidates or the number of a specific item they obtained as a result of the auction. %Although it is in theory possible to efficiently open the aggregated $\htlp$(s) given every participant's private puzzle randomness, in practice this is unrealistic. We therefore omit the optimistic opening procedure in the $\Open$ algorithm below.
+
+\begin{definition}[Time-locked voting/auction protocol]\label{def:syntax}
+A time-locked voting/auction protocol $\Pi_\Sigma = (\Setup, \Seal,\allowbreak \Aggr, \Open, \Finalize)$ is defined with respect to a base voting/auction protocol $\Sigma = \final \circ \tally$, where $\tally : \X^n \to \X'$ and $\final : \X' \to \Y$. %where $n$ is the number of participants.
+
+\begin{description}
+    \item[$\Setup(\secparam, \Ttime) \randout (\pp, \Z)$.] Given a security parameter $\secpar$ and a time parameter $\Ttime$, output public parameters $\pp$ and an initial time-locked value $\Z$.
+    %HTLP that corresponds to the running tally or bid computation.
+    \item[$\Seal(\pp, i, s) \randout (\Z_i, \pi_i)$.] User $i\in[n]$ seals its submission $s \in \X$ into a time-locked submission %a (list of) HTLP(s) 
+    $\Z_i$. It also outputs a proof of well-formedness $\pi_i$.
+    \item[$\Aggr(\pp, \Z, i, \Z_i, \pi_i) \to \Z'$.] Given a time-locked running computation %list of (tally) HTLPs 
+    $\Z$, time-locked submission $\Z_i$ of user $i$, and proof $\pi_i$, the transparent contract checks the proof and potentially updates $\Z$ to $\Z'$. %aggregates the sealed submission homomorphically into $\Z$ to get an updated (tally) $\Z' = \tally(\Z, \Z_i)$.
+    \item[$\Open(\pp, \Z) \to (\vec{s}, \pi_\open)$.] Open $\Z$ to $\vec{s} = \tally(s_1, \dots, s_n)$, requiring $\Ttime$ sequential steps, and compute a proof $\pi_\open$ to prove correctness of $\vec{s}$.
+    \item[$\Finalize(\pp, \Z, \vec{s}, \pi_\open) \to \{y, \perp\}$.] Given proposed opening $\vec{s}$ of $\Z$ and proof $\pi_{\sf open}$, the coordinator may reject $\vec{s}$ or compute the final result $y = \final(\vec{s}) \in \Y$. %, which specifies the winner and, in the case of an auction, the amount to be paid as well as the appropriate items to be transferred.
+\end{description}
+\end{definition}
+
+We note that the $\Setup(\cdot)$ algorithm in our protocols may use private randomness. In particular, our constructions use cryptographic groups (RSA and Paillier groups) that cannot be efficiently instantiated without a trusted setup (an untrusted setup would require gigantic moduli~\cite{ICICS:Sander99}). This trust can be minimized by generating the group via a distributed trusted setup, e.g.,~\cite{JACM:BonFra01,SP:CHIKMRsVW21,TCC:DamMik10}.
+Alternatively, the HTLPs in our protocols could be instantiated in class groups~\cite{CCS:TCLM21}, which do not require a trusted setup; however, HTLPs in class groups are less efficient and verifying them on-chain would be prohibitively costly 
+(see \Cref{sec:feasability}).
+
+A time-locked voting/auction protocol $\Pi_\Sigma$ must satisfy the following three security properties:
+
+\paragraph{Correctness.} 
+$\Pi_\Sigma$ is \emph{correct} if, assuming setup, submission of $n$ puzzles, aggregation of all $n$ submissions, and opening are all performed honestly, $\sf Finalize$ outputs a winner consistent with the base protocol $\Sigma$.
+
+\begin{definition}[Correctness]\label{def:correctness_cicada}
+We say a voting/auction protocol $\Pi_\Sigma$ with $\Sigma: \X^n \to \mathcal{Y}$ is \emph{correct} if for all $\Ttime,\secpar \in \mathbb{N}$ and submissions $s_1, \dots, s_n \in \X$,
+\[
+    \Pr\left[
+        \begin{aligned}
+            &\\
+            \Finalize &(\pp, \Z_{\sf final}, \mathcal{S}, \pi_{\sf open}) \\
+            &= \Sigma(s_1, \dots, s_n)\\
+            &\\
+        \end{aligned}
+        \middle|
+        \begin{array}{c}
+            (\pp, \Z) \sample \Setup(\secparam, \Ttime)~\land\\
+            (\Z_i, \pi_i) \sample \Seal(\pp, i, s_i)~\forall i \in [n]~\land\\
+            \Z_{\sf final} \gets \Aggr(\pp, \Z, \{i, \Z_i, \pi_i\}_{i \in [n]})~\land\\
+            (\mathcal{S}, \pi_{\sf open}) \gets \Open(\pp, \Z_{\sf final}) \\
+        \end{array}
+    \right] = 1
+\]
+where the aggregation step is performed over all $n$ submissions in any order.
+\end{definition}
+
+\paragraph{Submission privacy.} 
+The scheme satisfies \emph{submission privacy} if the adversary cannot distinguish between two submissions, i.e., bids or ballots. Note that this property is only ensured up to time $\Ttime$.
+
+\begin{definition}[Submission privacy]\label{def:submission_privacy}
+We say that a voting/auction protocol $\Pi_\Sigma$ with $\Sigma: \X^n \to \mathcal{Y}$ is \emph{submission private} if for all $\Ttime,\secpar \in \mathbb{N}, i \in [n]$ and all PPT adversaries $\mathcal{A}$ running in at most $\Ttime$ sequential steps, there exists a negligible function $\negl$ such that 
+\begin{equation*}
+    \Pr\left[
+        b=b'
+        \middle|
+        \begin{array}{c}
+            (\pp, \Z) \sample \Setup(\secparam, \Ttime)~\land\\       
+            b\sample\{0,1\}~\land\\
+            (\Z_i, \pi_i) \sample \Seal(\pp, i, b)~\land\\
+            b'\gets\adv(\pp,\Z,i, \Z_i, \pi_i)\\
+        \end{array}
+    \right]
+    \leq \frac{1}{2} + \mathsf{negl}(\lambda).
+\end{equation*}
+\end{definition}
+
+\paragraph{Non-malleability.} 
+Notice that submission privacy alone does not suffice for security: even without knowing the contents of other puzzles, an adversary could submit a value that depends on other participants' (sealed) submissions. For example, in an auction, one could be guaranteed to win by homomorphically computing an HTLP containing the sum of all the other participants' bids plus a small value $\varepsilon$. Therefore, we also require \emph{non-malleability}, which requires that no participant can take another's submission and replay it or ``maul'' it into a valid submission under its own name.
+
+\begin{definition}[Non-malleability]\label{def:non_malleability}
+We say that a voting/auction protocol $\Pi_\Sigma$ with $\Sigma: \X^n \to \mathcal{Y}$ is \emph{non-malleable} if for all $\Ttime,\secpar \in \mathbb{N}$ and all PPT adversaries $\mathcal{A}$ running in at most $\Ttime$ sequential steps, there exists a negligible function $\negl$ such that the following probability is bounded by $\negl[\secpar]$:
+\begin{align*}
+    \Pr\left[
+        \begin{array}{c}
+        \Aggr(\pp, \Z, i, \Z_i, \pi_i) \neq \Z~\land\\
+        (i, \cdot, \Z_i, \pi_i) \notin \mathcal{Q}
+        \end{array}
+        \middle|
+        \begin{array}{c}
+            (\pp, \Z) \sample \Setup(\secparam, \Ttime)~\land\\
+            (i, \Z_i, \pi_i) \gets \adv^{\mathcal{O}_\Seal(\pp,\cdot,\cdot)}(\pp, \Z)
+        \end{array}
+    \right]
+    % \\
+    %\leq\mathsf{negl}(\lambda)
+\end{align*}
+where $\mathcal{O}_\Seal(\pp, \cdot,\cdot)$ is an oracle which takes as input any $j \in [n]$ and $s_j \in \X$ and outputs $(\Z_j, \pi_j) \sample \Seal(\pp, j, s_j)$, and $\mathcal{Q}$ is the set of queries and responses $(j, s_j, \Z_j, \pi_j)$ to the oracle.
+\end{definition}
+
+\paragraph{A note on anonymity.} 
+We consider user anonymity an orthogonal problem. In the applications we have in mind, users can increase their anonymity by using zero-knowledge mixers~\cite{PerSemSto19} or other privacy-enhancing overlays, e.g., zero-knowledge sets~\cite{semaphore}. Additionally, users can decouple their identities from their ballots by applying a verifiable shuffle~\cite{CCS:Neff01}, although the on-chain verification of a shuffle proof might be prohibitively costly for larger elections. 
+In~\Cref{sec:everlasting_ballot_privacy} we describe how our protocols can be extended to achieve bid privacy even after the election ends, thus disclosing nothing besides a user's (non-)participation.
+
+%\todo{can use (verifiable) shuffling/Semaphore or compose with something like TornadoVote~\cite{tornadovote} to anonymize voters/bidders. Refer to \cref{sec:everlasting_ballot_privacy}}

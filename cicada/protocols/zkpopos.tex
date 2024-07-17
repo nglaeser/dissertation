@@ -1,0 +1,24 @@
+% \begin{figure}
+%     \centering
+    \begin{mdframed}
+    \begin{center}
+        \textbf{Proof of positive solution (\zkpopos)}
+    \end{center}
+    \hfill\\
+    \textbf{Public parameters:} $\GG_2 \sample GGen(\secpar)$, a secure $\htlp$, and $h,y \in \GG_2$. \hfill\\
+    \textbf{Public input:} $v \in \GG_2$ such that $(\cdot,v) \in {\sf Im}(\htlp.{\sf Gen})$. \hfill\\
+    \textbf{Private input:} $s, r \in \ZZ$ such that $v = h^r y^s$ and $s > 0$.
+    \begin{enumerate}
+        \item Find three integers $s_1, s_2, s_3 \in \ZZ$ such that $4s + 1 = s_1^2 + s_2^2 + s_3^2$ and, for each $j = 1, 2, 3$, compute two HTLPs: 
+        \begin{align*}
+        Z_j \gets \htlp.{\sf Gen}(s_j) \\
+        Z_j' \gets \htlp.{\sf Gen}(s_j^2)
+        \end{align*}
+        \item Use \zkposqs to compute a proof $\sigma_j$ of square solution for each pair $(Z_j, Z_j')$ for $j=1, 2, 3$.
+        \item Use \zkposeq to compute a proof $\sigma_{\sf eq}$ of solution equality for $4 \cdot Z \boxplus 1$ and $Z_1' \boxplus Z_2' \boxplus Z_3'$.
+    \end{enumerate}
+    The full proof consists of $(\sigma_1, \sigma_2, \sigma_3, \sigma_{\sf eq})$, all computed with the same challenge $e \in [2^\secpar]$.
+    \end{mdframed}
+%     \caption{Zero-knowledge proof of positivity of a TLP solution, based on Legendre's three-square theorem \todo{citation?}. \noemi{This should generalize to the Paillier-based HTLP too.}}
+%     \label{fig:zkpopos}
+% \end{figure}
