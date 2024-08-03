@@ -38,6 +38,7 @@
 \newtheorem{corollary}{Corollary}
 \crefname{corollary}{corollary}{corollaries}
 \Crefname{corollary}{Corollary}{Corollaries}
+\newtheorem{remark}{Remark}
 
 % primitives
 \newcommand{\ENC}{\ensuremath{\mathsf{E}}}
@@ -148,23 +149,30 @@
 %%%%% KSP %%%%%
 \newcommand{\hot}{\ensuremath{\mathsf{hot}}}
 \newcommand{\cold}{\ensuremath{\mathsf{cold}}}
+\newcommand{\signset}{{\ensuremath{SS}}}
+\newcommand{\ppset}{{\ensuremath{NC}}}
+\newcommand{\timeT}{\ensuremath{T}}
+\newcommand{\blshash}{\ensuremath{H}}
+\newcommand{\lhlhash}{\ensuremath{\mathcal{H}}}
+% algos
 \newcommand{\skref}{\ensuremath{\mathsf{SKRefresh}}}
 \newcommand{\shref}{\ensuremath{\mathsf{ShareRefresh}}}
 \newcommand{\cSign}{\mathsf{CSign}\xspace}
 \newcommand{\hSign}{\mathsf{HSign}\xspace}
-\newcommand{\hx}{\tilde{x}}
-\newcommand{\aux}{\mathsf{aux}}
 \newcommand{\cProof}{\mathsf{CProof}\xspace}
 \newcommand{\hProof}{\mathsf{HProof}\xspace}
-\newcommand{\timeT}{\ensuremath{T}}
-\newcommand{\blshash}{\ensuremath{H}}
-\newcommand{\lhlhash}{\ensuremath{\mathcal{H}}}
-\newcommand{\mex}{MEX\xspace}
-\newcommand{\hcwl}{hot-cold threshold wallet\xspace}
-\newcommand{\HCWL}{Hot-Cold Threshold Wallet\xspace}
+% elements
+\newcommand{\hx}{\tilde{x}}
+\newcommand{\csecret}{\ensuremath{s_i^\cold}}
+\newcommand{\hsecret}{\ensuremath{s_i^\hot}}
+\newcommand{\aux}{\mathsf{aux}}
 \newcommand{\zopen}{\ensuremath{\zeta}}
 \newcommand{\dcom}{\ensuremath{\mathsf{dcom}}}
 \newcommand{\ucom}{\ensuremath{\mathsf{ucom}}}
+% names
+\newcommand{\mex}{MEX\xspace}
+\newcommand{\hcwl}{hot-cold threshold wallet\xspace}
+\newcommand{\HCWL}{Hot-Cold Threshold Wallet\xspace}
 % functionalities
 \newcommand{\Fs}{\F_\mathsf{SS}\xspace}
 \newcommand{\Fpk}{\F_\mathsf{PK}\xspace}
@@ -177,3 +185,13 @@
 \newcommand{\clientlist}{\ensuremath{D}}
 \newcommand{\hotlist}{\ensuremath{\keylist_\hot}}
 \newcommand{\hotstates}{\ensuremath{S_\hot}}
+% security games
+\newcommand{\ufgame}{\ensuremath{\mathsf{HC\text{-}SUF\text{-}2}}}
+\newcommand{\corrset}{{\ensuremath{CS}}}
+\newcommand{\honest}{{\ensuremath{HS}}}
+% oracles
+\newcommand{\RO}{{\ensuremath{\textsc{RO}}}}
+\newcommand{\PPO}{{\ensuremath{\textsc{PSignO}}}}
+\newcommand{\HSignO}{{\ensuremath{\textsc{HSignO}}}}
+\newcommand{\CSignO}{{\ensuremath{\textsc{CSignO}}}}
+\newcommand{\DLogO}{{\ensuremath{\textsc{DLog}}}}

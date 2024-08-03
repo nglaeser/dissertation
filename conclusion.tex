@@ -1,0 +1,11 @@
+\section{Conclusion}\label{sec:conclusion}
+
+We described three examples of how advanced cryptography can improve the security and trust assumptions of blockchain applications in a practical and deployable manner: naysayer proofs, the Cicada voting and auction framework, and hot-cold threshold wallets. While these works have had significant industry discussion and/or collaboration, it is my hope that they will also see practical deployment in the near future. 
+
+The ideas discussed in this dissertation also have significant potential to spark additional discussion and future work. The naysayer paradigm can be substituted for classic zero-knowledge proofs in any application which uses the latter as a building block. A more theoretical analysis of their complexity, lower bounds, and application to particular classes of underlying verifier circuits may also be fruitful. There is also room for optimizing naysayer provers to particular underlying proof systems. Finally, like optimistic rollups, naysayer proofs would benefit from a rigorous analysis of how to set collateral and delay periods in optimistic settings.
+
+We have shown that the Cicada framework is a useful blueprint for fair on-chain elections and auctions and have shown its practicality for many popular protocols. Extending Cicada to other, non-additive protocols could be a useful future work. Additionally, each of the proposed extensions can be explored in greater detail as well.A
+
+Finally, our hot-cold threshold wallet protocols cover two popular threshold signature schemes used in the blockchain ecosystem today, but it may be desirable or necessary to extend other threshold signatures to this setting. Furthermore, although our protocols already offer several advanced functionalities, deployments may wish to extend our protocols more, e.g., by adding distributed key generation, hot share refreshes, and secret resharing.
+
+Cryptography has seen significant deployment in the blockchain ecosystem and driven some of its most important innovations. As the space continues to grow, cryptographic protocols and primitives have a large role to play in furthering security, decentralization, and scalability.

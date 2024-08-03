@@ -60,15 +60,14 @@
 
 \maketitle
 \begin{abstract}
-In 2008, Satoshi Nakamoto introduced Bitcoin, the first digital currency without a trusted authority whose security is maintained by a decentralized blockchain. Since then, a plethora of decentralized applications have been proposed utilizing blockchains as a public bulletin board. In recent years, it has become clear that this basic functionality is not enough to prevent widespread attacks on both the privacy and security of blockchain users, as evidenced by the blockchain analytics industry and the billions of dollars stolen via cryptocurrency exploits to date. 
+In 2008, Satoshi Nakamoto introduced Bitcoin, the first digital currency without a trusted authority whose security is maintained by a decentralized blockchain. Since then, a plethora of decentralized applications have been proposed utilizing blockchains as a public bulletin board. This growing popularity has put pressure on the ecosystem to prioritize scalability at the expense of trustlessness and decentralization.
 
-This work explores the role cryptography has to play in the blockchain ecosystem to both reduce trust and secure user funds. 
+This work explores the role cryptography has to play in the blockchain ecosystem to improve performance while maintaining minimal trust and strong security guarantees. 
 % I discuss how to generically add universally composable security to any non-interactive zero-knowledge proof (NIZK), a crucial building block in many blockchain systems, in a way that is compatible with an updatable common reference string. This strengthens security for any system relying on NIZKs, including many blockchains and blockchain applications, while maintaining minimal trust assumptions. Next, I discuss how to improve the security of a class of coin mixing protocols by giving a formal security treatment of this class and patching the security of an existing, insecure protocol. 
-I discuss a new paradigm for rollups called ``naysayer proofs'' which sits between optimistic and zero-knowledge approaches.
-Next, I show how to construct efficient, non-interactive, and private on-chain protocols for a large class of elections and auctions. 
-Finally, I introduce a new type of threshold wallet which adds offline components at each custodian to improve security. Furthermore, the construction enables transparency by allowing the wallet owner to request custodians to prove ``remembrance'' of the secret key material.
-All three of these works will be deployed in practice or have seen interest from practitioners who I hope will be interested in applying them. Thus, they have real practical impact.
-I conclude by describing future directions.
+I discuss a new paradigm for scalability, called \emph{naysayer proofs}, which sits between optimistic and zero-knowledge approaches.
+Next, I show how to construct efficient, non-interactive, and fair on-chain protocols for a large class of elections and auctions without a trusted third party. 
+Finally, I introduce a new type of threshold wallet which adds offline components at each custodian to improve security while maintaining distributed trust. Furthermore, the construction enables transparency by allowing the wallet owner to request custodians to prove ``remembrance'' of the secret key material.
+All three of these works will be deployed in practice or have seen interest from practitioners in applying them. These examples show that advanced cryptography has the potential to meaningfully nudge the blockchain ecosystem towards increased security and reduced trust.
 
 % Blockchains are inherently public, [but sometimes we want privacy. We need to use crypto to do this. And so on and so forth\dots] \noemi{actually probably need to expand to also include ``security'', since the threshold sigs project isn't really about privacy}
 % A key challenge in [my area of research] is [problem I halfway figured out how to solve]. (And so on and so forth\dots)
@@ -114,7 +113,6 @@ I conclude by describing future directions.
 
 \section{Naysayer Proofs}\label{sec:naysayer}
 \textit{(Parts of this section are taken/adapted from \cite{FC:SerGlaBon24}.)}
-
 \input{naysayer/intro}
 \input{naysayer/related}
 \input{naysayer/model}
@@ -122,7 +120,7 @@ I conclude by describing future directions.
 \input{naysayer/applications}
 \input{naysayer/storage}
 
-\section{On-chain Voting and Auctions}
+\section{On-chain Voting and Auctions}\label{sec:cicada}
 \textit{(Parts of this section are taken/adapted from \cite{CTB:GSZB23}.)}
 \input{cicada/intro}
 \input{cicada/related}
@@ -138,7 +136,6 @@ I conclude by describing future directions.
 
 \section{{\HCWL}s}\label{sec:hcwl}
 \textit{(Parts of this section are taken/adapted from \cite{GGJLM24}.)}
-
 \input{ksp/intro}
 \input{ksp/results}
 \input{ksp/tech-overview}
@@ -149,10 +146,12 @@ I conclude by describing future directions.
 \input{ksp/bls-construction}
 \input{ksp/bls-security}
 \input{ksp/bls-eval}
-\subsection{Extensions}
+% \subsection{Extensions}
 \input{ksp/implementingFs}
+\input{ksp/frost-construction}
+\input{ksp/frost-security}
 
-\section{Conclusion}
+\input{conclusion}
 
 {\small
 \bibliographystyle{alpha}

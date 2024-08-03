@@ -1,0 +1,186 @@
+\subsubsection{Security Analysis}
+
+We first recall the proof of security for the original FROST2 protocol~\cite{C:BCKMTZ22}.
+
+\begin{theorem}[informal]
+    FROST2 is unforgeable assuming the one-more discrete logarithm (OMDL) assumption holds.
+\end{theorem}
+
+\begin{proof}[Proof (informal)]
+Given an adversary $\adv$ against the unforgeability of FROST2 (specifically, against TS-SUF-2~\cite{C:BCKMTZ22}), we will construct an adversary $\bdv$ for the OMDL game. Specifically, given $2q_s + t$ OMDL challenges $(A_0, \dots, A_{t-1}, U_1, V_1, \dots, U_{q_s}, V_{q_s})$, $\bdv$ will output the corresponding discrete logarithms $(a_0, \dots, a_{t-1}, u_1, v_1,\allowbreak \dots, u_{q_s}, v_{q_s})$ using only $2q_s + t - 1$ queries to the discrete logarithm oracle $\textsc{DLog}(\cdot)$.
+
+The idea is as follows: $\bdv$ will run $\adv$, programming the FROST instance with the $a_j$ as coefficients of the polynomial $f$ used to share the secret key (that is, $\vk := A_0 = g^{a_0}$ and $\vk_i := \prod_{0 \leq j \leq t-1} A_j^{i^j} = g^{f(i)} = g^{\sk_i}$) and using the $(U_k, V_k)$ as preprocessing tokens for FROST partial signatures. Note that this already requires some $\textsc{DLog}(\cdot)$ queries by $\bdv$: $\adv$ receives as input the secret keys of the corrupted parties (the set $CS$), computed as $\sk_i := \textsc{DLog}(\vk_i) \forall i \in CS$. Computing a partial signature for party $i$ and signing set $SS$ using the token $(U_k, V_k)$ also requires a single query to compute $z_i := \textsc{DLog}(U_k V_k^d \vk_i^{c \lambda_i^{SS}})$, where $d, c$ are random oracle outputs.
+
+Once $\adv$ outputs its forgery $(m^*, \sigma^*)$, where $\sigma^* = (R^*, z^*)$ and $R^*$ was output by the $I$th (partial) signing oracle query which also used some preprocessing token $(U_{k^*}, V_{k^*})$, we rewind and program different RO outputs for that signing oracle query (and all the following ones as well). By the generalized Forking Lemma~\cite{CCS:BelNev06}, $\adv$ will still output a forgery on the same message $m^*$ with a reasonably high probability and now we have two ``versions'' (forks) of signing oracle queries/responses \emph{with the same preprocessing tokens $(U_k, V_k)$}. We can use this information to extract all of the discrete logarithms with sufficiently few $\DLogO(\cdot)$ queries.
+
+We will use a tick mark to denote the corresponding variable in the second fork, e.g., $\sigma^*$ is the forgery output in the first fork and ${\sigma^*}'$ in the second. Note that $\sigma^* = (R^*, z^*)$ and in our simulated FROST2 these will be computed as $R^* = \prod_{i \in SS} R_i S_i^\rho$ (where each $(R_i, S_i) = (U_k, V_k)$ for some $k$) and $z^* = \sum_{i \in SS} \textsc{DLog}(R_i S_i^d \vk_i^{c \lambda_i^{SS}})$, where $\rho, c$ are random oracle outputs. In particular, at exactly the forking point, the second fork will use the same first RO output (so $\rho' = \rho$ and thus ${R^*}' = R^*$) but a different second RO output (so $c' \neq c$ and thus ${z^*}' \neq z^*$).
+
+In more detail, to compute $\textsc{DLog}(A_i)$ for all $i=0, \dots, t-1$, $\bdv$ will do the following:
+\begin{itemize}
+    \item We have $g^{z^*} = (\prod_i g^{R_i S_i^\rho}) \cdot \vk^c = R^* A_0^c$ and similarly $g^{{z^*}'} = R^* A_0^{c'}$. So, $g^{z^* - {z^*}'} = g^{a_0 (c-c')}$ and we can compute \colorbox{lightgray}{$a_0$} $= \frac{z^* - {z^*}'}{c - c'}$.
+    \item Next, we can look at all the different (honest) parties for which $\adv$ made a partial signing oracle query for $m^*$ (and the same signing set $SS$\footnote{for the case of TS-SUF-$i$ with $i=2$.}). By the winning condition, $\adv$ can only have made queries for $< t-\sizeof{CS}$ honest parties (call this set $Q^*$). For each of those queries, in our simulation we computed $z_i^*$ by querying $\textsc{DLog}(U_k V_k^\rho \vk_i^{c \lambda_i^{SS}})$ for some $k$. So $g^{z_i^*} = U_k V_k^\rho \vk_i^{c \lambda_i^{SS}}$ and in the second fork $g^{{z_i^*}'} = U_k V_k^\rho \vk_i^{c' \lambda_i^{SS}}$ and therefore $g^{z_i^* - {z_i^*}'} = g^{\sk_i (c-c')}$ \noemi{their paper left out $\lambda_i^{SS}$ in the exponent}. Now we can solve for $\sk_i = f(i) = \frac{z_i^* - {z_i^*}'}{c-c'}$ \noemi{should be divided by $\lambda_i^{SS}$}.
+    \item At this point, including the values of $\sk_i$ queried as inputs to $\adv$, we have $\sizeof{Q^*} + \sizeof{\corrset}$ points $f(i)$ and also $a_0 = f(0)$. We will pick some set of indices $Q'$ of size $t - \sizeof{Q^*} - \sizeof{\corrset} - 1$ and query $\textsc{DLog}(\vk_{j})$ for all $j \in Q'$ to get $\sk_j = f(j)$. Now we have $t$ evaluations of $f$, so we interpolate $f(X)$ and evaluate at $X = 1, \dots, t-1$ to get \colorbox{lightgray}{$a_1, \dots, a_{t-1}$}.
+\end{itemize}
+
+Now we will look more systematically at all the partial signature queries/responses we simulated (at all times beyond just the forking point) to recover $\textsc{DLog}(U_j), \textsc{DLog}(V_j)$ for all $j = 1, \dots, q_s$. Remember that we issued each $(U_j, V_j)$ as a preprocessing token, and $\adv$ may or may not have later requested a partial signature using that token. To simplify notation, let $\sk_i^+ := \sk_i \cdot \lambda_i^{SS}$.
+
+\paragraph{Case 0:} \textbf{$\adv$ never requested a signature for that $(U_j, V_j)$} (in either fork).
+In this case we have no information about $u_j, v_j$ and must request them from the oracle: \colorbox{lightgray}{$u_j = \textsc{DLog}(U_j)$}, \colorbox{lightgray}{$v_j = \textsc{DLog}(V_j)$}. Note however that this means we didn't have to simulate the partial signature for this token, so we saved a $\textsc{DLog}(\cdot)$ query there.
+
+\paragraph{Case 1:} \textbf{$\adv$ only requested a signature for that $(U_j, V_j)$ in \emph{one} fork}.
+Because we simulated this partial signature in one fork, we know a value $z_i = \textsc{DLog}(U_j V_j^\rho \vk_i^{c \lambda_i^{SS}})$. We can compute \colorbox{lightgray}{$v_j = \textsc{DLog}(V_j)$} and \colorbox{lightgray}{$u_j = z_i - \rho \cdot v_j - c \cdot \sk_i^+$}.
+
+\paragraph{Case 2:} \textbf{$\adv$ requested a signature for that $(U_j, V_j)$ in \emph{both} forks}.
+Because we simulated partial signatures in both forks, we know values $z_i, z_i'$ such that $g^{z_i} = U_j V_j^d \vk_i^{c \lambda_i^{SS}}$ and $g^{z_i'} = U_j V_j^{d'} \vk_{i'}^{c' \lambda_{i'}^{SS}}$. (Note the preprocessing token $(U_j, V_j)$ could have been assigned to different parties $i \neq i'$ in the two forks.)
+We now have various cases based on whether this request happened before, at, or after the forking point.
+
+\begin{itemize}
+    \item \textbf{Case 2a: \emph{after} the forking point.} In this case, $d \neq d'$ and $c \neq c'$. So $g^{z_i - z_i'} = g^{v_j(d-d') + \sk_i^+ c - \sk_{i'}^+ c'}$. Therefore we compute \colorbox{lightgray}{$v_j = \frac{z_i - c \cdot f(i) \lambda_i^{SS} - z_i' + c' \cdot f(i') \lambda_{i'}^{SS}}{d-d'}$} and \colorbox{lightgray}{$u_j = z_i - d v_j - c \cdot f(i) \lambda_i^{SS}$}.
+    \item \textbf{Case 2b: \emph{at} the forking point.} In this case, $d = d'$ and $c \neq c'$ (see above where we calculated the $a_i$'s). Here we can learn nothing about $u_j, v_j$ since their terms are the same in both forks, so we have to resort to the same strategy as Case 1 and compute \colorbox{lightgray}{$v_j = \textsc{DLog}(V_j)$} and \colorbox{lightgray}{$u_j = z_i - dv_j - c \cdot \sk_i^+$}.
+    \item \textbf{Case 2c: \emph{before} the forking point.} In this case, $d = d'$ and $c=c'$ and again we have no information about $u_j, v_j$ and compute \colorbox{lightgray}{$v_j = \textsc{DLog}(V_j)$} and \colorbox{lightgray}{$u_j = z_i - dv_j - c \cdot \sk_i^+$} as in Case 1 (and 2b). Note that for simulating the partial signature, we were able to reuse the outputs from the first fork in the second, so as in Case 0 we save a $\textsc{DLog}(\cdot)$ query.
+\end{itemize}
+
+Clearly we have now calculated all $2q_s + t$ discrete logarithms correctly, so it remains to show that we only used $2q_s + t - 1$ $\textsc{DLog}(\cdot)$ queries to do it:
+
+\begin{itemize}
+    \item $\sizeof{CS}$ to compute the inputs $\{\sk_i\}_{i \in CS}$ to $\adv$,
+    \item $\sizeof{Q'}$ to compute $a_0, \dots, a_{t-1}$,
+    \item 2 total for each $j=1, \dots, q_s$ to compute $u_j, v_j$ and/or to simulate the partial signature for $U_j, V_j$---except for Case 2b, where we have to simulate partial signatures (each for some party $i$) for $U_j, V_j$ in both forks \emph{at} the forking point (i.e., on the winning message $m^*$). Remember that these were requested for parties in the set $Q^*$, so we only have to make $\sizeof{Q^*} < t - \sizeof{\corrset}$ (by the winning condition) queries $\textsc{DLog}(V_j)$ (i.e., only $\sizeof{Q^*}$ values of $j$ fall under Case 2b).
+\end{itemize}
+
+In total, the number of $\textsc{DLog}(\cdot)$ queries is $\sizeof{\corrset} + \sizeof{Q'} + 2q_s + \sizeof{Q^*}$, and since $\sizeof{Q'} = t - \sizeof{Q^*} - \sizeof{CS} - 1$ and $\sizeof{CS} < t$ (by the winning condition of unforgeability) this is equal to $2q_s + t - 1$ queries.
+
+Finally, we need to argue about the advantage of $\bdv$ assuming $\adv$ has non-negligible advantage. There are two events (called $\sf BadPPO$ and $\sf BadHash$ in \cite{C:BCKMTZ22}) in which $\bdv$ will fail even though $\adv$ wins (resp. either by failing to simulate FROST to $\adv$ or by having colliding RO outputs when forking/rewinding $\adv$). Let $\cdv$ denote the subroutine of $\bdv$ dedicated to simulating FROST ($\cdv$ ``accepts'', i.e., $\text{acc}(\cdv) = 1$, if it does so successfully and $\adv$ wins):
+\def\acc{\text{acc}}
+\def\Adv{\ensuremath{\mathsf{Adv}}}
+\[
+\Pr[\acc(\cdv)] \geq \Pr[\Adv(\adv)] - \Pr[{\sf BadPPO}]
+\]
+
+By a variant of the Forking Lemma \cite[Lemma 5.3]{C:BCKMTZ22}, 
+\[
+\Pr[\Adv(\bdv)] \geq \acc(\cdv)^2/q - \Pr[{\sf BadHash}]
+\]
+where $q$ is the number of RO queries in $\cdv$ (equal to $q_s + q_h + 1$, where $q_s$ is the number of partial signature queries and $q_h$ is the number of any other RO queries $\adv$ makes). \noemi{idk where +1 comes from}
+
+By the bounds on $\Pr[{\sf BadPPO}]$ and $\Pr[{\sf BadHash}]$ (see \cite{C:BCKMTZ22}), we end up with
+\[
+\Pr[\Adv(\bdv)] \geq \Pr[\Adv(\adv)]^2/q - 3q^2/p.
+\]
+So the existence of an adversary $\adv$ with non-negligible advantage in the TS-SUF-2 game implies an adversary $\bdv$ with non-negligible advantage in the OMDL game, which contradicts our assumption.
+\end{proof}
+
+We now show how to modify the above proof to show that the protocol in \Cref{fig:hc-frost} is HC-SUF-2-secure. For readability, in \Cref{fig:oracles-hc-frost} we give a version of the unforgeability oracles which is tailored to HC-FROST2.
+
+\newcommand{\PPMap}{\ensuremath{\mathsf{NMap}}}
+\begin{figure}
+    \centering
+    \begin{pchstack}[boxed]
+    %%%%% column 1 %%%%%
+    \begin{pcvstack}
+    \procedure[space=auto]{$\RO(x)$}{
+        \pcif \exists (x,y) \in L \\
+            \pcreturn y\\
+        \pcelse \\
+            y \sample \ZZ_q \\
+            L = L \cup \{(x,y)\} \\
+            \pcreturn y \\
+        \pcfi
+    }
+    \pcvspace
+
+    \procedure[space=auto]{$\PPO(i)$}{
+        \pcif i \notin \honest_\cold \\
+            \pcreturn \perp \\
+        \pcfi \\
+        d_i, e_i \sample \ZZ_q \\
+        D_i := g^{d_i}, E_i := g^{e_i} \\
+        \PPMap_i(D_i, E_i) := (d_i, e_i) \\
+        \ppset_i = \ppset_i \cup \{ (D_i, E_i) \} \\
+        % \pptoken_i \gets \PSign(i) \\
+        % \ppset_i = \ppset_i \cup \{\pptoken_i\} \\
+        \pcreturn (D_i, E_i)
+    }
+    \end{pcvstack}
+    \pchspace
+    %%%%% column 2 %%%%%
+    \procedure[space=auto]{$\CSignO(i, R', lr)$}{
+        m := lr.\mathsf{msg} \\
+        \pcif lr.\signset \nsubseteq [n] \lor m \notin \bin^* \lor i \notin \honest_\cold \\
+            \pcreturn \perp \\
+        \pcfi \\
+        L_\cold = L_\cold \cup \{lr\} \\
+        \rho \gets \RO(1, m, \vk, lr.\signset, lr.\ppset) \\
+        (D_j, E_j) = lr.\ppset(j) ~\forall j \in lr.\signset \\
+        \pcif i \notin \corrset_\hot \\
+            R' = \prod_{j \in lr.\signset \setminus \{i\}} D_j E_j^\rho \\
+        \pcfi\\
+        R := D_i E_i^\rho \cdot R' \\
+        c \gets \RO(2, m, \vk, R) \\
+        (d_i, e_i) = \PPMap_i((D_i, E_i)) \\
+        \sigma_i^\cold := (d_i + e_i\rho) - c \cdot \csecret\lambda_i^\signset \\
+        \pcif \sigma_i^\cold \neq \perp\\
+            S_\cold(lr) = S_\cold(lr) \cup \{i\} \\
+        \pcfi\\
+        \pcreturn \sigma_i^\cold
+    }
+    \pchspace
+    %%%%% column 3 %%%%%
+    \procedure[space=auto]{$\HSignO(i, \sigma_i^\cold, lr)$}{
+        m := lr.\mathsf{msg} \\
+        \pcif lr.\signset \nsubseteq [n] \lor m \notin \bin^* \lor i \notin \honest_\hot \\
+            \pcreturn \perp \\
+        \pcfi \\
+        L_\hot = L_\hot \cup \{lr\} \\
+        \rho \gets \RO(1, m, \vk, lr.\signset, lr.\ppset) \\
+        (D_j, E_j) = lr.\ppset(j) ~\forall j \in lr.\signset \\
+        R := \prod_{j \in lr.\signset} D_j E_j^\rho \\
+        c \gets \RO(2, m, \vk, R) \\
+        \pcif i \notin \corrset_\cold \\
+            (d_i, e_i) = \PPMap_i((D_i, E_i)) \\
+            \sigma_i^\cold = (d_i + e_i\rho) - c \cdot \csecret\lambda_i^\signset \\
+        \pcfi\\
+        z_i := \sigma_i^\cold + c \cdot \hsecret\lambda_i^\signset \\
+        \sigma_i^\hot := (R, z_i) \\
+        \pcif \sigma_i^\hot \neq \perp\\
+            S_\hot(lr) = S_\hot(lr) \cup \{i\} \\
+        \pcfi\\
+        \pcreturn \sigma_i^\hot
+    }
+    \end{pchstack}
+    \caption{Oracles for $\ufgame$ experiment (see \Cref{fig:hc-suf-2}) tailored to the HC-FROST2 protocol (\Cref{fig:hc-frost}).}
+    \label{fig:oracles-hc-frost}
+\end{figure}
+
+\begin{theorem}
+    The hot/cold variant of FROST2 described in \Cref{sec:frost} is unforgeable assuming OMDL.
+\end{theorem}
+\begin{proof}[Proof (sketch)]
+The idea is for the reduction to program the OMDL challenges into the inputs to $\adv$ like before. So, the $\vk, \vk_1, \dots, \vk_n$ will encode the challenges $A_0, \dots, A_{t-1}$. For $\adv$'s inputs, for $i \in \corrset_\hot \cap \corrset_\cold$, the reduction samples $\Delta_i \sample \ZZ_q$, computes $\sk_i \gets \DLogO(\vk_i)$, and sets $\csecret = \Delta_i$, $\hsecret = \sk_i + \Delta_i$; for $i \in \corrset_\hot \setminus \corrset_\cold$, it lets $\hsecret \sample \ZZ_q$, and similarly for $i \in \corrset_\cold \setminus \corrset_\hot$, it lets $\csecret \sample \ZZ_q$.
+
+The reduction will answer $\PPO$ queries as before using the challenges $(U_k,V_k)$. It also handles $\RO$ queries like before. Previously, partial signature queries were answered by querying the discrete log oracle once to get $z_i \gets \DLogO(U_k V_k^\rho \vk_i^{c \lambda_i^\signset})$. Now we have to instead handle queries to $\CSignO$ and $\HSignO$, but we will do it again with a single $\DLogO$ query \emph{per pair}. In $\CSignO(i, \cdot)$ (only answered if $P_i^\cold$ is honest), if $P_i^\hot$ is honest we sample $r \sample \ZZ_q$ and compute $z_i^\cold = \DLogO(U_k V_k^\rho \vk_i^{c \lambda_i^\signset}) - c \cdot r_i \lambda_i^\signset$, otherwise $z_i^\cold = \DLogO(U_k V_k^\rho) - c \cdot \hsecret \lambda_i^\signset$. For $\HSignO(i, \sigma_i^\cold)$ (similarly only answered if $P_i^\hot$ is honest), if $P_i^\cold$ is honest we compute $z_i = \DLogO(U_k V_k^\rho \vk_i^{c \lambda_i^\signset})$, where we can reuse the output of a potential previous $\DLogO$ query in $\CSignO$ on the same value. Otherwise $z_i = \DLogO(\vk_i^{c \lambda_i^\signset}) + \sigma_i^\cold + c \Delta_i \lambda_i^\signset$.
+
+Given a successful forgery by $\adv$, computing the discrete logarithms to the OMDL challenges is similar. As before, $a_0 = \frac{z^* - {z^*}'}{c-c'}$. Then, for every query to either $\CSignO$ or $\HSignO$ we can recover a point $f(i)$ as follows:
+\begin{description}
+    \item[case 1: $\adv$ queried $\HSignO(i, \cdot)$ and $i \in \honest_\cold$.] That means we have two values $z_i, z_i'$ from the two forks such that $g^{z_i} = U_k V_k^\rho \vk_i^{c \lambda_i^\signset}$ and $g^{z_i'} = U_k V_k^\rho \vk_i^{c' \lambda_i^\signset}$ and therefore $g^{z_i - z_i'} = g^{\sk_i \lambda_i^\signset (c-c')}$. Then $\sk_i = f(i) = \frac{z_i - z_i'}{\lambda_i^\signset(c-c')}$.
+    \item[case 2: $\adv$ queried $\HSignO(i, \cdot)$ and $i \notin \honest_\cold$.] Then the response $z_i$ was instead computed as $z_i = \DLogO(\vk_i^{c \lambda_i^\signset}) + z_i^\cold + c \Delta_i \lambda_i^\signset$. Thus, \todo{assuming (forking lemma?) that $\adv$ queried on the same $z_i^\cold$} from the two forks we have values $z_i, z_i'$ such that $g^{z_i-z_i'} = g^{(\sk_i + \Delta_i) \lambda_i^\signset (c-c')}$. Then $\sk_i = f(i) = \frac{z_i - z_i'}{\lambda_i^\signset(c-c')} - \Delta_i$, where the value $\Delta_i$ was sampled as an input for $\adv$ so it is known to the reduction.
+    \item[case 3: $\adv$ queried $\CSignO(i, \cdot)$ and $i \notin \honest_\hot$.] Here the response is computed as $z_i^\cold = \DLogO(U_k V_k^\rho \vk_i^{c \lambda_i^\signset}) - c \cdot \hsecret \lambda_i^\signset$. Given the responses from the two forks, we have $z_i^\cold, {z_i^\cold}'$ such that $g^{z_i^\cold - {z_i^\cold}'} = g^{(\sk_i - \hsecret) \lambda_i^\signset (c-c')}$ and can compute $\sk_i = f(i) = \frac{z_i^\cold - {z_i^\cold}'}{\lambda_i^\signset (c-c')} + \hsecret$, where the value $\hsecret$ was sampled as an input for $\adv$ so it is known to the reduction.
+    \item[case 4: $\adv$ queried $\CSignO(i, \cdot)$ and $i \in \honest_\honest$, and $\adv$ did not query $\HSignO(i, \cdot)$.] (Note that if $\adv$ \emph{did} query $\HSignO(i, \cdot)$, this falls under case 1 instead.) Now we have values $z_i^\cold = \DLogO(U_k V_k^\rho \vk_i^{c \lambda_i^\signset}) - c \cdot r_i \lambda_i^\signset$ and ${z_i^\cold}' = \DLogO(U_k V_k^\rho \vk_i^{c' \lambda_i^\signset}) - c' r_i \lambda_i^\signset$, where we use the same random coins for $r_i$ in both forks. Therefore we compute $\sk_i = f(i) = \frac{z_i^\cold - {z_i^\cold}'}{(c-c')\lambda_i^\signset} + r_i$.
+\end{description}
+
+Recall that these queries are captured by the set $Q^* = (S_\hot(lr) \cap \corrset_\cold) \cup (\corrset_\hot \cap S_\cold(lr)) \cup (S_\hot(lr) \cap S_\cold(lr))$. Along with $a_0 = f(0)$ and the values of $\sk_i$ we queried as inputs to $\adv$, we now have $\sizeof{Q^*} + \sizeof{\corrset_\hot \cap \corrset_\cold} + 1$ evaluations of the polynomial $f$. As in the previous proof, next we pick a set $Q'$ of indices, where $\sizeof{Q'} = t - \sizeof{Q^*} - 1$, and query $\sk_j = f(j) = \DLogO(\vk_j)$ for $j \in Q'$. This gives us a total of $t$ evaluations of $f$, allowing us to recover all the remaining values $a_1, \dots, a_{t-1}$.
+
+To compute the discrete logarithms of the challenges $(U_1, V_1), \dots, (U_{q_s}, V_{q_s})$, we can use the same approach as before, unmodified. Anytime $\adv$ requested a signature using some token $(U_j, V_j)$ \todo{except $\HSignO$ with corrupt cold, need to figure that out...}, we know a value $z_i = \DLogO(U_j V_j^\rho \vk_i^{c \lambda_i^\signset})$ and the same case analysis applies.
+
+It remains to count the $\DLogO(\cdot)$ queries used: 
+\begin{itemize}
+    \item $\sizeof{\corrset_\hot \cap \corrset_\cold}$ for $\adv$'s inputs, 
+    \item $\sizeof{Q'}$ to compute $a_0, \dots, a_{t-1}$, and
+    \item $2 q_s + \sizeof{Q^*}$ to compute $u_j, v_j$ and/or simulate the partial signature(s) for $U_j, V_j$.
+\end{itemize}
+Remember that $\sizeof{Q'} = t - \sizeof{Q^*} - \sizeof{\corrset_\hot \cap \corrset_\cold} - 1$, so once again the total number of $\DLogO$ queries used by the reduction is $2q_s + t - 1$.
+
+% Do we need the below somewhere for the proof to work?
+% By the winning condition, $\sizeof{Q^*} = \sizeof{S_\hot(lr^*) \cap \corrset_\cold} + \sizeof{\corrset_\hot \cap S_\cold(lr^*)} + \sizeof{S_\hot(lr^*) \cap S_\cold(lr^*)} < t - \sizeof{\corrset_\hot \cap \corrset_\cold}$ \noemi{because $S_\type(lr^*) \cap \corrset_\type = \emptyset$ for $\type \in \{\hot, \cold\}$}.
+
+\end{proof}
