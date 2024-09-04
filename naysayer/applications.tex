@@ -2,7 +2,7 @@
 
 The naysayer proof paradigm is generally applicable for proof systems with multi-round amplification, repetitive structure (e.g., multiple bilinear pairing checks~\cite{EPRINT:GabWilCio19}), or recursive reduction (e.g., Pietrzak's proof of exponentiation~\cite{ITCS:Pietrzak19b}). In this section, we highlight three example constructions of naysayer proofs.
 
-\subsubsection{FRI Polynomial Commitment Scheme}\label{sec:fri_example}
+\subsubsection{FRI Polynomial Commitment Scheme}\label{sec:fri_naysayer}
 
 The FRI polynomial commitment scheme~\cite{EPRINT:BBHR18} is used as a building block in many non-interactive proof systems, including STARKs~\cite{STOC:BCGT13}.
 Below, we describe only the parts of FRI relevant to our discussion. The FRI commitment to a polynomial $p(x)\in\mathbb{F}^{\leq d}[X]$ is the root of a Merkle tree with $\rho^{-1}d$ leaves. 
@@ -10,7 +10,7 @@ Each leaf is an evaluation of $p(x)$ on the set $L_0\subset\mathbb{F}$, where $\
 
 The overall STARK proof is invalid if any of the individual Merkle proofs is invalid. Therefore a straightforward naysayer proof $\pi^{\mathsf{FRI}}_{\nay}=(i,z_{i})$ need only point to the $i$th node in one of the Merkle proofs, where the hash values of the children nodes $x,y$ and their parent node $z\neq H(x,y)$ do not match in one of the incorrect Merkle authentication paths. The naysayer verifier only needs to compute a single hash evaluation $H(x,y)=z_{i}$ and check $z_{i}\neq z$. Thus, the naysayer proof for FRI has constant-size and can be verified in constant-time. 
 
-\subsubsection{Post-quantum Signature Schemes}
+\subsubsection{Post-quantum Signature Schemes}\label{sec:pqsig_naysayer}
 With the advent of account abstraction~\cite{accountabstraction}, Ethereum users can define their own preferred digital signature schemes, including post-quantum signatures as recently standardized by NIST~\cite{CCS:BHKNRS19,TCHES:DKLLS18,NISTPQC:FALCON22}.
 In all known schemes, %\joe{check this} 
 post-quantum signatures or public keys are substantially larger than their classical counterparts.  Since post-quantum signatures are generally expensive to verify on-chain, they are prime candidates for the naysayer proof paradigm.
@@ -25,9 +25,9 @@ where $C$ is a constant, $\mathbf{A}\in R^{k\times l}_q$, and $\mathbf{z},\mathb
 \end{equation}
 If the first check fails, then the naysayer prover shows an index $i$ for which the infinity norm of one of the polynomials in $\mathbf{z}$ is large. If the second check fails, then the naysayer prover can point to the $i$th row of the vector $\mathbf{w}$, where matrix-vector multiplication fails and verify only that row. Finally, if the last check fails, then the naysayer verifier just needs to recompute a single hash evaluation.
 
-\paragraph{SPHINCS+~\cite{CCS:BHKNRS19}.} The signature verifier in SPHINCS+ checks several Merkle authentication proofs, requiring hundreds of hash evaluations. A constant-size and -time naysayer proof can be easily devised akin to the naysayer proof described in~\Cref{sec:fri_example}. The naysayer prover simply points to the hash evaluation in one of the Merkle-trees where the signature verification fails. 
+\paragraph{SPHINCS+~\cite{CCS:BHKNRS19}.} The signature verifier in SPHINCS+ checks several Merkle authentication proofs, requiring hundreds of hash evaluations. A constant-size and -time naysayer proof can be easily devised akin to the naysayer proof described in~\Cref{sec:fri_naysayer}. The naysayer prover simply points to the hash evaluation in one of the Merkle-trees where the signature verification fails. 
 
-\subsubsection{Verifiable Shuffles}\label{sec:verifiable_shuffle_naysayer}
+\subsubsection{Verifiable Shuffles}\label{sec:vshuffle_naysayer}
 Verifiable shuffles are applied in many (blockchain) applications such as single secret leader election algorithms~\cite{AFT:Boneh20}, mix-nets~\cite{CACM:Chaum81}, cryptocurrency mixers~\cite{EPRINT:SNBB19}, and e-voting~\cite{USENIX:Adida08}. The state-of-the-art proof system for proving the correctness of a shuffle is due to Bayer and Groth~\cite{EC:BayGro12}. Their proof system is computationally heavy to verify on-chain as the proof size is $\mathcal{O}(\sqrt{n})$ and verification time is $\mathcal{O}(n)$, where $n$ is the number of shuffled elements. 
 
 Most shuffling protocols (of public keys, re-randomizable commitments, or ElGamal ciphertexts) admit a succinct naysayer proof if the naysayer knows at least one of the shuffled elements. Let us consider the simplest case of shuffling public keys. We want to prove membership in the following  NP language:
@@ -37,7 +37,13 @@ Most shuffling protocols (of public keys, re-randomizable commitments, or ElGama
 where $\mathsf{Perm}(n)$ is the set of all permutations $f:[n]\rightarrow[n]$.
 Suppose the naysayer knows that for $j\in[n]$, the prover did not correctly include $g^{r\cdot \witness_j}$ in the shuffle. The naysayer can prove this by showing that $(g,g^{\witness_j},g^r,g^{r\cdot \witness_j})\in\mathcal{R}_{DH}\land g^{r\cdot \witness_j}\notin (\cdot,g^{r\cdot \witness_{\sigma(i)}})^n_{i=1}$, where $\mathcal{R}_{DH}$ is the language of Diffie-Hellman tuples. One can show that a tuple is a Diffie-Hellman tuple with a proof of knowledge of discrete logarithm equality~\cite{C:ChaPed92}. However, the naysayer must know the discrete logarithm $\witness_j$ to produce such a proof. Unlike our previous examples, which were publicly naysayable, this is a privately naysayable proof since the naysayer algorithm takes auxiliary input $\witness_j$. With the right data structure for the permuted list (e.g., a hash table), both of the above conditions can be checked in constant-time with a constant-size naysayer proof, resulting in exponential savings compared to directly verifying the original Bayer-Groth shuffle proof.
 
+\subsubsection{zkVMs}
+
+\noemi{Given an underlying zkVM, you can define a corresponding naysayer proof based on the $\mathsf{zkVM}.\vrfy$ circuit --- with the rise of zkVMs, should mention this. This is still ``application-specific'', since the naysayer proof depends on what zkVM is used (on its design/proof system). But in practice it's more ``general-purpose''. However, I think naysayer proofs are inherently application-specific since they rely on the structure of the verification circuit. But if we, as an area, start using only a few common verification circuits (e.g., adopting a few standard zkVMs), then the naysayer proof system can be reused.}
+
+\noemi{update: not sure if it makes sense to talk about a $\mathsf{zkVM}.\vrfy$ circuit---they're generally just some proof system's verification procedure, e.g. the RISC Zero zkVM is running a STARK. Just talk about general naysaying by committing to a verification trace---and mention zkVMs somewhere as an example---then talk about particular languages where the verification trace is not needed because the structure is repetitive (i.e., conjunctions).}
+
 \subsubsection{Evaluation}
-We evaluate the asymptotic cost savings for the verifiers in the four examples discussed in~\Cref{sec:naysayer_apps}. Note that naysayer proofs allow an exponential speedup for the verifier for verifiable shuffles and a logarithmic speedup for the FRI polynomial commitment opening proof verifier, see~\Cref{tab:apps_table}. For CRYSTALS-Dilithium, we can only claim weakly efficient naysayer proofs, as there is no asymptotic gap in the complexity in certain branches of the signature verification circuit and the naysayer prover algorithm, cf.~\Cref{eq:crystals_verifier_check,eq:crystals_naysayer_prover}.
+We evaluate the asymptotic cost savings for the verifiers in the four examples discussed in \Cref{sec:fri_naysayer,sec:pqsig_naysayer,sec:vshuffle_naysayer}. Note that naysayer proofs allow an exponential speedup for the verifier for verifiable shuffles and a logarithmic speedup for the FRI polynomial commitment opening proof verifier, see~\Cref{tab:apps_table}. For CRYSTALS-Dilithium, we can only claim weakly efficient naysayer proofs, as there is no asymptotic gap in the complexity in certain branches of the signature verification circuit and the naysayer prover algorithm, cf.~\Cref{eq:crystals_verifier_check,eq:crystals_naysayer_prover}.
 
 \input{naysayer/apps-table}

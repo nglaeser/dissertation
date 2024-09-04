@@ -54,25 +54,29 @@ We distinguish between two types of naysayer proofs as follows.
 \end{description}
 We conjecture that in most applications, in the worst case, type-2 naysayer proofs are more costly than type-1 naysayer proofs (both compute and storage).
 It is an interesting open question which applications are more suited to type-1 or type-2 naysayer proofs considering both optimistic and pessimistic costs. To thoroughly model this question, one must take into account the verifier's compute cost, the (naysayer) proof storage costs, as well as the probability of the prover sending an invalid proof. We leave this problem to future work.
-In the rest of this paper, we solely focus on type-1 naysayer proofs.
+In the rest of \Cref{sec:naysayer}, we solely focus on type-1 naysayer proofs.
 
-Finally, we show that for every NP language, there exists a logarithmic-size naysayer proof with constant verification time (i.e., a succinct naysayer proof). %We follow the blueprint of~\cite{FOCS:FeiLapSha90}.
+\todo{Update this framing. Makes more sense to say that every \emph{proof system} (succinct or not) has a \emph{succinct}---i.e., log-size and constant-time verifiable---naysayer proof. (Then the concrete succinctness of the base proof system determines whether the naysayer is efficient/weakly efficient/etc.)} \noemi{This assumes the verification algorithm is already in circuit-form, so not sure this works. CTB Rev1 suggested the phrasing ``for all NP, the trivial proof system has a constant-time and log-size naysayer''.} Finally, we show that for every NP language, there exists a logarithmic-size naysayer proof with constant verification time (i.e., a succinct naysayer proof). %We follow the blueprint of~\cite{FOCS:FeiLapSha90}.
 
-\begin{theorem}\label{thm:naysayingNPCircuit}
-    For every NP language $\Lang$ with relation $\Rel_\Lang$, 
+\begin{lemma}\label{thm:naysayingNPCircuit}
+    For every NP language $\Lang$ with relation $\Rel_\Lang$, \todo{change to CSAT specifically}
     % assuming a binding commitment scheme with constant-size openings, 
     there exists a naysayer proof system $\Pi_{\nay}$ with logarithmic-sized proofs $\pi_{\nay}$ and constant-time verifier.
-\end{theorem}
+\end{lemma}
 \begin{proof}
     For any NP language $\Lang$, there exists a non-interactive proof system $\Pi = (\setup, \prove, \vrfy)$ for $\Rel_\Lang$ where $\vrfy(\crs, \cdot, \cdot)$ can be represented as a boolean circuit $C$ of size $\mathsf{poly}(\lvert x \rvert)$~\cite{C:LapSha90}. Recall that for all $(x,w) \in \Rel_\Lang$ and $\crs \gets \Pi.\setup(\secparam)$, by correctness, we have that if $\pi' \gets \Pi.\prove(\crs, x, w)$ then $C(x,\pi') = 1$. Therefore, if there is some gate of $C$ for which the wire assignment is inconsistent, then the proof $\pi'$ is incorrect. To naysay, i.e., to show the incorrectness of $\pi'$, the naysayer simply provides the index of the inconsistent gate.
     Recall that the verifier has access to the wire assignments of $C(x,\pi')$ as part of $\pi$ (see \Cref{def:naysayer_proof}). 
     The verifier then checks whether the wire assignments of $C(x,\pi')$ are consistent with a correct evaluation of the gate, which is a constant-time operation assuming constant-time indexing into the wire assignments. 
     Furthermore, the naysayer proof consists only of the gate index, which is logarithmic in the circuit size, i.e., succinct.
+
+    \todo{The above argues completeness (that if a proof is incorrect, we can naysay it). Need also to argue soundness (that if a proof is correct, we cannot give a convincing naysayer proof).}
 \end{proof}
 
-\begin{corollary}
+\begin{theorem}
     Every efficient proof system $\Pi$ (i.e., with a polynomial-time verification algorithm) has a succinct naysayer proof.
-\end{corollary}
+\end{theorem}
 \begin{proof}
-Given any proof system $\Pi$, one can represent the $\vrfy(\crs,\cdot,\cdot)$ algorithm as a circuit and apply the above theorem to obtain a succinct naysayer proof.
+Given any proof system $\Pi$, one can represent the $\vrfy(\crs,\cdot,\cdot)$ algorithm as a circuit and apply the above lemma to obtain a succinct naysayer proof.
 \end{proof}
+
+\noemi{Notice that the naysayer proof consists of an \emph{integer} index (which may only require a few bits to represent). So, even though it is asymptotically logarithmic, in fact it may actually be smaller than many ``regular'' proofs which consist of some group elements (which are normally at least $\secpar$ bits long). -- Need to check this with some common circuit sizes (e.g., the STARK verification circuit) and group element sizes (e.g., BN254 curve G1 element or other).}
