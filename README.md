@@ -17,6 +17,10 @@ git push
 
 Overleaf seems not to support submodules, so [CryptoBib](https://cryptobib.di.ens.fr/) will be updated manually. -->
 
+<!-- ## Dependencies
+
+- Inkscape (for `\includesvg`, see [this StackExchange answer](https://tex.stackexchange.com/a/523685)) -->
+
 ## LaTeX Workshop shortcuts
 
 `Cmd + click`: Go to source code from PDF location

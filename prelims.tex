@@ -15,11 +15,11 @@ We distinguish the key-pairs used in a signature scheme ($\vk, \sk$ for ``verifi
 \subsection{Non-interactive proof systems}\label{sec:nizks}
 
 \begin{definition}[Non-interactive proof] A non-interactive proof $\Pi$ for some NP relation $\Rel$ is a tuple of PPT algorithms $(\setup, \prove, \vrfy)$:
-    \begin{description}
-        \item[$\setup(\secparam) \rightarrow \crs$:] Given a security parameter, output a common reference string $\crs$. This algorithm might use private randomness (a trusted setup).
-        \item[$\prove(\crs, x, \witness) \rightarrow \pi$:] Given the $\crs$, an instance $x$, and witness $\witness$ such that $(x, \witness) \in \Rel$, output a proof $\pi$.
-        \item[$\vrfy(\crs, x,\pi) \rightarrow \{0,1\}$:] Given the $\crs$ and a proof $\pi$ for the instance $x$, output a bit indicating accept or reject.
-    \end{description}
+    \begin{itemize}
+        \item \underline{$\setup(\secparam) \rightarrow \crs$:} Given a security parameter, output a common reference string $\crs$. This algorithm might use private randomness (a trusted setup).
+        \item \underline{$\prove(\crs, x, \witness) \rightarrow \pi$:} Given the $\crs$, an instance $x$, and witness $\witness$ such that $(x, \witness) \in \Rel$, output a proof $\pi$.
+        \item \underline{$\vrfy(\crs, x,\pi) \rightarrow \{0,1\}$:} Given the $\crs$ and a proof $\pi$ for the instance $x$, output a bit indicating accept or reject.
+    \end{itemize}
 \end{definition}
 
 We refer the reader to \cite{Thaler23} for a formal description of the properties of proof systems (e.g., correctness, soundness, zero-knowledge). 
@@ -30,22 +30,22 @@ We refer the reader to \cite{Thaler23} for a formal description of the propertie
 
 A time-lock puzzle (TLP)~\cite{RivShaWag96} consists of three efficient algorithms $\mathsf{TLP} = (\mathsf{Setup}, \mathsf{Gen}, \mathsf{Solve})$ allowing a party to ``encrypt'' a message to the future. To recover the solution, one needs to perform a computation that is believed to be inherently sequential, with a parameterizable number of steps.
 
-\begin{definition}[Time-lock puzzle~\cite{RivShaWag96}] A time-lock puzzle scheme $\sf TLP$ for solution space $\mathcal{X}$ consists of the following three efficient algorithms:
-    \begin{description}
-        \item[$\mathsf{TLP.Setup}(\secparam, \Ttime) \randout \pp$.] The (potentially trusted) setup algorithm takes as input a security parameter $\secparam$ and a difficulty (time) parameter $\Ttime$, and outputs public parameters $\pp$. % (usually a group $\mathbb{G}$ with $\lambda$ bits of security). 
+\begin{definition}[Time-lock puzzle~\cite{RivShaWag96}] A time-lock puzzle scheme $\sf TLP = (\Setup, \mathsf{Gen}, \mathsf{Solve})$ for solution space $\mathcal{X}$ consists of the following three efficient algorithms:
+    \begin{itemize}
+        \item \underline{$\mathsf{TLP.Setup}(\secparam, \Ttime) \randout \pp$:} The (potentially trusted) setup algorithm takes as input a security parameter $\secparam$ and a difficulty (time) parameter $\Ttime$, and outputs public parameters $\pp$. % (usually a group $\mathbb{G}$ with $\lambda$ bits of security). 
         % Typically $\mathbb{G}$ is a group of unknown order, e.g., the group $\mathbb{Z}^{*}_N$. 
-        \item[$\mathsf{TLP.Gen}(\pp, s) \randout Z$.] Given a solution $s \in \X$, the puzzle generation algorithm efficiently computes a time-lock puzzle $Z$.
-        \item[$\mathsf{TLP.Solve}(\pp, Z) \rightarrow s$.] Given a TLP $Z$, the puzzle-solving algorithm requires at least $\Ttime$ sequential steps to output the solution $s$.
-    \end{description}
+        \item \underline{$\mathsf{TLP.Gen}(\pp, s) \randout Z$:} Given a solution $s \in \X$, the puzzle generation algorithm efficiently computes a time-lock puzzle $Z$.
+        \item \underline{$\mathsf{TLP.Solve}(\pp, Z) \rightarrow s$:} Given a TLP $Z$, the puzzle-solving algorithm requires at least $\Ttime$ sequential steps to output the solution $s$.
+    \end{itemize}
 \end{definition}
 
 Informally, we say that a TLP scheme is \emph{correct} if $\mathsf{TLP.Gen}$ is efficiently computable, and $\tlp.{\sf Solve}$ always recovers the original solution $s$ to a validly constructed puzzle. A TLP scheme is \emph{secure} if $Z$ hides the solution $s$ and no adversary can compute $\mathsf{TLP.Solve}$ in fewer than $\Ttime$ steps with non-negligible probability. For the formal definitions, see~\cite{C:MalThy19}.
 
 \paragraph{Homomorphic TLPs.}
 Malavolta and Thyagarajan~\cite{C:MalThy19} introduce \emph{homomorphic} TLPs (HTLPs). An HTLP is defined with respect to a circuit class $\mathcal{C}$ and has an additional algorithm $\sf Eval$ defined as:
-\begin{description}
-    \item[$\htlp.{\sf Eval}(\pp, C, Z_1, \dots, Z_m) \rightarrow Z_*$.] Given the public parameters, a circuit $C \in \mathcal{C}$ where $C: \X^m \rightarrow \X$, and input puzzles $Z_1, \dots, Z_m$, the homomorphic evaluation algorithm outputs a puzzle $Z_*$.
-\end{description}
+\begin{itemize}
+    \item \underline{$\htlp.{\sf Eval}(\pp, C, Z_1, \dots, Z_m) \rightarrow Z_*$:} Given the public parameters, a circuit $C \in \mathcal{C}$ where $C: \X^m \rightarrow \X$, and input puzzles $Z_1, \dots, Z_m$, the homomorphic evaluation algorithm outputs a puzzle $Z_*$.
+\end{itemize}
 
 Correctness requires that $\htlp.{\sf Solve}(Z_*)$
 % the puzzle obtained by homomorphically applying the circuit $C$ to $m$ puzzles 
@@ -70,39 +70,26 @@ should contain the expected solution, namely $C(s_1, \dots, s_m)$, where $s_i \g
 
 \subsection{HTLP Constructions}\label{app:htlp_constructions}
 
-Malavolta and Thyagarajan~\cite{C:MalThy19} give two HTLP constructions with linear and multiplicative homomorphisms, respectively. They require $N$ to be a \emph{strong} semiprime, i.e., $N = p \cdot q$ such that $p = 2p' + 1$ and $q = 2q' + 1$ where $p', q'$ are also prime. The linearly-homomorphic HTLP is based on Paillier encryption~\cite{C:Paillier99}, while the multiplicative homomorphism is achieved by working over the subgroup $\JJ_N \subseteq \ZZ_N^*$ of elements with Jacobi symbol $+1$. We recall their constructions in \Cref{fig:mt19-HTLP}.
+Malavolta and Thyagarajan~\cite{C:MalThy19} give two HTLP constructions with linear and multiplicative homomorphisms, respectively. They require $N$ to be a \emph{strong} semiprime, i.e., $N = p \cdot q$ such that $p = 2p' + 1$ and $q = 2q' + 1$ where $p', q'$ are also prime. The linearly-homomorphic HTLP is based on Paillier encryption~\cite{C:Paillier99}, while the multiplicative homomorphism is achieved by working over the subgroup $\JJ_N \subseteq \ZZ_N^*$ of elements with Jacobi symbol $+1$. 
+We recall their constructions below.
+% We recall their constructions in \Cref{fig:mt19-HTLP}.
 
-\begin{figure}[tb]
-    \centering
-    \begin{mdframed}
+% \begin{figure}[tb]
+%     \centering
+%     \begin{mdframed}
     \begin{construction}[Linear HTLP~\cite{C:MalThy19}.]\label{con:paillierHTLP}
     \hfill
-    \begin{description}
-        \item[$\htlp.\Setup(\secparam, \Ttime) \randout \pp$.] Sample a strong semiprime $N$ and a generator $g \sample \ZZ_N^*$, then compute $h = g^{2^\Ttime} \mod{N} \in \ZZ_N^*$. (This can be computed efficiently using the factorization of $N$). Output $\pp := (N, g, h)$.
-        \item[$\htlp.{\sf Gen}(\pp, s; r) \rightarrow Z$.] Given a value $s \in \ZZ_N$, use randomness $r \in \ZZ_{N^2}$ to compute and output
+    \begin{itemize}
+        \item \underline{$\htlp.\Setup(\secparam, \Ttime) \randout \pp$:} Sample a strong semiprime $N$ and a generator $g \sample \ZZ_N^*$, then compute $h = g^{2^\Ttime} \mod{N} \in \ZZ_N^*$. (This can be computed efficiently using the factorization of $N$). Output $\pp := (N, g, h)$.
+        \item \underline{$\htlp.{\sf Gen}(\pp, s; r) \rightarrow Z$:} Given a value $s \in \ZZ_N$, use randomness $r \in \ZZ_{N^2}$ to compute and output
             $$Z := (g^r \mod{N},\ h^{r \cdot N} \cdot (1+N)^s \mod{N^2}) \in \JJ_N \times \ZZ_{N^2}^*$$
-        \item[$\htlp.\Open(\pp, Z, r) \rightarrow s$.] Parse $Z := (u,v)$ and compute $w := u^{2^T} \mod{N} \allowbreak= h^r$ via repeated squaring. Output $s := \frac{(v/w^N \mod{N^2})- 1}{N}$.
-        \item[$\htlp.{\sf Eval}(\pp, f, Z_1, Z_2) \rightarrow Z$.] To evaluate a linear function $f(x_1, x_2) = b + a_1 x_1 + a_2 x_2$ homomorphically on puzzles $Z_1 := (u_1, v_1)$ and $Z_2 := (u_2, v_2)$, return
+        \item \underline{$\htlp.\Open(\pp, Z, r) \rightarrow s$:} Parse $Z := (u,v)$ and compute $w := u^{2^T} \mod{N} \allowbreak= h^r$ via repeated squaring. Output $s := \frac{(v/w^N \mod{N^2})- 1}{N}$.
+        \item \underline{$\htlp.{\sf Eval}(\pp, f, Z_1, Z_2) \rightarrow Z$:} To evaluate a linear function $f(x_1, x_2) = b + a_1 x_1 + a_2 x_2$ homomorphically on puzzles $Z_1 := (u_1, v_1)$ and $Z_2 := (u_2, v_2)$, return
         $$Z = (u_1^{a_1} \cdot u_2^{a_2} \mod{N}, v_1^{a_1} \cdot v_2^{a_2} \cdot (1+N)^b \mod{N^2}).$$
-    \end{description}
+    \end{itemize}
     \end{construction}
-    \begin{construction}[Multiplicative HTLP~\cite{C:MalThy19}.]\label{con:multHTLP}
-    \hfill
-    \begin{description}
-        \item[$\htlp.\Setup(\secparam, \Ttime) \randout \pp$.] Same as \cref{con:paillierHTLP}.
-        \item[$\htlp.{\sf Gen}(\pp, s; r) \rightarrow Z$.] Given a value $s \in \JJ_N$, use randomness $r \in \ZZ_{N^2}$ to compute and output
-            $$Z := (g^r \mod{N},\ h^r \cdot s \mod{N}) \in \ZZ_N^* \times \ZZ_N^*$$
-        \item[$\htlp.\Open(\pp, Z, r) \rightarrow s$.] Parse $Z := (u,v)$ and compute $w := u^{2^T} \mod{N} \allowbreak= h^r$ via repeated squaring. Output $s := v/w$.
-        \item[$\htlp.{\sf Eval}(\pp, f, Z_1, Z_2) \rightarrow Z$.] To evaluate a multiplicative function $f(x_1, x_2) \allowbreak= a x_1 x_2$ homomorphically on puzzles $Z_1 := (u_1, v_1)$ and $Z_2 := (u_2, v_2)$, return
-        $$Z = (u_1 \cdot u_2 \mod{N}, a \cdot v_1 \cdot v_2 \mod{N})$$
-    \end{description}
-    \end{construction}
-    \end{mdframed}
-    \caption{The HTLP constructions of \cite{C:MalThy19}.}
-    \label{fig:mt19-HTLP}
-\end{figure}
 
-Correctness of the linear HTLP holds because for all $s \in \ZZ_N$ and $Z = (u,v) \gets \htlp.{\sf Gen}(\pp, s)$,
+\noindent Correctness holds because for all $s \in \ZZ_N$ and $Z = (u,v) \gets \htlp.{\sf Gen}(\pp, s)$,
 \begin{equation}\label{eq:correctness1}
 \htlp.\Open(\pp, Z) = \frac{(v/(h^R)^N \mod{N^2})-1}{N} = \frac{((1+N)^s) - 1}{N} = s
 \end{equation}
@@ -120,7 +107,24 @@ Correctness of the homomorphism follows since for all linear functions $f(x_1, x
 % \end{equation}
 which opens to $f(s_1, s_2)$ by \cref{eq:correctness1}.
 
-The multiplicative HTLP operates over the solution space $\JJ_N$ (instead of $\ZZ_N$).
+
+    \begin{construction}[Multiplicative HTLP~\cite{C:MalThy19}.]\label{con:multHTLP}
+    \hfill
+    \begin{itemize}
+        \item \underline{$\htlp.\Setup(\secparam, \Ttime) \randout \pp$:} Same as \Cref{con:paillierHTLP}.
+        \item \underline{$\htlp.{\sf Gen}(\pp, s; r) \rightarrow Z$:} Given a value $s \in \JJ_N$, use randomness $r \in \ZZ_{N^2}$ to compute and output
+            $$Z := (g^r \mod{N},\ h^r \cdot s \mod{N}) \in \ZZ_N^* \times \ZZ_N^*$$
+        \item \underline{$\htlp.\Open(\pp, Z, r) \rightarrow s$:} Parse $Z := (u,v)$ and compute $w := u^{2^T} \mod{N} \allowbreak= h^r$ via repeated squaring. Output $s := v/w$.
+        \item \underline{$\htlp.{\sf Eval}(\pp, f, Z_1, Z_2) \rightarrow Z$:} To evaluate a multiplicative function $f(x_1, x_2) \allowbreak= a x_1 x_2$ homomorphically on puzzles $Z_1 := (u_1, v_1)$ and $Z_2 := (u_2, v_2)$, return
+        $$Z = (u_1 \cdot u_2 \mod{N}, a \cdot v_1 \cdot v_2 \mod{N})$$
+    \end{itemize}
+    \end{construction}
+%     \end{mdframed}
+%     \caption{The HTLP constructions of \cite{C:MalThy19}.}
+%     \label{fig:mt19-HTLP}
+% \end{figure}
+
+\noindent \Cref{con:multHTLP} operates over the solution space $\JJ_N$ (instead of $\ZZ_N$).
 It is easy to see that $\htlp.\Open(\pp,\allowbreak \htlp.{\sf Gen}(\pp, s)) = s$ for all $s \in \ZZ_N^*$. Furthermore, for all $f(x_1, x_2) = a x_1 x_2$ and all $Z_i = (u_i, v_i) \in {\sf Im}(\htlp.{\sf Gen}(\pp,\allowbreak s_i; r_i))$ for $i \in \{1,2\}$,
 \begin{align*}
     \htlp&\rlap{$.{\sf Eval}(\pp, f, Z_1, Z_2) = (u_1 \cdot u_2 \mod{N}, a \cdot v_1 \cdot v_2 \mod{N})$} &&\\
@@ -128,7 +132,7 @@ It is easy to see that $\htlp.\Open(\pp,\allowbreak \htlp.{\sf Gen}(\pp, s)) = s
     &= (g^{r_1 + r_2} \mod{N},   &&h^{r_1 + r_2} \cdot a s_1 s_2 \mod{N})\\
     &\rlap{$= \htlp.{\sf Gen}(\pp, f(s_1, s_2); r_1 + r_2)$}. &&
 \end{align*}
-Thus correctness holds.
+% Thus correctness holds.
 
 % \begin{mdframed}
 % \begin{construction}[Multiplicative HTLP~\cite{liu2022towards}]
@@ -160,9 +164,9 @@ Thus correctness holds.
 \begin{definition}[Vector packing]\label{def:packing}
 A setup algorithm $\PSetup$ and pair of efficiently computable bijective functions $(\pack,\unpack)$ is called a \emph{packing scheme} and has the following syntax:
     \begin{itemize}
-        \item $\PSetup(\ell, w) \to \pp$. Given a vector dimension $\ell$ and maximum entry $w$, output public parameters $\pp$.
-        \item $\pack(\pp, \Vec{a}) \to s$. Encode $\Vec{a} \in (\ZZ^+)^\ell$ as a positive integer $s \in \ZZ^+$. 
-        \item $\unpack(\pp, s) \to \Vec{a}$. Given $s \in \ZZ^+$, recover a vector $\Vec{a} \in (\ZZ^+)^\ell$. 
+        \item \underline{$\PSetup(\ell, w) \to \pp$:} Given a vector dimension $\ell$ and maximum entry $w$, output public parameters $\pp$.
+        \item \underline{$\pack(\pp, \Vec{a}) \to s$:} Encode $\Vec{a} \in (\ZZ^+)^\ell$ as a positive integer $s \in \ZZ^+$. 
+        \item \underline{$\unpack(\pp, s) \to \Vec{a}$:} Given $s \in \ZZ^+$, recover a vector $\Vec{a} \in (\ZZ^+)^\ell$. 
     \end{itemize}
 For \emph{correctness} we require $\unpack(\pack(\Vec{a}))=\Vec{a}$ for all $\Vec{a}\in (\ZZ^+)^\ell$.
 \end{definition}
@@ -174,9 +178,9 @@ Instead, we will set $M:= nw+1$ to accommodate the homomorphic addition of all $
 \begin{construction}[Packing from Positional Numeral System]\label{con:packingPNS}
 \hfill
 \begin{itemize}%[topsep=2pt]
-    \item $\PSetup(\ell, w) \to M:$ Return $M := w + 1$.
-    \item $\pack(M, \Vec{a}) \to s:$ Output $s := \sum_{j=1}^{\sizeof{\vec{a}}} a_j M^{j-1}$.
-    \item $\unpack(M, s) \to \Vec{a}:$ Let $\ell := \ceil{\log_M{s}}$. For $j \in [\ell]$, compute the $j$th entry of $\Vec{a}$ as $a_j := s \mod{M^{j-1}}$.
+    \item \underline{$\PSetup(\ell, w) \to M$:} Return $M := w + 1$.
+    \item \underline{$\pack(M, \Vec{a}) \to s$:} Output $s := \sum_{j=1}^{\sizeof{\vec{a}}} a_j M^{j-1}$.
+    \item \underline{$\unpack(M, s) \to \Vec{a}$:} Let $\ell := \ceil{\log_M{s}}$. For $j \in [\ell]$, compute the $j$th entry of $\Vec{a}$ as $a_j := s \mod{M^{j-1}}$.
 \end{itemize}
 \end{construction}
 
@@ -186,9 +190,9 @@ Besides PNS packing, we also introduce an alternative approach in \Cref{con:pack
 \hfill
 \begin{itemize}%[topsep=2pt]
     % \textit{Public parameters:}~$\pp:=(p_1,\dots,p_m)$ primes s.t. $\min\limits_{j\in[m]}p_j\geq M(=nw+1)$.\\
-    \item $\PSetup(\ell, w) \to \vec{p}:$ Let $M := w + 1$ and sample $\ell$ distinct primes $p_1, \dots, p_\ell$ s.t. $p_j \geq M\ \forall j \in [\ell]$. Return $\vec{p} := (p_1, \dots, p_\ell)$.
-    \item $\pack(\vec{p}, \Vec{a}) \to s$: Given $\Vec{a} \in (\ZZ^+)^\ell$, use the CRT to find the unique $s \in \ZZ^+$ s.t. $s\equiv a_j \pmod{p_j}~\forall j\in[\ell]$.
-    \item $\unpack(\vec{p}, s) \to \Vec{a}$: return $(a_1, \dots, a_\ell)$ where $a_j \equiv s \mod{p_j}\ \forall j \in [\ell]$.
+    \item \underline{$\PSetup(\ell, w) \to \vec{p}$:} Let $M := w + 1$ and sample $\ell$ distinct primes $p_1, \dots, p_\ell$ s.t. $p_j \geq M\ \forall j \in [\ell]$. Return $\vec{p} := (p_1, \dots, p_\ell)$.
+    \item \underline{$\pack(\vec{p}, \Vec{a}) \to s$:} Given $\Vec{a} \in (\ZZ^+)^\ell$, use the CRT to find the unique $s \in \ZZ^+$ s.t. $s\equiv a_j \pmod{p_j}~\forall j\in[\ell]$.
+    \item \underline{$\unpack(\vec{p}, s) \to \Vec{a}$:} return $(a_1, \dots, a_\ell)$ where $a_j \equiv s \mod{p_j}\ \forall j \in [\ell]$.
 \end{itemize}
 \end{construction}
 
@@ -271,16 +275,16 @@ A partial signature is computed in exactly the same way as a regular BLS signatu
 
 Notice that the reconstruction simply performs Shamir reconstruction of the signing key shares $\sk_i$ in the exponent and thus the output will equal $\blshash(m)^{\sk}$. Hence, the complete signature is indistinguishable from a regular BLS signature, and verification proceeds exactly as in the regular scheme.
 
-subsubsection{Schnorr Signatures}\label{sec:schnorr}
+\subsubsection{Schnorr Signatures}\label{sec:schnorr}
 
-\begin{definition}[Schnorr signature~\cite{C:Schnorr89}]
+\begin{construction}[Schnorr signature~\cite{C:Schnorr89}]
     Let $\pp = (\GG, g, q)$ be description of a cyclic group $\GG$ of prime order $q$ with generator $g$ in which the discrete logarithm problem is hard.
-    \begin{description}
-        \item[$\kgen(\pp) \to (\sk, \vk)$.] Sample a secret key $\sk \sample \ZZ_q$ and set the corresponding verification key $\vk := g^{\sk} \in \GG$. Output $(\sk, \vk)$.
-        \item[$\sign(\sk, m) \to \sigma$.] Given a secret key $\sk \in \ZZ_q$ and message $m$, sample $k \sample \ZZ_q$ and let $R := g^k$. Compute $c := H(m, g^\sk, R)$ and $s := k + c \cdot \sk$. Output $\sigma := (R, s)$.
-        \item[$\vrfy(\vk, m, \sigma) \to \{0,1\}$.] Given a verification key $\vk$, message $m$, and signature $\sigma$, compute $c := H(m, \vk, R)$ and check $R \cdot \vk^c \stackrel{?}{=} s$. If so, output 1, else 0.
-    \end{description}
-\end{definition}
+    \begin{itemize}
+        \item \underline{$\kgen(\pp) \to (\sk, \vk)$:} Sample a secret key $\sk \sample \ZZ_q$ and set the corresponding verification key $\vk := g^{\sk} \in \GG$. Output $(\sk, \vk)$.
+        \item \underline{$\sign(\sk, m) \to \sigma$:} Given a secret key $\sk \in \ZZ_q$ and message $m$, sample $k \sample \ZZ_q$ and let $R := g^k$. Compute $c := H(m, g^\sk, R)$ and $s := k + c \cdot \sk$. Output $\sigma := (R, s)$.
+        \item \underline{$\vrfy(\vk, m, \sigma) \to \{0,1\}$:} Given a verification key $\vk$, message $m$, and signature $\sigma$, compute $c := H(m, \vk, R)$ and check $R \cdot \vk^c \stackrel{?}{=} s$. If so, output 1, else 0.
+    \end{itemize}
+\end{construction}
 
 \noemi{Schnorr (threshold) signatures; \cite{EPRINT:Lindell22} and \cite{SAC:KomGol20} use different definitions of Schnorr, are they equivalent?}
 
