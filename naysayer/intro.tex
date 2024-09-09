@@ -10,7 +10,9 @@ High gas costs have motivated many applications to utilize \emph{verifiable comp
 This computation can even depend on secret inputs not known to the verifier in the case of zero-knowledge proofs (i.e., zkSNARKs).
  %In some cases (though not all), this proof is also zero-knowledge, hiding some inputs to the computation. This is commonly referred to as a \emph{zk-rollup} (even if it is not zero-knowledge).
 
-VC leads to a paradigm in which smart contracts, while capable of arbitrary computation, primarily act as verifiers and outsource all significant computation off-chain (see \Cref{fig:vc}). A motivating application is so-called ``zk''-\emph{rollups}~\cite{starknet,zksync,aztec,dydx,scroll}, which combine transactions from many users into a single smart contract which verifies a proof that all have been executed correctly. However, verifying these proofs can still be costly. For example, the StarkEx rollup 
+VC leads to a paradigm in which smart contracts, while capable of arbitrary computation, primarily act as verifiers and outsource all significant computation off-chain (see \Cref{fig:vc}). A motivating application is so-called ``zk''-\emph{rollups}\footnotemark~\cite{starknet,zksync,aztec,dydx,scroll}, which combine transactions from many users into a single smart contract which verifies a proof that all have been executed correctly.
+\footnotetext{Note that ``zk-rollup'' is somewhat of a misnomer, since these services do not necessarily meet the zero-knowledge property.} 
+However, verifying these proofs can still be costly. For example, the StarkEx rollup 
 %contract verifying the state transitions of the off-chain StarkEx marketplace 
 has spent hundreds of thousands of dollars to date to verify FRI polynomial commitment opening proofs.\footnote{\url{https://etherscan.io/address/0x3e6118da317f7a433031f03bb71ab870d87dd2dd}}
 % Even verifying simple statements can exceed the block gas limit of Ethereum~\cite{EPRINT:NRBB22}\todo{not sure about this example. Maybe a dollar figure on STARKs would more convincing?}\istvan{I had in mind the CRS for EIP-4844 that would have been exceeded the block gas limit with this solution.}.
@@ -28,7 +30,8 @@ Otherwise, if no party successfully naysays the original proof before the end of
 To deter denial of service, naysayers may be required to post collateral, which is forfeited if their naysayer proof is incorrect.
 
 This paradigm potentially saves the verifier work in two ways. 
-First, in the optimistic case, where the proof is not challenged, the verifier does no work at all. (The same is true of optimistic rollups.) We expect this to almost always be the case in practice. Second, even in the pessimistic case, we will see below that checking the naysayer proof can be much more efficient than checking the original proof. In other words, the naysayer acts as a helper to the verifier by reducing the cost of the verification procedure in fraudulent cases. At worst, checking the naysayer proof is equivalent to verifying the original proof (this is the trivial naysayer construction).
+First, in the optimistic case, where the proof is not challenged, the verifier does no work at all (the same is true of fraud proofs; see \Cref{sec:naysayer-related}). We expect this to almost always be the case in practice. Second, even in the pessimistic case, we will see below that checking the naysayer proof can be much more efficient than checking the original proof.
+In other words, the naysayer acts as a helper to the verifier by reducing the cost of the verification procedure in fraudulent cases. At worst, checking the naysayer proof is equivalent to verifying the original proof (this is the trivial naysayer construction).
 
 Naysayer proofs enable other interesting trade-offs. 
 % for instance, %for a proof system with transparent setup and large proofs, the \naysayer proof could be instantiated generically using a short proof system with trusted setup (e.g., \cite{groth16}), or using a lower security level. 

@@ -1,11 +1,11 @@
 \subsection{Model}
 
-There are three entities in a naysayer proof system. We assume that all parties can read and write to a public bulletin board (e.g. a blockchain).
+There are three entities in a naysayer proof system. We assume that all parties can read and write to a public bulletin board (e.g., a blockchain). Fix a function $f: \mathcal{Y} \times \mathcal{W} \to \mathcal{Y}$ and let $\Lang_f$ be the language $\{(y, y'): \exists \witness \suchthat y' = f(y, \witness)\}$. Let $\Rel_f = \{((y, y'), \witness)\}$ be the corresponding relation. We assume $f,y$ are known by all parties.
 \begin{description}
-    \item[Prover] The prover posts a proof $\pi$ to the bulletin board claiming $(x,\witness)\in\mathcal{R}$. 
-    \item[Verifier] The verifier does not directly verify the validity of $\pi$, rather, it allows everyone to naysay in a pre-defined time window of duration $T_{\nay}$.
-    Optimistically, if no one naysays $\pi$ within time $T_{\nay}$, the verifier accepts it. In the pessimistic case, a party (or multiple parties) naysay the validity of $\pi$ by posting proof(s) $\pi_{\nay}$. The verifier checks the validity of each $\pi_{\nay}$, and if any of them pass, it rejects the original proof $\pi$.
-    \item[Naysayer] If $\vrfy(\crs, x,\pi)=0$, then the naysayer posts a naysayer proof $\pi_{\nay}$ to the public bulletin board before $T_{\nay}$ time elapses.
+    \item[Prover] The prover posts $y'$ and a proof $\pi$ to the bulletin board claiming $(y,y') \in \Lang_f$. 
+    \item[Verifier] The verifier does not directly verify the validity of $\pi$, rather, it waits for time $T_{\nay}$.
+    If no one naysays $y', \pi$ within that time, the verifier accepts $y'$. In the pessimistic case, a party (or multiple parties) naysay the validity of $\pi$ by posting proof(s) $\pi_{\nay}$. The verifier checks the validity of each $\pi_{\nay}$, and if any of them pass, it rejects $y'$.
+    \item[Naysayer] If $\vrfy(\crs, (y,y'),\pi)=0$, then the naysayer posts a naysayer proof $\pi_{\nay}$ to the public bulletin board before $T_{\nay}$ time elapses.
 \end{description}
 
-Note that we need to assume a synchronous communication model as we cannot have naysayer proofs in partial synchrony or asynchrony: if the adversary can arbitrarily delay the posting of naysayer proofs, then we cannot enforce soundness of the underlying proofs. Note that synchrony is already assumed by most of the deployed consensus algorithms, e.g., Nakamoto consensus~\cite{Nakamoto08}. Furthermore, we assume that the public bulletin board offers censorship resistance for the writers of the bulletin board. Finally, we assume that there is \emph{at least one honest party} who is ready to create and submit naysayer proofs for invalid proofs.
+Note that we must assume a synchronous communication model. In partial synchrony or asynchrony, the adversary can arbitrarily delay the posting of naysayer proofs, and one cannot enforce soundness of the underlying proofs. Synchrony is already assumed by most deployed consensus algorithms, e.g., Nakamoto consensus~\cite{Nakamoto08}. Furthermore, we assume that the public bulletin board offers censorship-resistance, i.e., anyone who wishes to write to it can do so successfully within a certain time bound. Finally, we assume that there is \emph{at least one honest party} who will submit a naysayer proof for any invalid $\pi$.

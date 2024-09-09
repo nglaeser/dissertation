@@ -14,6 +14,8 @@ We distinguish the key-pairs used in a signature scheme ($\vk, \sk$ for ``verifi
 
 \subsection{Non-interactive proof systems}\label{sec:nizks}
 
+\todo{NP-languages and relations}
+
 \begin{definition}[Non-interactive proof] A non-interactive proof $\Pi$ for some NP relation $\Rel$ is a tuple of PPT algorithms $(\setup, \prove, \vrfy)$:
     \begin{itemize}
         \item \underline{$\setup(\secparam) \rightarrow \crs$:} Given a security parameter, output a common reference string $\crs$. This algorithm might use private randomness (a trusted setup).

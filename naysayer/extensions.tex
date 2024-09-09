@@ -1,0 +1,16 @@
+\subsection{Extensions and Future Work}\label{sec:naysayer_extensions}
+
+\noemi{Currently, we require the prover to additionally run $\Pi.\vrfy$ to create the verification trace $\com$. Is there a way to separate/outsource this to another party to reduce the added computational burden on a party already spending so much power to compute the proof?}
+
+\subsubsection{Yeasayer Proofs}
+
+\todo{edit} We distinguish between two types of naysayer proofs as follows.
+\begin{description}
+    \item \textbf{Type 1.} A prover of an NP-relation $\Rel_\Lang$ posts $(x,\pi' = (\com, \pi))$ to the public bulletin board claiming that $x \in \Lang$. If the proof $\pi$ is invalid with respect to the statement $x$, i.e., $\vrfy(\crs, x,\pi)=0$\footnote{assuming the trace in $\com$ is consistent with the computation of $\vrfy(\crs, x, \pi)$; otherwise, a naysayer can show that $\com$ is inconsistent with $\pi$}, then naysayer provers convince the resource-constrained verifier by sending a $\pi_{\nay}$ that this is indeed the case, i.e., $\vrfynay(\crs_{\nay}, (x,\pi), \pi_{\nay})=0$. 
+    \item \textbf{Type 2.} This family of naysayer proofs is even more efficient in the optimistic case, as the prover \emph{only sends the instance $x$} and no proofs at all, claiming without evidence that $(x,w) \in \Rel_\Lang$ (this is the same as in the fraud proof paradigm). On the other hand, if the prover's assertion is incorrect, i.e., $(x,w) \notin \Rel_\Lang$, then a naysayer prover provides the correct statement $x'$ such that $(x',w) \in \Rel_\Lang$ 
+    and a corresponding ``regular'' proof $\pi$ such that $\vrfy(\crs, x', \pi) = 1$. Importantly, $x'$ must correspond to the same witness $w$ (which must be known to the challenger). For example, in the case of rollups, the (public) witness $w$ is the set of transactions in the rollup, and the statement $x = (\mathsf{st}, \mathsf{st}')$ is the updated rollup state after applying the batch $w$. Therefore, an incorrect assertion represents an incorrect application of the update $w$. The correction $x'$ is the result of the proper application of $w$.
+    This can be seen as a naysayer proof system where $\pi' = \varnothing$, $\aux_{\nay} = w$, $\pi_{\nay} = (x', \pi_{x'})$, and $\vrfynay$ runs $\Pi.\vrfy(\crs, x', \pi_{x'})$.
+\end{description}
+We conjecture that in most applications, in the worst case, type-2 naysayer proofs are more costly than type-1 naysayer proofs (both compute and storage).
+It is an interesting open question which applications are more suited to type-1 or type-2 naysayer proofs considering both optimistic and pessimistic costs. To thoroughly model this question, one must take into account the verifier's compute cost, the (naysayer) proof storage costs, as well as the probability of the prover sending an invalid proof. We leave this problem to future work.
+In the rest of \Cref{sec:naysayer}, we solely focus on type-1 naysayer proofs.

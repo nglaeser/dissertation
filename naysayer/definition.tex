@@ -1,62 +1,54 @@
 \subsection{Formal Definitions}\label{sec:naysayer_def}
 
-We formally introduce the notion of a \emph{naysayer proof}, with the following syntax:
+Next, we introduce a formal definition and syntax for naysayer proofs. A naysayer proof system $\Pi_{\nay}$ can be seen as a ``wrapper'' around an underlying proof system $\Pi$. For example, $\Pi_{\sf nay}$ defines a proving algorithm $\Pi_{\nay}.\prove$ which uses the original prover $\Pi.\prove$ as a subroutine.
 
-\begin{definition}[Naysayer proof] \label{def:naysayer_proof}
-Given a non-interactive proof system $\Pi = (\setup, \prove, \vrfy)$ for some NP relation $\Rel$, the corresponding naysayer proof system $\Pi_{\nay}$ is a tuple of PPT algorithms $({\sf N}\setup, {\sf N}\prove, \naysay, \vrfynay)$ defined as follows:
+\begin{definition}[Naysayer proof]\label{def:naysayer_proof}
+Given a non-interactive proof system $\Pi = (\setup, \prove, \vrfy)$ for some NP relation $\Rel_\Lang$ for the language $\Lang$, the corresponding naysayer proof system $\Pi_{\nay}$ is a tuple of PPT algorithms $(\setup, \prove,\allowbreak \naysay, \vrfynay)$ defined as follows:
     \begin{description}
-        \item[${\sf N}\setup(\secparam, 1^\naysecparam) \rightarrow (\crs,\crs_{\nay})$:] Given security parameters $\secparam$ and $1^\naysecparam$ for $\Pi$ and $\Pi_{\nay}$, respectively, output common reference strings $\crs$ and $\crs_{\nay}$. This algorithm might use private randomness.
-        \item[${\sf N}\prove(\crs, x, w) \to \pi$:] Given a statement $x$ and witness $w$ such that $(x, w) \in \Rel$, compute $\pi' \gets \Pi.\prove(\crs, x,w)$ and $\com$ a commitment to the evaluation trace of $\Pi.\vrfy(\crs, x, \pi')$, output $\pi := (\com, \pi')$.
-        \item[$\naysay(\crs_{\nay}, (x,\pi), \aux_{\nay}) \rightarrow \pi_{\nay}$:] Given a statement $x$, $\pi = (\com, \pi')$ where $\pi'$ is a corresponding (potentially invalid) proof in proof system $\Pi$, and auxiliary information $\aux_{\nay}$, output a naysayer proof $\pi_{\nay}$ disputing $\pi'$. 
-        \item[$\vrfynay(\crs_{\nay}, (x,\pi), \pi_{\nay}) \rightarrow \{0, \perp\}$:] Given a statement-proof pair $(x, \pi=(\com,\allowbreak\pi'))$ and a naysayer proof $\pi_{\nay}$ disputing $\pi$, output a bit indicating whether evidence against $\pi$ is sufficient to reject $\pi$ (0) or inconclusive ($\perp$).
+        \item[$\setup(\secparam, 1^{\naysecparam}) \randout (\crs,\crs_{\nay})$:] Given (potentially different) security parameters $\secparam$ and $1^{\naysecparam}$, output two common reference strings $\crs$ and $\crs_{\nay}$. This algorithm may use private randomness.
+        \item[$\prove(\crs, x, \witness) \to \pi'$:] Given a statement $x$ and witness $\witness$ such that $(x,\allowbreak \witness) \in \Rel$, compute $\pi \gets \Pi.\prove(\crs, x,w)$ and a commitment $\com$ to the evaluation trace of $\Pi.\vrfy(\crs, x, \pi)$. Output $\pi' = (\com, \pi)$.
+        \item[$\naysay(\crs_{\nay}, (x,\pi'), \aux_{\nay}) \rightarrow \pi_{\nay}$:] Given a statement $x$ and values $\pi' = (\com,\allowbreak \pi)$ where $\pi$ is a (potentially invalid) proof that $x \in \Lang$ using the proof system $\Pi$, output a naysayer proof $\pi_{\nay}$ disputing $\pi$. This algorithm may also make use of some (private) auxiliary information $\aux_{\nay}$.
+        \item[$\vrfynay(\crs_{\nay}, (x,\pi'), \pi_{\nay}) \rightarrow \{0, \perp\}$:] Given a statement-proof pair $(x,\allowbreak \pi'=(\com,\allowbreak\pi))$ and a naysayer proof $\pi_{\nay}$ disputing $\pi$, output a bit indicating whether evidence against $\pi$ is sufficient to reject (0) or inconclusive ($\perp$).
     \end{description}
 \end{definition}
 
 %Naysayer proofs are most interesting if $\vrfynay$ takes less time than directly verifying the proof $\pi$, i.e., running the $\vrfy$ algorithm. 
-A trivial naysayer proof system always exists in which $\pi_\nay = \varnothing$, $\pi = (\perp, \pi')$, and $\vrfynay$ simply runs the original verification procedure.
+A trivial naysayer proof system always exists in which $\pi_\nay = \varnothing$, $\pi' = (\perp, \pi)$, and $\vrfynay$ simply runs the original verification procedure, outputting $0$ if $\Pi.\vrfy(\crs, x, \pi) = 0$ and $\perp$ otherwise.
 We say a proof system $\Pi$ is \emph{efficiently naysayable} if there exists a corresponding naysayer proof system $\Pi_{\nay}$ such that $\vrfynay$ is asymptotically faster than $\vrfy$. If $\vrfynay$ is only concretely faster than $\vrfy$, we say $\Pi_{\nay}$ is a \emph{weakly efficient} naysayer proof. Note that some proof systems already have constant proof size and verification time~\cite{EC:Groth16,C:Schnorr89} and therefore can, at best, admit only weakly efficient naysayer proofs. 
-Moreover, if $\aux_\nay = \varnothing$, we say $\Pi_{\nay}$ is a \emph{public} naysayer proof. 
+Moreover, if $\aux_\nay = \varnothing$, we say $\Pi_{\nay}$ is a \emph{public} naysayer proof (see \Cref{sec:naysayer_apps} for an example of a non-publicly naysayble proof). 
 
 \begin{definition}[Naysayer correctness]
-    Given a proof system $\Pi$, a naysayer proof system $\Pi_{\nay}$ is \emph{correct} if, for all honestly generated $\crs, \crs_{\nay}$, all statements $x$, and all invalid proofs $\pi$, $\naysay$ outputs a valid naysayer proof $\pi_{\nay}$:
-\begin{equation}
+    Given a proof system $\Pi$, a naysayer proof system $\Pi_{\nay} = (\setup, \prove, \naysay, \vrfynay)$ is \emph{correct} if, for all honestly generated $\crs, \crs_{\nay}$, all statements $x$, all invalid proofs $\pi$, and all corresponding auxiliary information $\aux_{\nay}$, $\naysay$ outputs a valid naysayer proof $\pi_{\nay}$. That is:
+\begin{equation*}
     \Pr\left[
-        \vrfynay(\crs_{\nay}, (x,\pi), \pi_{\nay})=0 
+        \vrfynay(\crs_{\nay}, (x,\pi'), \pi_{\nay})=0 
         \middle| 
         \begin{array}{c}
-            (\crs, \crs_{\nay}) \gets {\sf N}\setup(\secparam, 1^\naysecparam)~\land\\
-            \vrfy(\crs, x,\pi)=0~\land\\
-            \pi_{\nay} \gets \naysay(\crs_{\nay}, (x, \pi), \aux_{\nay})
+            (\crs, \crs_{\nay}) \gets \setup(\secparam, 1^{\naysecparam})~\land\\
+            \Pi.\vrfy(\crs, x,\pi)=0~\land\\
+            \pi_{\nay} \gets \naysay(\crs_{\nay}, (x, \pi'), \aux_{\nay})
         \end{array}
     \right] = 1.
-\end{equation}
+\end{equation*}
 \end{definition}
 
-\begin{definition}[Naysayer soundness] Given a proof system $\Pi$, a naysayer proof system $\Pi_{\nay}$ is sound if, for all PPT adversaries $\adv$ and for all $x, \aux$, honestly generated $\crs, \crs_\nay$, and correct proofs $\pi$, $\adv$ produces a verifying naysayer proof $\pi_{\nay}$ with at most negligible probability:
-\begin{equation}
+\begin{definition}[Naysayer soundness] Given a proof system $\Pi$, a naysayer proof system $\Pi_{\nay}$ is \emph{sound} if, for all PPT adversaries $\adv$ and for all honestly generated $\crs, \crs_\nay$, all statements $x$ and auxiliary information $\aux_{\nay}$, and all correct proofs $\pi$, $\adv$ produces a passing naysayer proof $\pi_{\nay}$ with at most negligible probability:
+\begin{equation*}
     \Pr\left[
-        \vrfynay(\crs_{\nay}, (x,\pi), \pi_{\nay})=0 
+        \vrfynay(\crs_{\nay}, (x,\pi'), \pi_{\nay})=0 
         \middle| 
         \begin{array}{c}
-            (\crs, \crs_{\nay}) \gets {\sf N}\setup(\secparam, 1^\naysecparam)~\land\\
-            \vrfy(\crs, x,\pi)=1~\land\\
+            (\crs, \crs_{\nay}) \gets \setup(\secparam, 1^{\naysecparam})~\land\\
+            \Pi.\vrfy(\crs, x,\pi)=1~\land\\
             \pi_{\nay} \gets \adv(\crs_{\nay}, (x, \pi), \aux_{\nay})
         \end{array}
     \right] \leq\mathsf{negl}(\naysecparam).
-\end{equation}
+\end{equation*}
 \end{definition}
 
-We distinguish between two types of naysayer proofs as follows.
-\begin{description}
-    \item \textbf{Type 1.} A prover of an NP-relation $\Rel_\Lang$ posts $(x,\pi)$ to the public bulletin board claiming that $x \in \Lang$. If the proof $\pi$ is invalid with respect to the statement $x$, i.e., $\vrfy(\crs, x,\pi)=0$, then naysayer provers convince the resource-constrained verifier by sending a $\pi_{\nay}$ that this is indeed the case, i.e., $\vrfynay(\crs_{\nay}, (x,\pi), \pi_{\nay})=0$. 
-    \item \textbf{Type 2.} This family of naysayer proofs is even more efficient in the optimistic case, as the prover \emph{only sends the instance $x$} and no proofs at all, claiming without evidence that $(x,w) \in \Rel$. On the other hand, if the prover's assertion is incorrect, i.e., $(x,w) \notin \Rel$, then a naysayer prover provides the correct statement $x'$ such that $(x',w) \in \Rel$ 
-    and a corresponding ``regular'' proof $\pi$ such that $\vrfy(\crs, x', \pi) = 1$. For example, in the case of rollups, the (public) witness $w$ is the set of transactions in the rollup, and the statement $x = (\mathsf{st}, \mathsf{st}')$ is the updated rollup state after applying the batch $w$. Therefore, an incorrect assertion represents an incorrect application of the update $w$. The correction $x'$ is the result of the proper application of $w$.
-\end{description}
-We conjecture that in most applications, in the worst case, type-2 naysayer proofs are more costly than type-1 naysayer proofs (both compute and storage).
-It is an interesting open question which applications are more suited to type-1 or type-2 naysayer proofs considering both optimistic and pessimistic costs. To thoroughly model this question, one must take into account the verifier's compute cost, the (naysayer) proof storage costs, as well as the probability of the prover sending an invalid proof. We leave this problem to future work.
-In the rest of \Cref{sec:naysayer}, we solely focus on type-1 naysayer proofs.
+\todo{Update this framing. Makes more sense to say that every \emph{proof system} (succinct or not) has a \emph{succinct}---i.e., log-size and constant-time verifiable---naysayer proof. (Then the concrete succinctness of the base proof system determines whether the naysayer is efficient/weakly efficient/etc.)} \noemi{This assumes the verification algorithm is already in circuit-form, so not sure this works. CTB Rev1 suggested the phrasing ``for all NP, the trivial proof system has a constant-time and log-size naysayer''.} 
 
-\todo{Update this framing. Makes more sense to say that every \emph{proof system} (succinct or not) has a \emph{succinct}---i.e., log-size and constant-time verifiable---naysayer proof. (Then the concrete succinctness of the base proof system determines whether the naysayer is efficient/weakly efficient/etc.)} \noemi{This assumes the verification algorithm is already in circuit-form, so not sure this works. CTB Rev1 suggested the phrasing ``for all NP, the trivial proof system has a constant-time and log-size naysayer''.} Finally, we show that for every NP language, there exists a logarithmic-size naysayer proof with constant verification time (i.e., a succinct naysayer proof). %We follow the blueprint of~\cite{FOCS:FeiLapSha90}.
+We show that every proof system has a logarithmic-size naysayer proof with constant verification time (i.e., a succinct naysayer proof). %We follow the blueprint of~\cite{FOCS:FeiLapSha90}.
 
 \begin{lemma}\label{thm:naysayingNPCircuit}
     For every NP language $\Lang$ with relation $\Rel_\Lang$, \todo{change to CSAT specifically}
