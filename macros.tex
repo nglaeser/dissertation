@@ -64,17 +64,23 @@
 % oracles
 \newcommand{\oracle}{\ensuremath{\mathcal{O}}}
 \newcommand{\oaal}{\ensuremath{\oracle^{\sf A^2L}}}
+%%% Cryptographic primitives
 % common algorithms
 \newcommand{\setup}{\ensuremath{\mathsf{Setup}}}
 \newcommand{\kgen}{\ensuremath{\mathsf{KGen}}}
+\newcommand{\vrfy}{\ensuremath{\mathsf{Vrfy}}}
+% encryption
 \newcommand{\enc}{\ensuremath{\mathsf{Enc}}}
 \newcommand{\dec}{\ensuremath{\mathsf{Dec}}}
-\newcommand{\Ext}{\ensuremath{\mathsf{Ext}}}
+% signature
 \newcommand{\sign}{\ensuremath{\mathsf{Sign}}}
-\newcommand{\vrfy}{\ensuremath{\mathsf{Vrfy}}}
+% proofs
 \newcommand{\prove}{\ensuremath{\mathsf{Prove}}}
+% secret sharing
 \newcommand{\share}{\ensuremath{\mathsf{Share}}}
 \newcommand{\recon}{\ensuremath{\mathsf{Reconstruct}}}
+% commitments
+\newcommand{\COM}{\ensuremath{\mathsf{COM}}}
 \newcommand{\Commit}{\ensuremath{\mathsf{Com}}}
 \newcommand{\Open}{\ensuremath{\mathsf{Open}}}
 \newcommand{\decom}{\ensuremath{\mathsf{decom}}}
@@ -113,8 +119,9 @@
 \newcommand{\Fbcs}{\ensuremath{\mathcal{F}_{\sf BCS}}}
 
 %%%%% Naysayer %%%%%
-\newcommand{\nay}{\mathsf{nay}}
-\newcommand{\naysecparam}{\secpar_\nay}
+\newcommand{\nay}{\ensuremath{\mathsf{nay}}}
+\newcommand{\naysecpar}{\secpar_\nay}
+\newcommand{\naysecparam}{1^{\naysecpar}}
 \newcommand{\naysay}{\ensuremath{\mathsf{Naysay}}}
 \newcommand{\vrfynay}{\ensuremath{{\vrfy}\mathsf{Nay}}}
 
