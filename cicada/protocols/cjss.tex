@@ -5,11 +5,11 @@
 \end{center}
 Let $\Pi_{\sf E}$ be a CCA-secure public-key encryption scheme, $\tlp$ a time-lock puzzle scheme, and $\Sigma: \X^n \rightarrow \Y$ a base voting/auction protocol.
 \begin{description}
-    \item[$\mathsf{Setup}(\secparam, \Ttime) \randout (\pp, \Z)$.] Sample a key-pair $(\pk, \sk) \gets \Pi_{\sf E}.{\sf Gen}(\secparam)$ and TLP parameters $\pp_{\sf tlp} \gets \tlp.\Setup(\secparam, \Ttime)$. Compute $Z_{\sk} \sample \tlp.\mathsf{Gen}(\pp_{\sf tlp},\sk)$ and return $\pp := (\pp_{\sf tlp}, \pk)$ and $\Z := (Z_{\sk}, \perp)$.
-    \item[$\Seal(\pp, i, s) \randout (\ct_i, \pi_{i})$.] Parse $\pk$ from $\pp$ and compute an encrypted bid/ballot as $\ct_i \gets \Pi_{\sf E}.\enc(\pk,s_i)$ along with a proof $\pi_{i}$ that $\ct_i$ is a valid encryption under $\pk$.
-    \item[$\Aggr(\pp, \Z, \ct_{i}, \pi_{i}) \rightarrow \Z'$.] Verify $\pi_{i}$. If the check passes, parse $\Z := (Z_{\sk}, \mathcal{C})$ and update to $\Z' := (Z_{\sk}, \mathcal{C} \cup \{ \ct_{i} \})$.
-    \item[$\Open(\pp,\Z,\perp) \rightarrow \sk$.] Let $\Z := (Z_{\sk}, \mathcal{C})$ and publish $\sk \leftarrow \htlp.\mathsf{Solve}(\pp_{\sf tlp},Z_{\sk})$.
-    \item[$\Finalize(\pp,\sk) \rightarrow y$.] Use the secret key $\sk$ to decrypt each ciphertext $\ct_i \in \mathcal{C}$ to $s_i \gets \Pi_{\sf E}.\dec(\sk, \ct_i)$. Compute the final result in the clear as $\Sigma(s_1, \dots, s_n)$.
+    \item[$\mathsf{Setup}(\secparam, \Ttime) \randout (\pparam, \Z)$.] Sample a key-pair $(\pk, \sk) \gets \Pi_{\sf E}.{\sf Gen}(\secparam)$ and TLP parameters $\pparam_{\sf tlp} \gets \tlp.\Setup(\secparam, \Ttime)$. Compute $Z_{\sk} \sample \tlp.\mathsf{Gen}(\pparam_{\sf tlp},\sk)$ and return $\pparam := (\pparam_{\sf tlp}, \pk)$ and $\Z := (Z_{\sk}, \perp)$.
+    \item[$\Seal(\pparam, i, s) \randout (\ct_i, \pi_{i})$.] Parse $\pk$ from $\pparam$ and compute an encrypted bid/ballot as $\ct_i \gets \Pi_{\sf E}.\enc(\pk,s_i)$ along with a proof $\pi_{i}$ that $\ct_i$ is a valid encryption under $\pk$.
+    \item[$\Aggr(\pparam, \Z, \ct_{i}, \pi_{i}) \rightarrow \Z'$.] Verify $\pi_{i}$. If the check passes, parse $\Z := (Z_{\sk}, \mathcal{C})$ and update to $\Z' := (Z_{\sk}, \mathcal{C} \cup \{ \ct_{i} \})$.
+    \item[$\Open(\pparam,\Z,\perp) \rightarrow \sk$.] Let $\Z := (Z_{\sk}, \mathcal{C})$ and publish $\sk \leftarrow \htlp.\mathsf{Solve}(\pparam_{\sf tlp},Z_{\sk})$.
+    \item[$\Finalize(\pparam,\sk) \rightarrow y$.] Use the secret key $\sk$ to decrypt each ciphertext $\ct_i \in \mathcal{C}$ to $s_i \gets \Pi_{\sf E}.\dec(\sk, \ct_i)$. Compute the final result in the clear as $\Sigma(s_1, \dots, s_n)$.
 \end{description}
 \end{mdframed}
 \caption{The ``solve one, get many for free'' paradigm (CJSS)~\cite{ESORICS:CJSS21}.}

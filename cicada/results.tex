@@ -21,10 +21,10 @@ Intuitively, the TLPs play the role of commitments to bids/ballots that any part
 
 % \begin{definition}[Time-lock puzzle~\cite{RSW96}] A time-lock puzzle scheme $\sf TLP$ consists of the following three efficient algorithms:
 %     \begin{description}
-%         \item[$\mathsf{TLP.Setup}(\secparam, \Ttime) \randout \pp$.] The (potentially trusted) setup algorithm takes as input a security parameter $\secparam$ and a difficulty (time) parameter $\Ttime$, and outputs public parameters $\pp$. % (usually a group $\mathbb{G}$ with $\lambda$ bits of security). 
+%         \item[$\mathsf{TLP.Setup}(\secparam, \Ttime) \randout \pparam$.] The (potentially trusted) setup algorithm takes as input a security parameter $\secparam$ and a difficulty (time) parameter $\Ttime$, and outputs public parameters $\pparam$. % (usually a group $\mathbb{G}$ with $\lambda$ bits of security). 
 %         % Typically $\mathbb{G}$ is a group of unknown order, e.g., the group $\mathbb{Z}^{*}_N$. 
-%         \item[$\mathsf{TLP.Gen}(\pp, s) \randout Z$.] Given a solution $s\in\ZZ$, the puzzle generation algorithm efficiently computes a time-lock puzzle $Z\in\mathbb{G}$.
-%         \item[$\mathsf{TLP.Solve}(\pp, Z) \rightarrow s$.] Given a TLP $Z$, the puzzle solving algorithm requires at least $\Ttime$ sequential steps to output the solution $s$.
+%         \item[$\mathsf{TLP.Gen}(\pparam, s) \randout Z$.] Given a solution $s\in\ZZ$, the puzzle generation algorithm efficiently computes a time-lock puzzle $Z\in\mathbb{G}$.
+%         \item[$\mathsf{TLP.Solve}(\pparam, Z) \rightarrow s$.] Given a TLP $Z$, the puzzle solving algorithm requires at least $\Ttime$ sequential steps to output the solution $s$.
 %     \end{description}
 % \end{definition}
 % Informally, we say that a TLP scheme is \emph{correct} if $\mathsf{TLP.Gen}$ is efficiently computable and $\tlp.{\sf Solve}$ always recovers the original solution $s$ to a validly constructed puzzle. A TLP scheme is \emph{secure} if $Z$ hides the solution $s$ and no adversary can compute $\mathsf{TLP.Solve}$ in fewer than $\Ttime$ steps with non-negligible probability. For the formal definitions, we refer the reader to~\cite{C:MalThy19}.
@@ -49,13 +49,13 @@ where $g,y \sample \ZZ_N^*$ and again $h = g^{2^\Ttime}$. This scheme is only pr
     \begin{construction}[Efficient linear HTLP.]\label{con:exp_elgamalHTLP}
     \hfill
     \begin{description}
-        \item[$\htlp.\Setup(\secparam, \Ttime) \randout \pp$.] Output $\pp := (N, g, h, y)$, where $y \sample \ZZ_N^*$ and the remaining parameters are the same as in \cref{con:paillierHTLP,con:multHTLP}.
-        \item[$\htlp.{\sf Gen}(\pp, s; r) \rightarrow Z$.] Given a value $s \in \change{\mathcal{S} \subset \ZZ_N}$, use randomness $r \in \ZZ_{N}$ to compute and output
+        \item[$\htlp.\Setup(\secparam, \Ttime) \randout \pparam$.] Output $\pparam := (N, g, h, y)$, where $y \sample \ZZ_N^*$ and the remaining parameters are the same as in \cref{con:paillierHTLP,con:multHTLP}.
+        \item[$\htlp.{\sf Gen}(\pparam, s; r) \rightarrow Z$.] Given a value $s \in \change{\mathcal{S} \subset \ZZ_N}$, use randomness $r \in \ZZ_{N}$ to compute and output
             $$Z := (g^r \mod{N},\ h^r \cdot \change{y^s} \mod{N}) \in \ZZ_N^* \times \ZZ_N^*$$
-        \item[$\htlp.\Open(\pp, Z, r) \rightarrow s$.] Parse $Z := (u,v)$ and compute $w := u^{2^T} \mod{N} \allowbreak= h^r$ via repeated squaring. \change{Compute $S := v/w$ and brute force the discrete logarithm of $S$ w.r.t. $y$ to obtain $s$.}
-        % \item[$\htlp.{\sf Eval}(\pp, f, Z_1, Z_2) \rightarrow Z$.] To evaluate a multiplicative function $f(x_1, x_2) \allowbreak= a x_1 x_2$ homomorphically on puzzles $Z_1 := (u_1, v_1)$ and $Z_2 := (u_2, v_2)$, return
+        \item[$\htlp.\Open(\pparam, Z, r) \rightarrow s$.] Parse $Z := (u,v)$ and compute $w := u^{2^T} \mod{N} \allowbreak= h^r$ via repeated squaring. \change{Compute $S := v/w$ and brute force the discrete logarithm of $S$ w.r.t. $y$ to obtain $s$.}
+        % \item[$\htlp.{\sf Eval}(\pparam, f, Z_1, Z_2) \rightarrow Z$.] To evaluate a multiplicative function $f(x_1, x_2) \allowbreak= a x_1 x_2$ homomorphically on puzzles $Z_1 := (u_1, v_1)$ and $Z_2 := (u_2, v_2)$, return
         % $$Z = (u_1 \cdot u_2 \mod{N}, a \cdot v_1 \cdot v_2 \mod{N})$$
-        \item[$\htlp.{\sf Eval}(\pp, f, Z_1, Z_2) \to Z$.] To evaluate a \change{linear function $f(x_1, x_2) = b + a_1 x_1 + a_2 x_2$} homomorphically on puzzles $Z_1 := (u_1, v_1)$ and $Z_2 := (u_2, v_2)$, return
+        \item[$\htlp.{\sf Eval}(\pparam, f, Z_1, Z_2) \to Z$.] To evaluate a \change{linear function $f(x_1, x_2) = b + a_1 x_1 + a_2 x_2$} homomorphically on puzzles $Z_1 := (u_1, v_1)$ and $Z_2 := (u_2, v_2)$, return
         \change{$$Z = (u_1^{a_1} \cdot u_2^{a_2} \mod{N}, v_1^{a_1} \cdot v_2^{a_2} \cdot y^b \mod{N}).$$}
     \end{description}
     \end{construction}
@@ -105,5 +105,5 @@ Our protocols are both practically efficient, private until the end of the votin
 
 % \input{voting-table}
 
-% Malavolta and Thyagarajan~\cite{C:MalThy19} introduce \emph{homomorphic} TLPs (HTLPs). An HTLP is defined with respect to a class $\mathcal{C}$ of circuits which can be homomorphically evaluated over puzzle solutions, i.e., $\htlp.{\sf Eval}(\pp, C, Z_1, \dots, Z_m) \rightarrow Z_*$ where $Z_*$ contains the application of $c \in \mathcal{C}$ to the solutions in $Z_1, \dots, Z_m$. Moving forward, 
+% Malavolta and Thyagarajan~\cite{C:MalThy19} introduce \emph{homomorphic} TLPs (HTLPs). An HTLP is defined with respect to a class $\mathcal{C}$ of circuits which can be homomorphically evaluated over puzzle solutions, i.e., $\htlp.{\sf Eval}(\pparam, C, Z_1, \dots, Z_m) \rightarrow Z_*$ where $Z_*$ contains the application of $c \in \mathcal{C}$ to the solutions in $Z_1, \dots, Z_m$. Moving forward, 
 % we will use $\boxplus$ for homomorphic addition and $\cdot$ for scalar multiplication of HTLPs. For the homomorphic application of a linear function $f$, we write $f(Z_1, \dots, Z_m)$.

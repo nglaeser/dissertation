@@ -1,12 +1,19 @@
 \subsection{Applications}\label{sec:naysayer_apps}
 
-The naysayer proof paradigm is generally applicable for proof systems with multi-round amplification, repetitive structure (e.g., multiple bilinear pairing checks~\cite{EPRINT:GabWilCio19}), or recursive reduction (e.g., Pietrzak's proof of exponentiation~\cite{ITCS:Pietrzak19b}). In this section, we highlight three example constructions of naysayer proofs.
+\todo{rename to Constructions?}
+
+Many proof systems have some repetitive structure in their verification algorithm. This structure allows for more efficient naysaying. Examples include proofs with multi-round amplification, verification as a conjunction of repeated checks (e.g., multiple bilinear pairing checks~\cite{EPRINT:GabWilCio19}), or recursive reduction (e.g., Pietrzak's proof of exponentiation~\cite{ITCS:Pietrzak19b}). In this section, we highlight three naysayer proof constructions which take advantage of such repetition to achieve better performance: Merkle commitments (\Cref{sec:merkle_naysayer}), the FRI polynomial commitment scheme (\Cref{sec:fri_naysayer}), and two post-quantum signature schemes (\Cref{sec:pqsig_naysayer}). In \Cref{sec:vshuffle_naysayer}, we give an example of a non-public naysayer proof which uses a trapdoor to reduce the \todo{size/verif of naysayer, or computation of naysayer proof}. In \Cref{sec:eval}, we
+% summarize the succinctness of each naysayer proof compared to that of the original proof system.
+estimate the performance of each naysayer proof system compared to that of the original proof system.
 
 \subsubsection{Merkle Commitments}\label{sec:merkle_naysayer}
 \input{naysayer/figs/merkle-diagram}
 
+\todo{this might just be the generic construction tbh}
 
 \subsubsection{FRI Polynomial Commitment Scheme}\label{sec:fri_naysayer}
+
+\noemi{might actually be for STARKs not just FRI?}
 
 The FRI polynomial commitment scheme~\cite{EPRINT:BBHR18} is used as a building block in many non-interactive proof systems, including STARKs~\cite{STOC:BCGT13}.
 Below, we describe only the parts of FRI relevant to our discussion. The FRI commitment to a polynomial $p(x)\in\mathbb{F}^{\leq d}[X]$ is the root of a Merkle tree with $\rho^{-1}d$ leaves. 
@@ -40,12 +47,6 @@ Most shuffling protocols (of public keys, re-randomizable commitments, or ElGama
 \end{equation}
 where $\mathsf{Perm}(n)$ is the set of all permutations $f:[n]\rightarrow[n]$.
 Suppose the naysayer knows that for $j\in[n]$, the prover did not correctly include $g^{r\cdot \witness_j}$ in the shuffle. The naysayer can prove this by showing that $(g,g^{\witness_j},g^r,g^{r\cdot \witness_j})\in\mathcal{R}_{DH}\land g^{r\cdot \witness_j}\notin (\cdot,g^{r\cdot \witness_{\sigma(i)}})^n_{i=1}$, where $\mathcal{R}_{DH}$ is the language of Diffie-Hellman tuples. One can show that a tuple is a Diffie-Hellman tuple with a proof of knowledge of discrete logarithm equality~\cite{C:ChaPed92}. However, the naysayer must know the discrete logarithm $\witness_j$ to produce such a proof. Unlike our previous examples, which were publicly naysayable, this is a privately naysayable proof since the naysayer algorithm takes auxiliary input $\witness_j$. With the right data structure for the permuted list (e.g., a hash table), both of the above conditions can be checked in constant-time with a constant-size naysayer proof, resulting in exponential savings compared to directly verifying the original Bayer-Groth shuffle proof.
-
-\subsubsection{zkVMs}
-
-\noemi{Given an underlying zkVM, you can define a corresponding naysayer proof based on the $\mathsf{zkVM}.\vrfy$ circuit --- with the rise of zkVMs, should mention this. This is still ``application-specific'', since the naysayer proof depends on what zkVM is used (on its design/proof system). But in practice it's more ``general-purpose''. However, I think naysayer proofs are inherently application-specific since they rely on the structure of the verification circuit. But if we, as an area, start using only a few common verification circuits (e.g., adopting a few standard zkVMs), then the naysayer proof system can be reused.}
-
-\noemi{update: not sure if it makes sense to talk about a $\mathsf{zkVM}.\vrfy$ circuit---they're generally just some proof system's verification procedure, e.g. the RISC Zero zkVM is running a STARK. Just talk about general naysaying by committing to a verification trace---and mention zkVMs somewhere as an example---then talk about particular languages where the verification trace is not needed because the structure is repetitive (i.e., conjunctions).}
 
 \subsubsection{Evaluation}
 We evaluate the asymptotic cost savings for the verifiers in the four examples discussed in \Cref{sec:fri_naysayer,sec:pqsig_naysayer,sec:vshuffle_naysayer}. Note that naysayer proofs allow an exponential speedup for the verifier for verifiable shuffles and a logarithmic speedup for the FRI polynomial commitment opening proof verifier, see~\Cref{tab:apps_table}. For CRYSTALS-Dilithium, we can only claim weakly efficient naysayer proofs, as there is no asymptotic gap in the complexity in certain branches of the signature verification circuit and the naysayer prover algorithm, cf.~\Cref{eq:crystals_verifier_check,eq:crystals_naysayer_prover}.

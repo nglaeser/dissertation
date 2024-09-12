@@ -4,9 +4,9 @@ We use $[n]$ to denote the range $\{1, \dots, n\}$. For other ranges (mostly zer
 Concatenation of vectors $\vec{x},\vec{y}$ is written as $\vec{x} || \vec{y}$. 
 Let $\secpar$ be the security parameter.
 We use the uppercase variable $X$ for the free variable of a polynomial, e.g., $f(X)$. 
-We use a calligraphic font, e.g., $\mathcal{S}$ or $\mathcal{X}$, to denote sets or domains. When we apply an operation to two sets of equal size $\ell$ we mean pairwise application, e.g., $\mathcal{Z} = \mathcal{X} + \mathcal{Y}$ means $z_i = x_i + y_i~\forall{i \in [\ell]}$. 
+We use a calligraphic font, e.g., $\mathcal{S}$ or $\mathcal{X}$, to denote sets or domains. When we apply an operation to two sets of equal size $\ell$ we mean pairwise application, e.g., $\mathcal{Z} = \mathcal{X} + \mathcal{Y}$ means $z_i = x_i + y_i~\forall{i \in [\ell]}$. \todo{empty set $\emptyset$ vs. $\perp$}
 Sampling an element $x$ uniformly at random from a set $\mathcal{X}$ is written as $x \sample \mathcal{X}$. 
-We use $:=$ to denote variable assignment, $y \gets \mathsf{Alg}(x)$ to assign to $y$ the output of some algorithm $\mathsf{Alg}$ on input $x$, and $y \sample \mathsf{Alg}(x)$ if the algorithm is randomized. When we wish to be explicit about the randomness $r$ used, we write $y \gets \mathsf{Alg}(x; r)$. We use $\mathcal{D}_1 \approx_\secpar \mathcal{D}_2$ to denote that two distributions $\mathcal{D}_1, \mathcal{D}_2$ have statistical distance bounded by $\negl$.
+We use $:=$ to denote variable assignment, $y \gets \mathsf{Alg}(x)$ to assign to $y$ the output of some algorithm $\mathsf{Alg}$ on input $x$, and $y \sample \mathsf{Alg}(x)$ if the algorithm is randomized (or sometimes $\mathsf{Alg}(x) \randout y$). When we wish to be explicit about the randomness $r$ used, we write $y \gets \mathsf{Alg}(x; r)$. We use $\mathcal{D}_1 \approx_\secpar \mathcal{D}_2$ to denote that two distributions $\mathcal{D}_1, \mathcal{D}_2$ have statistical distance bounded by $\negl$.
 
 For a non-interactive proof system $\Pi$, we write $\pi \gets \Pi.\prove(x; w)$ to show that the proving algorithm takes as input an instance $x$ and witness $w$ and outputs a proof $\pi$. Verification is written as $\Pi.\vrfy(x, \pi)$ and outputs a bit $b$. 
 
@@ -14,17 +14,42 @@ We distinguish the key-pairs used in a signature scheme ($\vk, \sk$ for ``verifi
 
 \subsection{Non-interactive proof systems}\label{sec:nizks}
 
-\todo{NP-languages and relations}
+\todo{NP-languages and relations} \noemi{A language is some subset of strings. Every NP language has a corresponding polynomially-decidable relation such that if $x \in \Lang, \exists w \suchthat (x,w) \in \Rel_\Lang$ where $w$ is polynomial in $\sizeof{x}$.}
 
-\begin{definition}[Non-interactive proof] A non-interactive proof $\Pi$ for some NP relation $\Rel$ is a tuple of PPT algorithms $(\setup, \prove, \vrfy)$:
+\begin{definition}[Non-interactive proof system] A non-interactive proof system $\Pi$ for some NP language $\Lang$ is a tuple of PPT algorithms $(\setup, \prove, \vrfy)$:
     \begin{itemize}
         \item \underline{$\setup(\secparam) \rightarrow \crs$:} Given a security parameter, output a common reference string $\crs$. This algorithm might use private randomness (a trusted setup).
-        \item \underline{$\prove(\crs, x, \witness) \rightarrow \pi$:} Given the $\crs$, an instance $x$, and witness $\witness$ such that $(x, \witness) \in \Rel$, output a proof $\pi$.
+        \item \underline{$\prove(\crs, x, \witness) \rightarrow \pi$:} Given the $\crs$, an instance $x$, and witness $\witness$ such that $(x, \witness) \in \Rel_\Lang$, output a proof $\pi$.
         \item \underline{$\vrfy(\crs, x,\pi) \rightarrow \{0,1\}$:} Given the $\crs$ and a proof $\pi$ for the instance $x$, output a bit indicating accept or reject.
     \end{itemize}
+
+We require (perfect) \emph{completeness}, meaning that for all $(x,\witness) \in \Rel_Lang$,
+\begin{equation*}
+    \Pr\left[
+        \vrfy(\crs, x, \pi)=1 
+        \middle| 
+        \begin{array}{c}
+            \crs \gets \setup(\secparam)~\land\\
+            \pi \gets \prove(\crs, x, \witness)
+        \end{array}
+    \right] = 1.
+\end{equation*}
 \end{definition}
 
-We refer the reader to \cite{Thaler23} for a formal description of the properties of proof systems (e.g., correctness, soundness, zero-knowledge). 
+\begin{definition}[soundness] Soundness requires that for all $x \notin \Lang$, $\secpar \in \NN$, and all PPT adversaries $\adv$,
+\begin{equation*}
+    \Pr\left[
+        \vrfy(\crs, x, \pi)=1 
+        \middle| 
+        \begin{array}{c}
+            \crs \gets \setup(\secparam)~\land\\
+            \pi \gets \adv(\crs, x)
+        \end{array}
+    \right] \leq \negl.
+\end{equation*}
+\end{definition}
+
+We refer the reader to \cite{Thaler23,goldreich_book} for a formal description of the properties of proof systems (e.g., correctness, soundness, zero-knowledge). 
 
 \todo{define succinctness}
 
@@ -36,10 +61,10 @@ A time-lock puzzle (TLP)~\cite{RivShaWag96} consists of three efficient algorith
 
 \begin{definition}[Time-lock puzzle~\cite{RivShaWag96}] A time-lock puzzle scheme $\sf TLP = (\Setup, \mathsf{Gen}, \mathsf{Solve})$ for solution space $\mathcal{X}$ consists of the following three efficient algorithms:
     \begin{itemize}
-        \item \underline{$\mathsf{TLP.Setup}(\secparam, \Ttime) \randout \pp$:} The (potentially trusted) setup algorithm takes as input a security parameter $\secparam$ and a difficulty (time) parameter $\Ttime$, and outputs public parameters $\pp$. % (usually a group $\mathbb{G}$ with $\lambda$ bits of security). 
+        \item \underline{$\mathsf{TLP.Setup}(\secparam, \Ttime) \randout \pparam$:} The (potentially trusted) setup algorithm takes as input a security parameter $\secparam$ and a difficulty (time) parameter $\Ttime$, and outputs public parameters $\pparam$. % (usually a group $\mathbb{G}$ with $\lambda$ bits of security). 
         % Typically $\mathbb{G}$ is a group of unknown order, e.g., the group $\mathbb{Z}^{*}_N$. 
-        \item \underline{$\mathsf{TLP.Gen}(\pp, s) \randout Z$:} Given a solution $s \in \X$, the puzzle generation algorithm efficiently computes a time-lock puzzle $Z$.
-        \item \underline{$\mathsf{TLP.Solve}(\pp, Z) \rightarrow s$:} Given a TLP $Z$, the puzzle-solving algorithm requires at least $\Ttime$ sequential steps to output the solution $s$.
+        \item \underline{$\mathsf{TLP.Gen}(\pparam, s) \randout Z$:} Given a solution $s \in \X$, the puzzle generation algorithm efficiently computes a time-lock puzzle $Z$.
+        \item \underline{$\mathsf{TLP.Solve}(\pparam, Z) \rightarrow s$:} Given a TLP $Z$, the puzzle-solving algorithm requires at least $\Ttime$ sequential steps to output the solution $s$.
     \end{itemize}
 \end{definition}
 
@@ -48,7 +73,7 @@ Informally, we say that a TLP scheme is \emph{correct} if $\mathsf{TLP.Gen}$ is 
 \paragraph{Homomorphic TLPs.}
 Malavolta and Thyagarajan~\cite{C:MalThy19} introduce \emph{homomorphic} TLPs (HTLPs). An HTLP is defined with respect to a circuit class $\mathcal{C}$ and has an additional algorithm $\sf Eval$ defined as:
 \begin{itemize}
-    \item \underline{$\htlp.{\sf Eval}(\pp, C, Z_1, \dots, Z_m) \rightarrow Z_*$:} Given the public parameters, a circuit $C \in \mathcal{C}$ where $C: \X^m \rightarrow \X$, and input puzzles $Z_1, \dots, Z_m$, the homomorphic evaluation algorithm outputs a puzzle $Z_*$.
+    \item \underline{$\htlp.{\sf Eval}(\pparam, C, Z_1, \dots, Z_m) \rightarrow Z_*$:} Given the public parameters, a circuit $C \in \mathcal{C}$ where $C: \X^m \rightarrow \X$, and input puzzles $Z_1, \dots, Z_m$, the homomorphic evaluation algorithm outputs a puzzle $Z_*$.
 \end{itemize}
 
 Correctness requires that $\htlp.{\sf Solve}(Z_*)$
@@ -59,18 +84,18 @@ should contain the expected solution, namely $C(s_1, \dots, s_m)$, where $s_i \g
 % For correctness, we require that the following holds for all $\secpar, \Ttime \in \mathbb{N}$, $C \in \mathcal{C}$, and $s_1, \dots, s_m \in \ZZ$:
 % \[
 %     \Pr\left[
-%         \htlp.{\sf Solve}(\pp, Z_*) = C(s_1, \dots, s_m) 
+%         \htlp.{\sf Solve}(\pparam, Z_*) = C(s_1, \dots, s_m) 
 %         \middle| 
 %         \begin{array}{c}
-%             \pp \sample \htlp.{\sf Setup}(\secparam, \Ttime)\\
-%             Z_i \sample \htlp.{\sf Gen}(\pp, s)~\forall i\in [m]~\land\\
-%             Z_* \gets \htlp.{\sf Eval}(\pp, C, Z_1, \dots, Z_m)
+%             \pparam \sample \htlp.{\sf Setup}(\secparam, \Ttime)\\
+%             Z_i \sample \htlp.{\sf Gen}(\pparam, s)~\forall i\in [m]~\land\\
+%             Z_* \gets \htlp.{\sf Eval}(\pparam, C, Z_1, \dots, Z_m)
 %         \end{array}
 %     \right] = 1
 % \]
 
 % removed the below because we're not using this shorthand anymore
-% Later in the paper, we may apply $\sf Eval$ to \emph{vectors} of puzzles of common size $k$ to indicate element-wise application of the function, e.g., $\{Z_1'', \dots, Z_k''\} \gets \htlp.{\sf Eval}(\pp, f, \{Z_1, \dots, Z_k\}, \{Z_1', \dots, Z_k'\})$ means $Z_i'' \gets \htlp.{\sf Eval}(\pp, C, Z_i, Z_i')$ for all $i \in [k]$.
+% Later in the paper, we may apply $\sf Eval$ to \emph{vectors} of puzzles of common size $k$ to indicate element-wise application of the function, e.g., $\{Z_1'', \dots, Z_k''\} \gets \htlp.{\sf Eval}(\pparam, f, \{Z_1, \dots, Z_k\}, \{Z_1', \dots, Z_k'\})$ means $Z_i'' \gets \htlp.{\sf Eval}(\pparam, C, Z_i, Z_i')$ for all $i \in [k]$.
 
 \subsection{HTLP Constructions}\label{app:htlp_constructions}
 
@@ -84,28 +109,28 @@ We recall their constructions below.
     \begin{construction}[Linear HTLP~\cite{C:MalThy19}.]\label{con:paillierHTLP}
     \hfill
     \begin{itemize}
-        \item \underline{$\htlp.\Setup(\secparam, \Ttime) \randout \pp$:} Sample a strong semiprime $N$ and a generator $g \sample \ZZ_N^*$, then compute $h = g^{2^\Ttime} \mod{N} \in \ZZ_N^*$. (This can be computed efficiently using the factorization of $N$). Output $\pp := (N, g, h)$.
-        \item \underline{$\htlp.{\sf Gen}(\pp, s; r) \rightarrow Z$:} Given a value $s \in \ZZ_N$, use randomness $r \in \ZZ_{N^2}$ to compute and output
+        \item \underline{$\htlp.\Setup(\secparam, \Ttime) \randout \pparam$:} Sample a strong semiprime $N$ and a generator $g \sample \ZZ_N^*$, then compute $h = g^{2^\Ttime} \mod{N} \in \ZZ_N^*$. (This can be computed efficiently using the factorization of $N$). Output $\pparam := (N, g, h)$.
+        \item \underline{$\htlp.{\sf Gen}(\pparam, s; r) \rightarrow Z$:} Given a value $s \in \ZZ_N$, use randomness $r \in \ZZ_{N^2}$ to compute and output
             $$Z := (g^r \mod{N},\ h^{r \cdot N} \cdot (1+N)^s \mod{N^2}) \in \JJ_N \times \ZZ_{N^2}^*$$
-        \item \underline{$\htlp.\Open(\pp, Z, r) \rightarrow s$:} Parse $Z := (u,v)$ and compute $w := u^{2^T} \mod{N} \allowbreak= h^r$ via repeated squaring. Output $s := \frac{(v/w^N \mod{N^2})- 1}{N}$.
-        \item \underline{$\htlp.{\sf Eval}(\pp, f, Z_1, Z_2) \rightarrow Z$:} To evaluate a linear function $f(x_1, x_2) = b + a_1 x_1 + a_2 x_2$ homomorphically on puzzles $Z_1 := (u_1, v_1)$ and $Z_2 := (u_2, v_2)$, return
+        \item \underline{$\htlp.\Open(\pparam, Z, r) \rightarrow s$:} Parse $Z := (u,v)$ and compute $w := u^{2^T} \mod{N} \allowbreak= h^r$ via repeated squaring. Output $s := \frac{(v/w^N \mod{N^2})- 1}{N}$.
+        \item \underline{$\htlp.{\sf Eval}(\pparam, f, Z_1, Z_2) \rightarrow Z$:} To evaluate a linear function $f(x_1, x_2) = b + a_1 x_1 + a_2 x_2$ homomorphically on puzzles $Z_1 := (u_1, v_1)$ and $Z_2 := (u_2, v_2)$, return
         $$Z = (u_1^{a_1} \cdot u_2^{a_2} \mod{N}, v_1^{a_1} \cdot v_2^{a_2} \cdot (1+N)^b \mod{N^2}).$$
     \end{itemize}
     \end{construction}
 
-\noindent Correctness holds because for all $s \in \ZZ_N$ and $Z = (u,v) \gets \htlp.{\sf Gen}(\pp, s)$,
+\noindent Correctness holds because for all $s \in \ZZ_N$ and $Z = (u,v) \gets \htlp.{\sf Gen}(\pparam, s)$,
 \begin{equation}\label{eq:correctness1}
-\htlp.\Open(\pp, Z) = \frac{(v/(h^R)^N \mod{N^2})-1}{N} = \frac{((1+N)^s) - 1}{N} = s
+\htlp.\Open(\pparam, Z) = \frac{(v/(h^R)^N \mod{N^2})-1}{N} = \frac{((1+N)^s) - 1}{N} = s
 \end{equation}
 since $(1+N)^x = 1+Nx \mod{N^2}$.
-Correctness of the homomorphism follows since for all linear functions $f(x_1, x_2) = b + a_1 x_1 + a_2 x_2$ and all $Z_i = (u_i, v_i) \in {\sf Im}(\htlp.{\sf Gen}(\pp, s_i; r_i))$ for $i \in \{1,2\}$,\footnote{For space and clarity we drop the moduli and assume that we are working in the appropriate ring in each coordinate (namely $\mathbb{Z}_N$ and $\mathbb{Z}_{N^2}$, respectively).}
+Correctness of the homomorphism follows since for all linear functions $f(x_1, x_2) = b + a_1 x_1 + a_2 x_2$ and all $Z_i = (u_i, v_i) \in {\sf Im}(\htlp.{\sf Gen}(\pparam, s_i; r_i))$ for $i \in \{1,2\}$,\footnote{For space and clarity we drop the moduli and assume that we are working in the appropriate ring in each coordinate (namely $\mathbb{Z}_N$ and $\mathbb{Z}_{N^2}$, respectively).}
 % \begin{equation}\label{eq:correctness2}
 % \begin{aligned}
 \begin{align*}
-&\htlp\rlap{$.{\sf Eval}(\pp, f, Z_1, Z_2) = (u_1^{a_1} \cdot u_2^{a_2}, (1+N)^b \cdot v_1^{a_1} \cdot v_2^{a_2})$} && \\
+&\htlp\rlap{$.{\sf Eval}(\pparam, f, Z_1, Z_2) = (u_1^{a_1} \cdot u_2^{a_2}, (1+N)^b \cdot v_1^{a_1} \cdot v_2^{a_2})$} && \\
 &= (g^{r_1 a_1} \cdot g^{r_2 a_2}, &&(1+N)^b \cdot h^{r_1 N a_1} \cdot (1+N)^{s_1 a_1} \cdot h^{r_2 N a_2} \cdot (1+N)^{s_2 a_2})\\
 &= (g^{r_1 a_1 + r_2 a_2},         &&h^{(r_1 a_1 + r_2 a_2) \cdot N} \cdot (1+N)^{b + s_1 a_1 + s_2 a_2}) \\
-&\rlap{$= \htlp.{\sf Gen}(\pp, f(s_1, s_2); r_1 a_1 + r_2 a_2)$} &&
+&\rlap{$= \htlp.{\sf Gen}(\pparam, f(s_1, s_2); r_1 a_1 + r_2 a_2)$} &&
 \end{align*}
 % \end{aligned}
 % \end{equation}
@@ -115,11 +140,11 @@ which opens to $f(s_1, s_2)$ by \cref{eq:correctness1}.
     \begin{construction}[Multiplicative HTLP~\cite{C:MalThy19}.]\label{con:multHTLP}
     \hfill
     \begin{itemize}
-        \item \underline{$\htlp.\Setup(\secparam, \Ttime) \randout \pp$:} Same as \Cref{con:paillierHTLP}.
-        \item \underline{$\htlp.{\sf Gen}(\pp, s; r) \rightarrow Z$:} Given a value $s \in \JJ_N$, use randomness $r \in \ZZ_{N^2}$ to compute and output
+        \item \underline{$\htlp.\Setup(\secparam, \Ttime) \randout \pparam$:} Same as \Cref{con:paillierHTLP}.
+        \item \underline{$\htlp.{\sf Gen}(\pparam, s; r) \rightarrow Z$:} Given a value $s \in \JJ_N$, use randomness $r \in \ZZ_{N^2}$ to compute and output
             $$Z := (g^r \mod{N},\ h^r \cdot s \mod{N}) \in \ZZ_N^* \times \ZZ_N^*$$
-        \item \underline{$\htlp.\Open(\pp, Z, r) \rightarrow s$:} Parse $Z := (u,v)$ and compute $w := u^{2^T} \mod{N} \allowbreak= h^r$ via repeated squaring. Output $s := v/w$.
-        \item \underline{$\htlp.{\sf Eval}(\pp, f, Z_1, Z_2) \rightarrow Z$:} To evaluate a multiplicative function $f(x_1, x_2) \allowbreak= a x_1 x_2$ homomorphically on puzzles $Z_1 := (u_1, v_1)$ and $Z_2 := (u_2, v_2)$, return
+        \item \underline{$\htlp.\Open(\pparam, Z, r) \rightarrow s$:} Parse $Z := (u,v)$ and compute $w := u^{2^T} \mod{N} \allowbreak= h^r$ via repeated squaring. Output $s := v/w$.
+        \item \underline{$\htlp.{\sf Eval}(\pparam, f, Z_1, Z_2) \rightarrow Z$:} To evaluate a multiplicative function $f(x_1, x_2) \allowbreak= a x_1 x_2$ homomorphically on puzzles $Z_1 := (u_1, v_1)$ and $Z_2 := (u_2, v_2)$, return
         $$Z = (u_1 \cdot u_2 \mod{N}, a \cdot v_1 \cdot v_2 \mod{N})$$
     \end{itemize}
     \end{construction}
@@ -129,12 +154,12 @@ which opens to $f(s_1, s_2)$ by \cref{eq:correctness1}.
 % \end{figure}
 
 \noindent \Cref{con:multHTLP} operates over the solution space $\JJ_N$ (instead of $\ZZ_N$).
-It is easy to see that $\htlp.\Open(\pp,\allowbreak \htlp.{\sf Gen}(\pp, s)) = s$ for all $s \in \ZZ_N^*$. Furthermore, for all $f(x_1, x_2) = a x_1 x_2$ and all $Z_i = (u_i, v_i) \in {\sf Im}(\htlp.{\sf Gen}(\pp,\allowbreak s_i; r_i))$ for $i \in \{1,2\}$,
+It is easy to see that $\htlp.\Open(\pparam,\allowbreak \htlp.{\sf Gen}(\pparam, s)) = s$ for all $s \in \ZZ_N^*$. Furthermore, for all $f(x_1, x_2) = a x_1 x_2$ and all $Z_i = (u_i, v_i) \in {\sf Im}(\htlp.{\sf Gen}(\pparam,\allowbreak s_i; r_i))$ for $i \in \{1,2\}$,
 \begin{align*}
-    \htlp&\rlap{$.{\sf Eval}(\pp, f, Z_1, Z_2) = (u_1 \cdot u_2 \mod{N}, a \cdot v_1 \cdot v_2 \mod{N})$} &&\\
+    \htlp&\rlap{$.{\sf Eval}(\pparam, f, Z_1, Z_2) = (u_1 \cdot u_2 \mod{N}, a \cdot v_1 \cdot v_2 \mod{N})$} &&\\
     &= (g^{r_1} g^{r_2} \mod{N}, &&h^{r_1} h^{r_2} \cdot a s_1 s_2 \mod{N})\\
     &= (g^{r_1 + r_2} \mod{N},   &&h^{r_1 + r_2} \cdot a s_1 s_2 \mod{N})\\
-    &\rlap{$= \htlp.{\sf Gen}(\pp, f(s_1, s_2); r_1 + r_2)$}. &&
+    &\rlap{$= \htlp.{\sf Gen}(\pparam, f(s_1, s_2); r_1 + r_2)$}. &&
 \end{align*}
 % Thus correctness holds.
 
@@ -142,16 +167,16 @@ It is easy to see that $\htlp.\Open(\pp,\allowbreak \htlp.{\sf Gen}(\pp, s)) = s
 % \begin{construction}[Multiplicative HTLP~\cite{liu2022towards}]
 % \hfill
 % \begin{description}
-%     \item[$\htlp.\Setup(\secparam, \Ttime) \randout \pp$.]
-%         \item[$\htlp.{\sf Gen}(\pp, s; r) \randout Z$.] Encode the solution $s \in \mathbb{Z}_n^*$ as $m = s\chi^\sigma \in \mathbb{J}_n$, where 
+%     \item[$\htlp.\Setup(\secparam, \Ttime) \randout \pparam$.]
+%         \item[$\htlp.{\sf Gen}(\pparam, s; r) \randout Z$.] Encode the solution $s \in \mathbb{Z}_n^*$ as $m = s\chi^\sigma \in \mathbb{J}_n$, where 
 %             $$\chi \in \mathbb{Z}_n^* \setminus \mathbb{J}_n,
 %             \sigma = \begin{cases}
 %                 0 & J_n(s) = 1\\
 %                 1 & J_n(s) = -1
 %             \end{cases}.$$
 %     Then use the multiplicative and linear HTLPs of \cite{malavolta2019homomorphic} on $m$ and $\sigma$, respectively.
-%     \item[$\htlp.\Open(\pp, Z, r) \randout s$.]
-%     \item[$\htlp.{\sf Eval}(\pp, f, Z_1, Z_2) \randout Z$.]
+%     \item[$\htlp.\Open(\pparam, Z, r) \randout s$.]
+%     \item[$\htlp.{\sf Eval}(\pparam, f, Z_1, Z_2) \randout Z$.]
 % \end{description}
 % \end{construction}
 % \end{mdframed}
@@ -168,9 +193,9 @@ It is easy to see that $\htlp.\Open(\pp,\allowbreak \htlp.{\sf Gen}(\pp, s)) = s
 \begin{definition}[Vector packing]\label{def:packing}
 A setup algorithm $\PSetup$ and pair of efficiently computable bijective functions $(\pack,\unpack)$ is called a \emph{packing scheme} and has the following syntax:
     \begin{itemize}
-        \item \underline{$\PSetup(\ell, w) \to \pp$:} Given a vector dimension $\ell$ and maximum entry $w$, output public parameters $\pp$.
-        \item \underline{$\pack(\pp, \Vec{a}) \to s$:} Encode $\Vec{a} \in (\ZZ^+)^\ell$ as a positive integer $s \in \ZZ^+$. 
-        \item \underline{$\unpack(\pp, s) \to \Vec{a}$:} Given $s \in \ZZ^+$, recover a vector $\Vec{a} \in (\ZZ^+)^\ell$. 
+        \item \underline{$\PSetup(\ell, w) \to \pparam$:} Given a vector dimension $\ell$ and maximum entry $w$, output public parameters $\pparam$.
+        \item \underline{$\pack(\pparam, \Vec{a}) \to s$:} Encode $\Vec{a} \in (\ZZ^+)^\ell$ as a positive integer $s \in \ZZ^+$. 
+        \item \underline{$\unpack(\pparam, s) \to \Vec{a}$:} Given $s \in \ZZ^+$, recover a vector $\Vec{a} \in (\ZZ^+)^\ell$. 
     \end{itemize}
 For \emph{correctness} we require $\unpack(\pack(\Vec{a}))=\Vec{a}$ for all $\Vec{a}\in (\ZZ^+)^\ell$.
 \end{definition}
@@ -193,7 +218,7 @@ Besides PNS packing, we also introduce an alternative approach in \Cref{con:pack
 \begin{construction}[Packing from Residue Numeral System]\label{con:packingRNS}
 \hfill
 \begin{itemize}%[topsep=2pt]
-    % \textit{Public parameters:}~$\pp:=(p_1,\dots,p_m)$ primes s.t. $\min\limits_{j\in[m]}p_j\geq M(=nw+1)$.\\
+    % \textit{Public parameters:}~$\pparam:=(p_1,\dots,p_m)$ primes s.t. $\min\limits_{j\in[m]}p_j\geq M(=nw+1)$.\\
     \item \underline{$\PSetup(\ell, w) \to \vec{p}$:} Let $M := w + 1$ and sample $\ell$ distinct primes $p_1, \dots, p_\ell$ s.t. $p_j \geq M\ \forall j \in [\ell]$. Return $\vec{p} := (p_1, \dots, p_\ell)$.
     \item \underline{$\pack(\vec{p}, \Vec{a}) \to s$:} Given $\Vec{a} \in (\ZZ^+)^\ell$, use the CRT to find the unique $s \in \ZZ^+$ s.t. $s\equiv a_j \pmod{p_j}~\forall j\in[\ell]$.
     \item \underline{$\unpack(\vec{p}, s) \to \Vec{a}$:} return $(a_1, \dots, a_\ell)$ where $a_j \equiv s \mod{p_j}\ \forall j \in [\ell]$.
@@ -282,9 +307,9 @@ Notice that the reconstruction simply performs Shamir reconstruction of the sign
 \subsubsection{Schnorr Signatures}\label{sec:schnorr}
 
 \begin{construction}[Schnorr signature~\cite{C:Schnorr89}]
-    Let $\pp = (\GG, g, q)$ be description of a cyclic group $\GG$ of prime order $q$ with generator $g$ in which the discrete logarithm problem is hard.
+    Let $\pparam = (\GG, g, q)$ be description of a cyclic group $\GG$ of prime order $q$ with generator $g$ in which the discrete logarithm problem is hard.
     \begin{itemize}
-        \item \underline{$\kgen(\pp) \to (\sk, \vk)$:} Sample a secret key $\sk \sample \ZZ_q$ and set the corresponding verification key $\vk := g^{\sk} \in \GG$. Output $(\sk, \vk)$.
+        \item \underline{$\kgen(\pparam) \to (\sk, \vk)$:} Sample a secret key $\sk \sample \ZZ_q$ and set the corresponding verification key $\vk := g^{\sk} \in \GG$. Output $(\sk, \vk)$.
         \item \underline{$\sign(\sk, m) \to \sigma$:} Given a secret key $\sk \in \ZZ_q$ and message $m$, sample $k \sample \ZZ_q$ and let $R := g^k$. Compute $c := H(m, g^\sk, R)$ and $s := k + c \cdot \sk$. Output $\sigma := (R, s)$.
         \item \underline{$\vrfy(\vk, m, \sigma) \to \{0,1\}$:} Given a verification key $\vk$, message $m$, and signature $\sigma$, compute $c := H(m, \vk, R)$ and check $R \cdot \vk^c \stackrel{?}{=} s$. If so, output 1, else 0.
     \end{itemize}

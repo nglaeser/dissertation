@@ -10,14 +10,14 @@ For example, in first-past-the-post voting, the tally function $t$ is addition, 
 A time-locked voting/auction protocol $\Pi_\Sigma = (\Setup, \Seal,\allowbreak \Aggr, \Open, \Finalize)$ is defined with respect to a base voting/auction protocol $\Sigma = \final \circ \tally$, where $\tally : \X^n \to \X'$ and $\final : \X' \to \Y$. %where $n$ is the number of participants.
 
 \begin{description}
-    \item[$\Setup(\secparam, \Ttime) \randout (\pp, \Z)$.] Given a security parameter $\secpar$ and a time parameter $\Ttime$, output public parameters $\pp$ and an initial time-locked value $\Z$.
+    \item[$\Setup(\secparam, \Ttime) \randout (\pparam, \Z)$.] Given a security parameter $\secpar$ and a time parameter $\Ttime$, output public parameters $\pparam$ and an initial time-locked value $\Z$.
     %HTLP that corresponds to the running tally or bid computation.
-    \item[$\Seal(\pp, i, s) \randout (\Z_i, \pi_i)$.] User $i\in[n]$ seals its submission $s \in \X$ into a time-locked submission %a (list of) HTLP(s) 
+    \item[$\Seal(\pparam, i, s) \randout (\Z_i, \pi_i)$.] User $i\in[n]$ seals its submission $s \in \X$ into a time-locked submission %a (list of) HTLP(s) 
     $\Z_i$. It also outputs a proof of well-formedness $\pi_i$.
-    \item[$\Aggr(\pp, \Z, i, \Z_i, \pi_i) \to \Z'$.] Given a time-locked running computation %list of (tally) HTLPs 
+    \item[$\Aggr(\pparam, \Z, i, \Z_i, \pi_i) \to \Z'$.] Given a time-locked running computation %list of (tally) HTLPs 
     $\Z$, time-locked submission $\Z_i$ of user $i$, and proof $\pi_i$, the transparent contract checks the proof and potentially updates $\Z$ to $\Z'$. %aggregates the sealed submission homomorphically into $\Z$ to get an updated (tally) $\Z' = \tally(\Z, \Z_i)$.
-    \item[$\Open(\pp, \Z) \to (\vec{s}, \pi_\open)$.] Open $\Z$ to $\vec{s} = \tally(s_1, \dots, s_n)$, requiring $\Ttime$ sequential steps, and compute a proof $\pi_\open$ to prove correctness of $\vec{s}$.
-    \item[$\Finalize(\pp, \Z, \vec{s}, \pi_\open) \to \{y, \perp\}$.] Given proposed opening $\vec{s}$ of $\Z$ and proof $\pi_{\sf open}$, the coordinator may reject $\vec{s}$ or compute the final result $y = \final(\vec{s}) \in \Y$. %, which specifies the winner and, in the case of an auction, the amount to be paid as well as the appropriate items to be transferred.
+    \item[$\Open(\pparam, \Z) \to (\vec{s}, \pi_\open)$.] Open $\Z$ to $\vec{s} = \tally(s_1, \dots, s_n)$, requiring $\Ttime$ sequential steps, and compute a proof $\pi_\open$ to prove correctness of $\vec{s}$.
+    \item[$\Finalize(\pparam, \Z, \vec{s}, \pi_\open) \to \{y, \perp\}$.] Given proposed opening $\vec{s}$ of $\Z$ and proof $\pi_{\sf open}$, the coordinator may reject $\vec{s}$ or compute the final result $y = \final(\vec{s}) \in \Y$. %, which specifies the winner and, in the case of an auction, the amount to be paid as well as the appropriate items to be transferred.
 \end{description}
 \end{definition}
 
@@ -36,16 +36,16 @@ We say a voting/auction protocol $\Pi_\Sigma$ with $\Sigma: \X^n \to \mathcal{Y}
     \Pr\left[
         \begin{aligned}
             &\\
-            \Finalize &(\pp, \Z_{\sf final}, \mathcal{S}, \pi_{\sf open}) \\
+            \Finalize &(\pparam, \Z_{\sf final}, \mathcal{S}, \pi_{\sf open}) \\
             &= \Sigma(s_1, \dots, s_n)\\
             &\\
         \end{aligned}
         \middle|
         \begin{array}{c}
-            (\pp, \Z) \sample \Setup(\secparam, \Ttime)~\land\\
-            (\Z_i, \pi_i) \sample \Seal(\pp, i, s_i)~\forall i \in [n]~\land\\
-            \Z_{\sf final} \gets \Aggr(\pp, \Z, \{i, \Z_i, \pi_i\}_{i \in [n]})~\land\\
-            (\mathcal{S}, \pi_{\sf open}) \gets \Open(\pp, \Z_{\sf final}) \\
+            (\pparam, \Z) \sample \Setup(\secparam, \Ttime)~\land\\
+            (\Z_i, \pi_i) \sample \Seal(\pparam, i, s_i)~\forall i \in [n]~\land\\
+            \Z_{\sf final} \gets \Aggr(\pparam, \Z, \{i, \Z_i, \pi_i\}_{i \in [n]})~\land\\
+            (\mathcal{S}, \pi_{\sf open}) \gets \Open(\pparam, \Z_{\sf final}) \\
         \end{array}
     \right] = 1
 \]
@@ -62,10 +62,10 @@ We say that a voting/auction protocol $\Pi_\Sigma$ with $\Sigma: \X^n \to \mathc
         b=b'
         \middle|
         \begin{array}{c}
-            (\pp, \Z) \sample \Setup(\secparam, \Ttime)~\land\\       
+            (\pparam, \Z) \sample \Setup(\secparam, \Ttime)~\land\\       
             b\sample\{0,1\}~\land\\
-            (\Z_i, \pi_i) \sample \Seal(\pp, i, b)~\land\\
-            b'\gets\adv(\pp,\Z,i, \Z_i, \pi_i)\\
+            (\Z_i, \pi_i) \sample \Seal(\pparam, i, b)~\land\\
+            b'\gets\adv(\pparam,\Z,i, \Z_i, \pi_i)\\
         \end{array}
     \right]
     \leq \frac{1}{2} + \mathsf{negl}(\lambda).
@@ -80,19 +80,19 @@ We say that a voting/auction protocol $\Pi_\Sigma$ with $\Sigma: \X^n \to \mathc
 \begin{align*}
     \Pr\left[
         \begin{array}{c}
-        \Aggr(\pp, \Z, i, \Z_i, \pi_i) \neq \Z~\land\\
+        \Aggr(\pparam, \Z, i, \Z_i, \pi_i) \neq \Z~\land\\
         (i, \cdot, \Z_i, \pi_i) \notin \mathcal{Q}
         \end{array}
         \middle|
         \begin{array}{c}
-            (\pp, \Z) \sample \Setup(\secparam, \Ttime)~\land\\
-            (i, \Z_i, \pi_i) \gets \adv^{\mathcal{O}_\Seal(\pp,\cdot,\cdot)}(\pp, \Z)
+            (\pparam, \Z) \sample \Setup(\secparam, \Ttime)~\land\\
+            (i, \Z_i, \pi_i) \gets \adv^{\mathcal{O}_\Seal(\pparam,\cdot,\cdot)}(\pparam, \Z)
         \end{array}
     \right]
     % \\
     %\leq\mathsf{negl}(\lambda)
 \end{align*}
-where $\mathcal{O}_\Seal(\pp, \cdot,\cdot)$ is an oracle which takes as input any $j \in [n]$ and $s_j \in \X$ and outputs $(\Z_j, \pi_j) \sample \Seal(\pp, j, s_j)$, and $\mathcal{Q}$ is the set of queries and responses $(j, s_j, \Z_j, \pi_j)$ to the oracle.
+where $\mathcal{O}_\Seal(\pparam, \cdot,\cdot)$ is an oracle which takes as input any $j \in [n]$ and $s_j \in \X$ and outputs $(\Z_j, \pi_j) \sample \Seal(\pparam, j, s_j)$, and $\mathcal{Q}$ is the set of queries and responses $(j, s_j, \Z_j, \pi_j)$ to the oracle.
 \end{definition}
 
 \paragraph{A note on anonymity.} 

@@ -1,9 +1,3 @@
-% protocol names
-\newcommand{\AAL}{A$^2$L\xspace}
-\newcommand{\AALplus}{A$^2$L$^+$\xspace}
-\newcommand{\AALUC}{A$^2$L$^{\rm UC}$\xspace}
-\newcommand{\COCO}{C\ensuremath{\emptyset}C\ensuremath{\emptyset}}
-
 % checkmarks / x's
 \usepackage{pifont}
 \newcommand{\cmark}{\ding{51}}%
@@ -12,8 +6,11 @@
 \newcommand{\yes}{\CIRCLE}
 \newcommand{\halfcirc}{\LEFTcircle}
 
-% variables
+% notation
 % \renewcommand{\epsilon}{\varepsilon}
+\let\oldemptyset\emptyset
+\let\emptyset\varnothing
+\newcommand{\td}{\ensuremath{\mathsf{td}}}
 
 % math
 \newcommand{\JJ}{\ensuremath{\mathbb{J}}}
@@ -23,9 +20,9 @@
 \newcommand{\X}{\ensuremath{\mathcal{X}}}
 \newcommand{\Y}{\ensuremath{\mathcal{Y}}}
 \newcommand{\Z}{\ensuremath{\mathcal{Z}}}
-\DeclareMathOperator*{\argmax}{arg\,max}
+% \DeclareMathOperator*{\argmax}{arg\,max}
 \newcommand{\sizeof}[1]{\lvert #1 \rvert}
-\newcommand{\ceil}[1]{\lceil #1 \rceil}
+% \newcommand{\ceil}[1]{\lceil #1 \rceil}
 \renewcommand{\vec}[1]{\ensuremath{\mathbf{#1}}}
 
 % theorem, etc. environments
@@ -48,11 +45,12 @@
 \newcommand{\BCS}{\ensuremath{\mathsf{BCS}}}
 
 %%% cryptography
-\newcommand{\negln}[1]{\ensuremath{\mathsf{negl}_{#1}}}
-\newcommand{\neglnf}[1]{\ensuremath{\mathsf{negl}_{#1}(\secpar)}}
-\newcommand{\negl}{\ensuremath{\mathsf{negl}(\secpar)}}
-\newcommand{\sample}{\ensuremath{\stackrel{\$}{\gets}}}
-\newcommand{\randout}{\ensuremath{\stackrel{\$}{\to}}}
+\newcommand{\negln}[1]{\ensuremath{\negl[]_{#1}}}
+\newcommand{\neglnf}[1]{\ensuremath{\negl_{#1}}}
+% \renewcommand{\sample}{\ensuremath{\stackrel{\$}{\gets}}}
+% \newcommand{\randout}{\ensuremath{\stackrel{\$}{\to}}}
+%% randout consistent with \sample from cryptocode:
+\newcommand{\randout}{\ensuremath{\,{\mbox{\scriptsize${\$}$\normalsize}\!\!\to}\hskip2.3pt}}
 \newcommand{\Rel}{\ensuremath{\mathcal{R}}}
 \newcommand{\Lang}{\ensuremath{\mathcal{L}}}
 \newcommand{\witness}{\ensuremath{w}}
@@ -89,7 +87,7 @@
 \newcommand{\dk}{\ensuremath{\mathsf{dk}}}
 % other elements
 \newcommand{\crs}{\ensuremath{\mathsf{crs}}}
-\newcommand{\pp}{\ensuremath{\mathsf{pp}}}
+\newcommand{\pparam}{\ensuremath{\mathsf{pp}}}
 \newcommand{\com}{\ensuremath{\mathsf{com}}}
 \newcommand{\ct}{\ensuremath{\mathsf{ct}}}
 % UC framework
