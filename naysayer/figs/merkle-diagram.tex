@@ -64,7 +64,6 @@
         \node[yshift=1em] at (ll) {$h_{00}$};
         \node[yshift=1em,xshift=1em] at (lrr) {$h_{011}$};
     \end{tikzpicture}
-    \caption{Each node in a Merkle tree consists of a hash of its children. The root $h$ is a commitment to the vector $(v_0, v_1, \dots, v_7)$ consisting of the leaves. To open the leaf at position 2, a prover provides the value $v_2$ and an opening proof $\pi$ consisting of the copath (black nodes) $(h_{011}, h_{00}, h_{1})$. The proof $\pi$ is checked by using its contents to recompute the root $h'$ starting with $v_2$, then checking that $h = h'$.
-    In a naysayer proof system, the prover provides $\pi$ along with a ``verification trace'': the blue nodes $\com = (h_{010}, h_{01}, h_{0})$. A naysayer can point out an error at a particular point of the trace, e.g., $h_{01}$, which the naysayer verifier checks by computing a single hash, e.g., $H(h_{010}, h_{011}) \stackrel{?}{=} h_{01}$.}
+    \caption{Each node in a Merkle tree consists of a hash of its children. The root $h$ is a commitment to the vector of leaves $(v_0, v_1, \dots, v_7)$. An opening proof for the element $v_2$ is its copath (black nodes); the ``verification trace'' for the proof is the path (blue nodes).}
     \label{fig:merkle-diagram}
 \end{figure*}

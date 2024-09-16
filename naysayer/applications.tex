@@ -1,18 +1,27 @@
-\subsection{Applications}\label{sec:naysayer_apps}
+\subsection{Constructions}\label{sec:naysayer_apps}
 
-\todo{rename to Constructions?}
+In \Cref{sec:merkle_naysayer}, we show a concrete example of the generic naysayer construction from \Cref{thm:naysayer} applied to Merkle trees. We then highlight three naysayer proof constructions which take advantage of repetition in the verification algorithm to achieve better naysayer performance: the FRI polynomial commitment scheme (\Cref{sec:fri_naysayer}) and two post-quantum signature schemes (\Cref{sec:pqsig_naysayer}). 
 
-Many proof systems have some repetitive structure in their verification algorithm. This structure allows for more efficient naysaying. Examples include proofs with multi-round amplification, verification as a conjunction of repeated checks (e.g., multiple bilinear pairing checks~\cite{EPRINT:GabWilCio19}), or recursive reduction (e.g., Pietrzak's proof of exponentiation~\cite{ITCS:Pietrzak19b}). In this section, we highlight three naysayer proof constructions which take advantage of such repetition to achieve better performance: Merkle commitments (\Cref{sec:merkle_naysayer}), the FRI polynomial commitment scheme (\Cref{sec:fri_naysayer}), and two post-quantum signature schemes (\Cref{sec:pqsig_naysayer}). In \Cref{sec:vshuffle_naysayer}, we give an example of a non-public naysayer proof which uses a trapdoor to reduce the \todo{size/verif of naysayer, or computation of naysayer proof}. In \Cref{sec:eval}, we
+% Many proof systems have some repetitive structure in their verification algorithm. This structure allows for more efficient naysaying. 
+\todo{Examples include proofs with multi-round amplification, verification as a conjunction of repeated checks (e.g., multiple bilinear pairing checks~\cite{EPRINT:GabWilCio19}), or recursive reduction (e.g., Pietrzak's proof of exponentiation~\cite{ITCS:Pietrzak19b}).}
+% In this section, we highlight three naysayer proof constructions which take advantage of such repetition to achieve better performance: the FRI polynomial commitment scheme (\Cref{sec:fri_naysayer}) and two post-quantum signature schemes (\Cref{sec:pqsig_naysayer}). 
+Then, in \Cref{sec:vshuffle_naysayer}, we give an example of a non-public naysayer proof which uses a trapdoor to reduce the \todo{size/verif of naysayer, or computation of naysayer proof}. 
+Finally, in \Cref{sec:eval} we
 % summarize the succinctness of each naysayer proof compared to that of the original proof system.
 estimate the performance of each naysayer proof system compared to that of the original proof system.
 
 \subsubsection{Merkle Commitments}\label{sec:merkle_naysayer}
 \input{naysayer/figs/merkle-diagram}
 
-\todo{this might just be the generic construction tbh}
+Merkle trees~\cite{todo} and their variants~\cite{patricia-trie} are ubiquitous in modern systems, including being used to store Ethereum state~\cite{todo}, \todo{other apps...?} A Merkle tree can be used to commit to a vector $\vec{v}$ of elements as shown in \Cref{fig:merkle-diagram}, with the root $h$ acting as a commitment to $\vec{v}$. The party who created the tree can prove the inclusion of some element $v_i$ at position $i$ in the tree by providing the corresponding copath. 
+
+For example, to open the leaf at position 2, a prover provides its value $v_2$ and an opening proof $\pi = (h_{011}, h_{00}, h_{1})$ consisting of the copath from the leaf $v_2$ to the root $h$. The proof $\pi$ is checked by using its contents to recompute the root $h'$ starting with $v_2$, then checking that $h = h'$. This involves recomputing the nodes along the path from the leaf to the root (the blue nodes in the figure). These nodes can be seen as a ``verification trace'' for the proof $\pi$.
+    
+In the context of a naysayer proof system, the prover provides $\pi$ along with the verfication trace $\aux = (h_{010}, h_{01}, h_{0})$. A naysayer can point out an error at a particular point of the trace by submitting the incorrect index of $\aux$ (e.g., $\pi_\nay = 1$ to indicate $h_{01}$). The naysayer verifier checks $\pi_\nay$ by computing a single hash using $\pi$ and oracle access to $\aux$, e.g., checking $H(h_{010}, h_{011}) \stackrel{?}{=} h_{01}$, where $h_{010}, h_{01} \in \aux$ and $h_{011} \in \pi$. This is the generic construction from \Cref{thm:naysayer}.
 
 \subsubsection{FRI Polynomial Commitment Scheme}\label{sec:fri_naysayer}
 
+\todo{pass on this section}
 \noemi{might actually be for STARKs not just FRI?}
 
 The FRI polynomial commitment scheme~\cite{EPRINT:BBHR18} is used as a building block in many non-interactive proof systems, including STARKs~\cite{STOC:BCGT13}.
@@ -22,33 +31,45 @@ Each leaf is an evaluation of $p(x)$ on the set $L_0\subset\mathbb{F}$, where $\
 The overall STARK proof is invalid if any of the individual Merkle proofs is invalid. Therefore a straightforward naysayer proof $\pi^{\mathsf{FRI}}_{\nay}=(i,z_{i})$ need only point to the $i$th node in one of the Merkle proofs, where the hash values of the children nodes $x,y$ and their parent node $z\neq H(x,y)$ do not match in one of the incorrect Merkle authentication paths. The naysayer verifier only needs to compute a single hash evaluation $H(x,y)=z_{i}$ and check $z_{i}\neq z$. Thus, the naysayer proof for FRI has constant-size and can be verified in constant-time. 
 
 \subsubsection{Post-quantum Signature Schemes}\label{sec:pqsig_naysayer}
+\todo{pass on this section}
+
 With the advent of account abstraction~\cite{accountabstraction}, Ethereum users can define their own preferred digital signature schemes, including post-quantum signatures as recently standardized by NIST~\cite{CCS:BHKNRS19,TCHES:DKLLS18,NISTPQC:FALCON22}.
 In all known schemes, %\joe{check this} 
 post-quantum signatures or public keys are substantially larger than their classical counterparts.  Since post-quantum signatures are generally expensive to verify on-chain, they are prime candidates for the naysayer proof paradigm.
 
-\paragraph{CRYSTALS-Dilithium~\cite{TCHES:DKLLS18}.} The verifier of this scheme checks that the following holds for signature $\sigma=(\mathbf{z},c)$, public key $\mathit{pk}=(\mathbf{A},\mathbf{t})$, and message $M$:
+\paragraph{CRYSTALS-Dilithium~\cite{TCHES:DKLLS18}.} The verifier of this scheme checks that the following holds for signature $\sigma=(\vec{z},c)$, public key $\pk=(\vec{A},\vec{t})$, and message $M$:
 \begin{equation}\label{eq:crystals_verifier_check}
-    \forall i: \lVert z_i\rVert_{\infty}\leq C\land \mathbf{A}\mathbf{z}-c\mathbf{t} = \mathbf{w} \land c=H(M\vert\vert \mathbf{w}),
+    \norm{\vec{z}}_\infty < C \land c=H(M \concat \vec{w}),
 \end{equation}
-where $C$ is a constant, $\mathbf{A}\in R^{k\times l}_q$, and $\mathbf{z},\mathbf{t},\mathbf{w}\in R^{k}_q$ for the polynomial ring $R_q:=\mathbb{Z}_q[x]/(X^{256}+1)$. Notice that the checks in~\Cref{eq:crystals_verifier_check} are efficiently naysayable. In fact, the naysayer prover must show that the following holds: 
+where $C$ is a constant, $\vec{A}\in R_q^{k\times l}$, and $\vec{z},\vec{t},\vec{w}\in R_q^k$ for the polynomial ring $R_q:=\ZZ_q[x]/(X^{256}+1)$, and $\vec{w} = \vec{A}\vec{z}-c\vec{t}$. Notice that the checks in~\Cref{eq:crystals_verifier_check} are efficiently naysayable. In fact, the naysayer prover must show that the following holds: 
 \begin{equation}\label{eq:crystals_naysayer_prover}
-    \exists i: \lVert z_i\rVert_{\infty}>C\lor \mathbf{A}\mathbf{z}-c\mathbf{t} \neq \mathbf{w} \lor c\neq H(M\vert\vert \mathbf{w}).
+    \exists i: \norm{z_i}_{\infty}>C 
+    \lor \vec{A}\vec{z}-c\vec{t} \neq \vec{w} \lor 
+    c\neq H(M \concat \vec{w}).
 \end{equation}
-If the first check fails, then the naysayer prover shows an index $i$ for which the infinity norm of one of the polynomials in $\mathbf{z}$ is large. If the second check fails, then the naysayer prover can point to the $i$th row of the vector $\mathbf{w}$, where matrix-vector multiplication fails and verify only that row. Finally, if the last check fails, then the naysayer verifier just needs to recompute a single hash evaluation.
+If the first check fails, then the naysayer prover shows an index $i$ for which the infinity norm of one of the polynomials in $\vec{z}$ is large. If the second check fails, then the naysayer prover can point to the $i$th row of the vector $\vec{w}$, where matrix-vector multiplication fails and verify only that row. Finally, if the last check fails, then the naysayer verifier just needs to recompute a single hash evaluation.
 
-\paragraph{SPHINCS+~\cite{CCS:BHKNRS19}.} The signature verifier in SPHINCS+ checks several Merkle authentication proofs, requiring hundreds of hash evaluations. A constant-size and -time naysayer proof can be easily devised akin to the naysayer proof described in~\Cref{sec:fri_naysayer}. The naysayer prover simply points to the hash evaluation in one of the Merkle-trees where the signature verification fails. 
+\paragraph{SPHINCS+~\cite{CCS:BHKNRS19}.} The signature verifier in SPHINCS+ checks several Merkle authentication proofs, requiring hundreds of hash evaluations. An efficient naysayer proof can be easily devised akin to the naysayer proof described in~\Cref{sec:fri_naysayer}. The naysayer prover simply points to the hash evaluation in one of the Merkle-trees where the signature verification fails. 
 
 \subsubsection{Verifiable Shuffles}\label{sec:vshuffle_naysayer}
 Verifiable shuffles are applied in many (blockchain) applications such as single secret leader election algorithms~\cite{AFT:Boneh20}, mix-nets~\cite{CACM:Chaum81}, cryptocurrency mixers~\cite{EPRINT:SNBB19}, and e-voting~\cite{USENIX:Adida08}. The state-of-the-art proof system for proving the correctness of a shuffle is due to Bayer and Groth~\cite{EC:BayGro12}. Their proof system is computationally heavy to verify on-chain as the proof size is $\mathcal{O}(\sqrt{n})$ and verification time is $\mathcal{O}(n)$, where $n$ is the number of shuffled elements. 
 
-Most shuffling protocols (of public keys, re-randomizable commitments, or ElGamal ciphertexts) admit a succinct naysayer proof if the naysayer knows at least one of the shuffled elements. Let us consider the simplest case of shuffling public keys. We want to prove membership in the following  NP language:
-\begin{equation}\label{eq:permlanguage}
-    \mathcal{R}_{perm}:=\{(g^{\witness_i},g^{r\cdot \witness_{\sigma(i)}})^{n}_{i=1},g^r;\sigma,r\vert\ \forall i:\witness_i,r\in_{R}\mathbb{F}_p,g\in\mathbb{G},  \sigma\in_{R}\mathsf{Perm}(n)\}, 
-\end{equation}
-where $\mathsf{Perm}(n)$ is the set of all permutations $f:[n]\rightarrow[n]$.
-Suppose the naysayer knows that for $j\in[n]$, the prover did not correctly include $g^{r\cdot \witness_j}$ in the shuffle. The naysayer can prove this by showing that $(g,g^{\witness_j},g^r,g^{r\cdot \witness_j})\in\mathcal{R}_{DH}\land g^{r\cdot \witness_j}\notin (\cdot,g^{r\cdot \witness_{\sigma(i)}})^n_{i=1}$, where $\mathcal{R}_{DH}$ is the language of Diffie-Hellman tuples. One can show that a tuple is a Diffie-Hellman tuple with a proof of knowledge of discrete logarithm equality~\cite{C:ChaPed92}. However, the naysayer must know the discrete logarithm $\witness_j$ to produce such a proof. Unlike our previous examples, which were publicly naysayable, this is a privately naysayable proof since the naysayer algorithm takes auxiliary input $\witness_j$. With the right data structure for the permuted list (e.g., a hash table), both of the above conditions can be checked in constant-time with a constant-size naysayer proof, resulting in exponential savings compared to directly verifying the original Bayer-Groth shuffle proof.
+Most shuffling protocols (of public keys, re-randomizable commitments, or ElGamal ciphertexts) admit a particularly efficient naysayer proof if the naysayer knows at least one of the shuffled elements. Let us consider the simple case of shuffling public keys. The shuffler wishes to prove membership in the following  NP language:
+\begin{align*}%\label{eq:permlanguage}
+    \Lang_{perm}:= \{ ((\pk_i,\pk_i')_{i=1}^n,R) : \exists r,\witness_1,\dots,\witness_n \in \FF_p, \sigma \in\mathsf{Perm}(n) \\
+    \suchthat \forall i\in[n], \pk_i = g^{\witness_i} \land \pk_i' = g^{r \cdot \witness_{\sigma(i)}} \land R = g^r
+    \}.
+\end{align*}
+Here $\mathsf{Perm}(n)$ is the set of all permutations $f:[n]\rightarrow[n]$.
+
+Suppose a party knows that for some $j\in[n]$, the prover did not correctly include $\pk_j' = g^{r\cdot \witness_j}$ in the shuffle. The party can naysay by showing that 
+\[
+    (g,\pk_j,R,\pk_j')\in\Lang_{DH}\land \pk_j' \notin (\pk_i,\cdot)_{i=1}^n
+\]
+where $\Lang_{DH}$ is the language of Diffie-Hellman tuples\footnote{Membership in $\Lang_{DH}$ can be shown via a proof of knowledge of discrete logarithm equality~\cite{C:ChaPed92}.}. To produce such a proof, however, the naysayer must know the discrete logarithm $\witness_j$. Unlike our previous examples, which were public naysayer proofs, this is an example of a private $\naysay$ algorithm using $\td_\nay := \witness_j$. The naysayer proof is $\pi_\nay := (j, \pk_j', \pi_{DH})$. The Diffie-Hellman proof can be checked in constant time and, with the right data structure for the permuted list (e.g., a hash table), so can the list non-membership. This, $\pi_\nay$ is a $\bigO{\log{n}}$-sized naysayer proof with $\bigO{1}$-verification, yielding in exponential savings compared to verifying the original Bayer-Groth shuffle proof.
 
 \subsubsection{Evaluation}
+\todo{pick up from here}
 We evaluate the asymptotic cost savings for the verifiers in the four examples discussed in \Cref{sec:fri_naysayer,sec:pqsig_naysayer,sec:vshuffle_naysayer}. Note that naysayer proofs allow an exponential speedup for the verifier for verifiable shuffles and a logarithmic speedup for the FRI polynomial commitment opening proof verifier, see~\Cref{tab:apps_table}. For CRYSTALS-Dilithium, we can only claim weakly efficient naysayer proofs, as there is no asymptotic gap in the complexity in certain branches of the signature verification circuit and the naysayer prover algorithm, cf.~\Cref{eq:crystals_verifier_check,eq:crystals_naysayer_prover}.
 
 \input{naysayer/apps-table}
