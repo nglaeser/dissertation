@@ -8,10 +8,12 @@
                                    &           &   (interactive)   & (non-interactive) &                \\\midrule
         No optimistic assumption   & \yes      & \no               & \no               & \no            \\
         Non-interactive            & \yes      & \no               & \yes              & \yes           \\
-        No on-chain $\Pi.\vrfy$  & \no       & \yes             & \yes            & \yes           \\
         Off-chain $f$  & \yes       & \yes              & \halfcirc             & \yes           \\
+        Off-chain $\Pi.\vrfy$  & \no       & -             & -            & \yes           \\
+        Witness-independent challenge& \yes    & \no              & \no               & \yes           \\
         Witness-independent resolution& \yes    & \halfcirc              & \no               & \yes           \\
-        No need to run $\Pi.\prove$     & \no       & \yes             & \yes              & \no\\\bottomrule
+        No $\Pi.\prove$     & \no       & \yes             & \yes              & \no\\
+        \bottomrule
     \end{tabular}}
     \caption{Trade-offs between VC, fraud proofs, and naysayer proofs.}
     \label{tab:comparison}
