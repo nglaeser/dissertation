@@ -1,5 +1,9 @@
 \subsection{Extensions and Future Work}\label{sec:naysayer_extensions}
 
+\todo{Mention zkVMs} 
+
+\noemi{moved here:} Many proof systems have some repetitive structure in their verification algorithm. This structure allows for more efficient naysaying. Examples include proofs with multi-round amplification, verification as a conjunction of repeated checks (e.g., multiple bilinear pairing checks~\cite{EPRINT:GabWilCio19}), or recursive reduction (e.g., Pietrzak's proof of exponentiation~\cite{ITCS:Pietrzak19b}).
+
 \noemi{Currently, in the generic construction we require the prover to additionally run $\Pi.\vrfy$ to create the verification trace $\aux$. Is there a way to separate/outsource this to another party to reduce the added computational burden on a party already spending so much power to compute the proof?}
 
 \noemi{How to implement efficient and secure query access to the prover's verification trace? Some approaches can be blob data (aka trusted KZG) (see \Cref{sec:naysayer_storage}), prover binding+deterministic commitments (?), Merkle trees, etc.}

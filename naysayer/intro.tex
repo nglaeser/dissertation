@@ -1,6 +1,6 @@
  \begin{figure}[tbh]
     \includegraphics[width=\textwidth]{naysayer/figs/vc.png}
-    \caption{\textbf{Using VC to move computation off-chain.} The off-chain ``prover'' applies the function $f$ to input $y$ and potentially auxiliary input $w$ to get the result $y' = f(y, w)$. (In the case of a zk-rollup, $f$ is the state transition function, $y$ is the previous on-chain state, $w$ is a batch of transactions, and $y'$ is the new state after applying the transactions in $w$ to $y$.) It posts $y'$ and a proof $\pi$ of its correctness, which is verified on-chain before the output $y'$ is accepted. This paradigm does not require any challengers.}
+    \caption{\textbf{Using VC to move computation off-chain.} The off-chain ``prover'' applies the function $f$ to input $y$ and potentially an auxiliary off-chain input $w$ to get the result $y' = f(y, w)$. (In the case of a zk-rollup, $f$ is the state transition function, $y$ is the previous on-chain state, $w$ is a batch of transactions, and $y'$ is the new state after applying the transactions in $w$ to $y$.) It posts $y'$ and a proof $\pi$ of its correctness, which is verified on-chain before the output $y'$ is accepted. This paradigm does not require any challengers.}
     \label{fig:vc}
  \end{figure}
 
@@ -11,7 +11,7 @@ This computation can even depend on secret inputs not known to the verifier in t
  %In some cases (though not all), this proof is also zero-knowledge, hiding some inputs to the computation. This is commonly referred to as a \emph{zk-rollup} (even if it is not zero-knowledge).
 
 VC leads to a paradigm in which smart contracts, while capable of arbitrary computation, primarily act as verifiers and outsource all significant computation off-chain (see \Cref{fig:vc}). A motivating application is so-called ``zk''-\emph{rollups}\footnotemark~\cite{starknet,zksync,aztec,dydx,scroll}, which combine transactions from many users into a single smart contract which verifies a proof that all have been executed correctly.
-\footnotetext{Note that ``zk-rollup'' is somewhat of a misnomer, since these services do not necessarily meet the zero-knowledge property.} 
+\footnotetext{Note that the ``zk'' part of the name is often a misnomer, since these services do not necessarily offer the zero-knowledge property, and in fact they often do not.} 
 However, verifying these proofs can still be costly. For example, the StarkEx rollup 
 %contract verifying the state transitions of the off-chain StarkEx marketplace 
 has spent hundreds of thousands of dollars to date to verify FRI polynomial commitment opening proofs.\footnote{\url{https://etherscan.io/address/0x3e6118da317f7a433031f03bb71ab870d87dd2dd}}
@@ -19,7 +19,7 @@ has spent hundreds of thousands of dollars to date to verify FRI polynomial comm
 
 We observe that this proof verification is often wasteful. In most applications, provers have strong incentives to post only correct proofs, suffering direct financial penalties (in the form of a lost security deposit) or indirect costs to their reputation and business for posting incorrect proofs. As a result, a significant fraction of a typical layer-1 blockchain's storage and computation is expended verifying proofs, which are almost always correct.\footnote{At the time of this writing, we are unaware of any major rollup service which has posted an incorrect proof in production.}
 
- \begin{figure}[tbh]
+ \begin{figure}[tb]
     \includegraphics[width=\textwidth]{naysayer/figs/naysayer.png}
     \caption{\textbf{The naysayer proof approach.} As in VC, the off-chain prover computes $y' = f(y, w)$ and $\pi$, which it posts on-chain. This time, the proof is \emph{not} verified on-chain, but is provisionally accepted while waiting for the challenge period to pass. Any party can verify $\pi$ off-chain and, if it fails, issue a challenge by creating a naysayer proof $\pi_\nay$. The on-chain verifier checks any submitted naysayer proofs, and if they pass, it rejects the claimed result $y'$. If the challenge period elapses without any successful naysaying, $y'$ is accepted.}
     \label{fig:naysayer}
@@ -30,18 +30,19 @@ Otherwise, if no party successfully naysays the original proof before the end of
 To deter denial of service, naysayers may be required to post collateral, which is forfeited if their naysayer proof is incorrect.
 
 This paradigm potentially saves the verifier work in two ways. 
-First, in the optimistic case, where the proof is not challenged, the verifier does no work at all (the same is true of fraud proofs; see \Cref{sec:naysayer-related}). We expect this to almost always be the case in practice. Second, even in the pessimistic case, we will see below that checking the naysayer proof can be much more efficient than checking the original proof.
-In other words, the naysayer acts as a helper to the verifier by reducing the cost of the verification procedure in fraudulent cases. At worst, checking the naysayer proof is equivalent to verifying the original proof (this is the trivial naysayer construction).
+First, in the optimistic case, where the proof is not challenged, the verifier does no work at all (the same is true of fraud proofs; see \Cref{sec:naysayer_related}). We expect this to almost always be the case in practice. Second, even in the pessimistic case, we will see below that checking the naysayer proof can be much more efficient than checking the original proof.
+In other words, the naysayer acts as a helper to the verifier by reducing the cost of the verification procedure in fraudulent cases. At worst, checking the naysayer proof is equivalent to verifying the original proof (this is the trivial naysayer construction; see \Cref{sec:naysayer_def}).
 
 Naysayer proofs enable other interesting trade-offs. 
 % for instance, %for a proof system with transparent setup and large proofs, the \naysayer proof could be instantiated generically using a short proof system with trusted setup (e.g., \cite{groth16}), or using a lower security level. 
 For instance, naysayer proofs might be run at a lower security level than the original proof system.
 A violation of the naysayer proof system's soundness undermines the \emph{completeness} of the original proof system. %, but not its soundness. 
 For an application like a rollup service, this results only in a loss of liveness; importantly, the rollup users' funds would remain secure. 
-Liveness could be restored by falling back to full proof verification.
+Liveness could be restored by falling back to full proof verification on-chain.
 
 %Move this to later? Conclusion?
 %The naysayer paradigm introduces a new set of criteria for evaluating the efficiency of proof systems. Previously, developers were solely focusing on the proof size and verification cost of a proof system; this paradigm allows one to instead optimize for a proof system's proof size \emph{and its accompanying naysayer proof size and verification cost}. We further detail the implications of these new selection criteria in~\Cref{sec:evaluation}.
 
-In~\Cref{sec:naysayer_def}, we formally define naysayer proofs and show that every NP language has a logarithmic size and constant-time naysayer proof. In~\Cref{sec:naysayer_apps}, we provide three concrete examples where naysayer proofs offer significant speedups. % in comparison with verifying the original proof. 
-% We conclude with open research questions in~\Cref{sec:conclusion}.
+We will formally define naysayer proofs in~\Cref{sec:naysayer_def} and show that every succinct proof system has a logarithmic-size and constant-time naysayer proof. First, we discuss related work in \Cref{sec:naysayer_related} and define our system model in more detail in \Cref{sec:naysayer_model}.
+In~\Cref{sec:naysayer_apps}, we construct naysayer proofs for four concrete proof systems and evaluate their succinctness. % in comparison with verifying the original proof. 
+We discuss storage considerations in \Cref{sec:naysayer_storage} and conclude with some open directions in~\Cref{sec:naysayer_extensions}.

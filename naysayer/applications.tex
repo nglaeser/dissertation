@@ -1,11 +1,8 @@
 \subsection{Constructions}\label{sec:naysayer_apps}
 
 In \Cref{sec:merkle_naysayer}, we show a concrete example of the generic naysayer construction from \Cref{thm:naysayer} applied to Merkle trees. We then highlight three naysayer proof constructions which take advantage of repetition in the verification algorithm to achieve better naysayer performance: the FRI polynomial commitment scheme (\Cref{sec:fri_naysayer}) and two post-quantum signature schemes (\Cref{sec:pqsig_naysayer}). 
-
-% Many proof systems have some repetitive structure in their verification algorithm. This structure allows for more efficient naysaying. 
-\todo{Examples include proofs with multi-round amplification, verification as a conjunction of repeated checks (e.g., multiple bilinear pairing checks~\cite{EPRINT:GabWilCio19}), or recursive reduction (e.g., Pietrzak's proof of exponentiation~\cite{ITCS:Pietrzak19b}).}
 % In this section, we highlight three naysayer proof constructions which take advantage of such repetition to achieve better performance: the FRI polynomial commitment scheme (\Cref{sec:fri_naysayer}) and two post-quantum signature schemes (\Cref{sec:pqsig_naysayer}). 
-Then, in \Cref{sec:vshuffle_naysayer}, we give an example of a non-public naysayer proof which uses a trapdoor to reduce the \todo{size/verif of naysayer, or computation of naysayer proof}. 
+Then, in \Cref{sec:vshuffle_naysayer}, we give an example of a non-public naysayer proof which uses a trapdoor to reduce the size and verification complexity of the naysayer proof. %\todo{as well as its computation complexity?}.
 Finally, in \Cref{sec:eval} we
 % summarize the succinctness of each naysayer proof compared to that of the original proof system.
 estimate the performance of each naysayer proof system compared to that of the original proof system.
@@ -13,7 +10,7 @@ estimate the performance of each naysayer proof system compared to that of the o
 \subsubsection{Merkle Commitments}\label{sec:merkle_naysayer}
 \input{naysayer/figs/merkle-diagram}
 
-Merkle trees~\cite{todo} and their variants~\cite{patricia-trie} are ubiquitous in modern systems, including being used to store Ethereum state~\cite{todo}, \todo{other apps...?} A Merkle tree can be used to commit to a vector $\vec{v}$ of elements as shown in \Cref{fig:merkle-diagram}, with the root $h$ acting as a commitment to $\vec{v}$. The party who created the tree can prove the inclusion of some element $v_i$ at position $i$ in the tree by providing the corresponding copath. 
+Merkle trees~\cite{C:Merkle87} and their variants are ubiquitous in modern systems, including Ethereum's state storage~\cite{ethereum_trie}. A Merkle tree can be used to commit to a vector $\vec{v}$ of elements as shown in \Cref{fig:merkle-diagram}, with the root $h$ acting as a commitment to $\vec{v}$. The party who created the tree can prove the inclusion of some element $v_i$ at position $i$ in the tree by providing the corresponding copath. 
 
 For example, to open the leaf at position 2, a prover provides its value $v_2$ and an opening proof $\pi = (h_{011}, h_{00}, h_{1})$ consisting of the copath from the leaf $v_2$ to the root $h$. The proof $\pi$ is checked by using its contents to recompute the root $h'$ starting with $v_2$, then checking that $h = h'$. This involves recomputing the nodes along the path from the leaf to the root (the blue nodes in the figure). These nodes can be seen as a ``verification trace'' for the proof $\pi$.
     
@@ -24,13 +21,13 @@ In the context of a naysayer proof system, the prover provides $\pi$ along with 
 The Fast Reed-Solomon IOP of proximity (FRI)~\cite{ICALP:BBHR18} is used as a building block in many non-interactive proof systems, including the STARK IOP~\cite{EPRINT:BBHR18}.
 Below, we describe only the parts of FRI as applied in STARK. We refer the reader to the cited works for details.
 
-The FRI commitment to a polynomial $p(X)\in\mathbb{F}^{\leq d}[X]$ is the root of a Merkle tree with $\rho^{-1}d$ leaves. 
-Each leaf is an evaluation of $p(X)$ on the set $L_0 \subset \FF$, where $\rho^{-1}d=\sizeof{L_0} \ll \sizeof{\FF}$ for Reed-Solomon rate parameter $0<\rho<1$. We focus on the verifier's cost in the proof of proximity. Let $\delta$ be a parameter of the scheme such that $\delta\in(0,1-\sqrt{\rho})$. The prover sends $\log{d}+\rho^{-1}$ values (roots of successive ``foldings'' of the original Merkle tree, plus the leaves of the final tree). The verifier makes $q=\secpar/\log(1/(1-\delta))$ queries to ensure $2^{-\secpar}$ soundness error; the prover responds to each query with $2\log{d}$ Merkle opening proofs (2 for each folded root). For each query, the verifier must check each Merkle authentication path, amounting to $\bigO{\log{\rho^{-1}d}}$ hashes per query. Furthermore, it must perform $q\log{d}$ arithmetic checks to ensure the consistency of the folded evaluations. Therefore, the overall FRI verification consists of $\bigO{\secpar\log{\rho^{-1}d}/\log(1/(1-\delta))}$ hashes \todo{plus...}. 
+The FRI commitment to a polynomial $p(X)\in\FF[X]^{\leq d}$ is the root of a Merkle tree with $\rho^{-1}d$ leaves. 
+Each leaf is an evaluation of $p(X)$ on the set $L_0 \subset \FF$, where $\rho^{-1}d=\sizeof{L_0} \ll \sizeof{\FF}$ for a constant $0<\rho<1$ (the Reed-Solomon rate parameter). We focus on the verifier's cost in the proof of proximity. Let $\delta$ be a parameter of the scheme such that $\delta\in(0,1-\sqrt{\rho})$. The prover sends $\log{d}+1$ values (roots of successive ``foldings'' of the original Merkle tree, plus the value of the constant polynomial encoded by the final tree). The verifier makes $q=\secpar/\log(1/(1-\delta))$ queries to ensure $2^{-\secpar}$ soundness error; the prover responds to each query with $2\log{d}$ Merkle opening proofs (2 for each folded root). For each query, the verifier must check each Merkle authentication path, amounting to $\bigO{\log{\rho^{-1}d}}$ hashes per query. Furthermore, it must perform $\log{d}$ arithmetic checks (roughly 3 additions, 2 divisions, and 2 multiplications in $\FF$) per query to ensure the consistency of the folded evaluations. Therefore, the overall FRI verification consists of $\bigO{\secpar\log{d}}$ hashes and field operations.
 
 A FRI proof is invalid if any of the above checks fails. Therefore a straightforward naysayer proof $\pi^{\mathsf{FRI}}_{\nay}=(i,j,k)$ need only point out a single Merkle proof (the $j$th proof for the $i$th query, $i\in[q], j \in [2\log{d}]$) or a single arithmetic check $k \in [q\log{d}]$ which fails. The naysayer verifier only needs to recompute that particular check: $\bigO{\log{\rho^{-1}d}}$ hashes in the former case\footnote{One could use a Merkle naysayer proof (\Cref{sec:merkle_naysayer}) to further reduce the naysayer verification from checking a full Merkle path to a single hash evaluation.} or a few arithmetic operations over $\FF$ in the latter.
 
 \subsubsection{Post-quantum Signature Schemes}\label{sec:pqsig_naysayer}
-\todo{pass on this section}
+\todo{pass on this section---Thursday}
 
 With the advent of account abstraction~\cite{accountabstraction}, Ethereum users can define their own preferred digital signature schemes, including post-quantum signatures as recently standardized by NIST~\cite{CCS:BHKNRS19,TCHES:DKLLS18,NISTPQC:FALCON22}.
 In all known schemes, %\joe{check this} 

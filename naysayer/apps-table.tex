@@ -9,13 +9,13 @@
      & \textbf{FRI Opening} & \textbf{CRYSTALS-D.} & \textbf{SPHINCS+}& \textbf{Shuffle proof} \\ [0.5ex] 
      \midrule
      $\sizeof{\pi}$ & $\bigO{\secpar\log{d}}\mathbb{H}$\ & $\bigO{\secpar}\FF$\  & $\bigO{\secpar}\FF$\  & $\bigO{\sqrt{n}}\GG$\  \\ 
-     $\vrfy$ & $\mathcal{O}(\secpar\log{d})\mathbb{H}$\ & $\mathcal{O}(\secpar)\FF+1\mathbb{H}$\  & $\mathcal{O}(\secpar)\mathbb{H}$\  & $\mathcal{O}(n)\GG$\  \\\midrule
+     $\vrfy$ & $\bigO{\secpar\log{d}}\mathbb{H} + \bigO{\secpar\log{d}}\FF$\ & $\bigO{\secpar}\FF+1\mathbb{H}$\  & $\mathcal{O}(\secpar)\mathbb{H}$\  & $\mathcal{O}(n)\GG$\  \\\midrule
      $\sizeof{\pi_{nay}}$ & $1\FF$\ & $1\FF$\  & $1\FF$\  & $(\log{n})\mathbb{B}+3\GG+1\FF$\  \\
      $\vrfynay$ & $1\mathbb{H}$\ & $\mathcal{O}(\secpar)\FF\lor1\mathbb{H}$\  & $1\mathbb{H}$\  & $4\GG$\  \\
     \bottomrule
     \end{tabular}
     }
-    \caption{Cost savings of the naysayer paradigm for the example applications in~\Cref{sec:naysayer_apps}. In FRI, let $deg(p(x))=d$. For the Bayer-Groth shuffle argument~\cite{EC:BayGro12}, we consider $n$ shuffled public keys (or ciphertexts). $\FF,\GG$ denotes field/group elements or field/group operations, respectively, and $\mathbb{B}$ bits. $\mathbb{H}$ denotes hashing operations. \todo{Can I get some estimated numbers here by looking at the implementations/papers of the underlying schemes, and then just the field/group element sizes in the relevant curves for the naysayer?}}
+    \caption{Cost savings of the naysayer paradigm for the example applications in~\Cref{sec:naysayer_apps}. In FRI, let $deg(p(x))=d$. For the Bayer-Groth shuffle argument~\cite{EC:BayGro12}, we consider $n$ shuffled elements (e.g., public keys). $\FF,\GG$ denote field/group elements or field/group operations, respectively, and $\mathbb{B}$ bits. $\mathbb{H}$ denotes hashing operations. \todo{Can I get some estimated numbers here by looking at the implementations/papers of the underlying schemes, and then just the field/group element sizes in the relevant curves for the naysayer?}}
     \label{tab:apps_table}
    \end{table}
    %--------------------END Naysayer cost savings TABLE--------------
