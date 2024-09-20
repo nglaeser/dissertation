@@ -74,7 +74,7 @@ Next, we show that every proof system has corresponding naysayer proof system wi
 \end{proof}
 
 \begin{theorem}\label{thm:naysayer}
-    Every efficient proof system $\Pi$ (i.e., with a polynomial-time verification algorithm) has a succinct naysayer proof.
+    Every proof system $\Pi$ with $\poly[x]$ verification complexity has a succinct naysayer proof.
 \end{theorem}
 \begin{proof}
 Given any proof system $\Pi$, the evaluation of $\Pi.\vrfy(\crs,\cdot,\cdot)$ can be represented as a circuit $C$. (We assume this circuit description is public.) 
@@ -97,10 +97,10 @@ Soundness follows by the completeness of $\Pi$. If $(x,w) \in \Rel_\Lang$ and $\
 
 Succinctness of $\pi_\nay$ follows from the fact that $\sizeof{i} = \log{\sizeof{\Pi.\vrfy(\crs, \cdot, \cdot)}} \in 
 % \bigOmega{\log{\sizeof{C}}} = 
-\bigO{\polylog{\sizeof{x}}}$ (by the succinctness of $\Pi$). Furthermore, it is clear to see that the runtime of $\vrfynay$ is constant.
+\bigO{\polylog{\sizeof{x}}}$. Furthermore, it is clear to see that the runtime of $\vrfynay$ is constant.
 \end{proof}
 
-The proof of \Cref{thm:naysayer} gives a generic way to build a succinct naysayer proof system for any succinct proof system $\Pi$. The generic construction even allows efficient naysaying, since the runtime of $\naysay$ depends only on the runtime of $\Pi.\vrfy$, which is sublinear due to the succinctness of $\Pi$.
+The proof of \Cref{thm:naysayer} gives a generic way to build a succinct naysayer proof system for any proof system $\Pi$ with polynomial-time verification. For strongly succinct\todo{define or change} proof systems, the generic construction even allows efficient naysaying, since the runtime of $\naysay$ depends only on the runtime of $\Pi.\vrfy$, which is sublinear if $\Pi$ is strongly succinct.
 
 Notice that although the syntax gives $\pi' = (\pi, \aux)$ as an input to the $\vrfynay$ algorithm, in the generic construction the algorithm does not make use of $\pi$. Thus, if the naysayer rollup from \Cref{fig:naysayer} were instantiated with this generic construction, $\pi$ would not need to be posted on-chain since the on-chain verifier (running the $\vrfynay$ algorithm) will not use this information. In fact, the verifier wouldn't even need most of $\aux$---only the values corresponding to the gate $G_i$, which is determined by $\pi_\nay$. Thus, although $\pi'$ must be available to all potential naysayers, only a small (adaptive) fraction of it must be accessible on-chain. We describe in \Cref{sec:naysayer_storage} how to leverage this insight to reduce the storage costs of a naysayer rollup. First, in \Cref{sec:naysayer_apps}, we show application-specific naysayer constructions which are more efficient than the generic naysayer proof.
 

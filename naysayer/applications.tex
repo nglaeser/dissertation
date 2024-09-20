@@ -27,25 +27,30 @@ Each leaf is an evaluation of $p(X)$ on the set $L_0 \subset \FF$, where $\rho^{
 A FRI proof is invalid if any of the above checks fails. Therefore a straightforward naysayer proof $\pi^{\mathsf{FRI}}_{\nay}=(i,j,k)$ need only point out a single Merkle proof (the $j$th proof for the $i$th query, $i\in[q], j \in [2\log{d}]$) or a single arithmetic check $k \in [q\log{d}]$ which fails. The naysayer verifier only needs to recompute that particular check: $\bigO{\log{\rho^{-1}d}}$ hashes in the former case\footnote{One could use a Merkle naysayer proof (\Cref{sec:merkle_naysayer}) to further reduce the naysayer verification from checking a full Merkle path to a single hash evaluation.} or a few arithmetic operations over $\FF$ in the latter.
 
 \subsubsection{Post-quantum Signature Schemes}\label{sec:pqsig_naysayer}
-\todo{pass on this section---Thursday}
 
 With the advent of account abstraction~\cite{accountabstraction}, Ethereum users can define their own preferred digital signature schemes, including post-quantum signatures as recently standardized by NIST~\cite{CCS:BHKNRS19,TCHES:DKLLS18,NISTPQC:FALCON22}.
-In all known schemes, %\joe{check this} 
-post-quantum signatures or public keys are substantially larger than their classical counterparts.  Since post-quantum signatures are generally expensive to verify on-chain, they are prime candidates for the naysayer proof paradigm.
+Compared to their classical counterparts, post-quantum signatures generally have either substantially larger signature sizes or substantially larger public key sizes.\footnote{Considering the NIST-standardized post-quantum signature schemes, Dilithium has 1.3KB public keys and 2.4KB signatures for the lowest provided security level (NIST level 2)~\cite{dilithium-spec}; the ``small'' variant of SPHINCS+ for NIST level 1 has 32B public keys but 7.8KB signatures~\cite{sphincsplus-spec}; and FALCON at level 1 has 897B public keys and 666B signatures~\cite{falcon-spec}. By comparison, 2048-bit RSA requires 256B both for public keys and signatures and offers comparable security~\cite{keylength} (only against classical adversaries, of course).}
+Since this makes post-quantum signatures expensive to verify on-chain, these schemes are prime candidates for the naysayer proof paradigm.
 
-\paragraph{CRYSTALS-Dilithium~\cite{TCHES:DKLLS18}.} The verifier of this scheme checks that the following holds for signature $\sigma=(\vec{z},c)$, public key $\pk=(\vec{A},\vec{t})$, and message $M$:
+\paragraph{CRYSTALS-Dilithium~\cite{TCHES:DKLLS18}.} We give a simplified version of signature verification in lattice-based signatures like CRYSTALS-Dilithium. In these schemes, the verifier checks that the following holds for a signature $\sigma=(\vec{z}_1,\vec{z}_2,c)$, public key $\pk=(\vec{A},\vec{t})$, and message $M$:
 \begin{equation}\label{eq:crystals_verifier_check}
-    \norm{\vec{z}}_\infty < C \land c=H(M \concat \vec{w}),
+    \norm{\vec{z}_1}_\infty < \beta \land
+    \norm{\vec{z}_2}_\infty < \beta \land 
+    c=H(M, \vec{w}, \pk).
 \end{equation}
-where $C$ is a constant, $\vec{A}\in R_q^{k\times l}$, and $\vec{z},\vec{t},\vec{w}\in R_q^k$ for the polynomial ring $R_q:=\ZZ_q[x]/(X^{256}+1)$, and $\vec{w} = \vec{A}\vec{z}-c\vec{t}$. Notice that the checks in~\Cref{eq:crystals_verifier_check} are efficiently naysayable. In fact, the naysayer prover must show that the following holds: 
+Here $\beta$ is a constant, $\vec{A}\in R_q^{k\times \ell}$, $\vec{z}_1 \in R_q^\ell$, $\vec{z}_2,\vec{t}\in R_q^k$ for the polynomial ring $R_q:=\ZZ_q[X]/(X^d+1)$, and $\vec{w} = \vec{A}\vec{z}_1+\vec{z}_2-c\vec{t} \mod{q}$. (Dilithium uses $d=256$.) We will write elements of $R_q$ as polynomials $p(X) = \sum_{j\in[d]} \alpha_j X^j$ with coefficients $\alpha_j \in \ZZ_q$.
+Since \Cref{eq:crystals_verifier_check} is a conjunction, the naysayer prover must show that
 \begin{equation}\label{eq:crystals_naysayer_prover}
-    \exists i: \norm{z_i}_{\infty}>C 
-    \lor \vec{A}\vec{z}-c\vec{t} \neq \vec{w} \lor 
-    c\neq H(M \concat \vec{w}).
+    \left( \exists z_i \in \vec{z}_1,\vec{z}_2: \norm{z_i}_\infty > \beta \right) \lor 
+    c\neq H(M, \vec{w}, \pk).
 \end{equation}
-If the first check fails, then the naysayer prover shows an index $i$ for which the infinity norm of one of the polynomials in $\vec{z}$ is large. If the second check fails, then the naysayer prover can point to the $i$th row of the vector $\vec{w}$, where matrix-vector multiplication fails and verify only that row. Finally, if the last check fails, then the naysayer verifier just needs to recompute a single hash evaluation.
+If the first check of \Cref{eq:crystals_verifier_check} fails, the naysayer gives an index $i$ for which the infinity norm of one of the polynomials in $\vec{z}_1$ or $\vec{z}_2$ is large. (In particular, it can give a tuple $(b,i,j)$ such that $\alpha_j > \beta$ for $z_i = \dots + \alpha_j X^j + \dots \in \vec{z}_b$.)\footnote{The same idea can be applied to constructions bounding the $\ell_2$ norm, but with lower efficiency gains for the naysayer verifier, who must recompute the full $\ell_2$ norm of either $\vec{z}_1,\vec{z}_2$.}
 
-\paragraph{SPHINCS+~\cite{CCS:BHKNRS19}.} The signature verifier in SPHINCS+ checks several Merkle authentication proofs, requiring hundreds of hash evaluations. An efficient naysayer proof can be easily devised akin to the naysayer proof described in~\Cref{sec:fri_naysayer}. The naysayer prover simply points to the hash evaluation in one of the Merkle-trees where the signature verification fails. 
+If the second check fails, the naysayer indicates that clause to the naysayer verifier, who must recompute $\vec{w}$ and perform a single hash evaluation which is compared to $c$.
+
+Overall, $\pi_\nay$ is a tuple $(a, b, i, j)$ indicating (respectively) a clause $a \in [2]$ of \Cref{eq:crystals_naysayer_prover}, the vector $\vec{z}_b$ with $b \in [2]$, an entry $i \in [\max{k,\ell}]$ in that vector, and the index $j \in [d]$ of the coefficient of the ring element at that entry. Since $k \geq \ell$, overall $\sizeof{\pi_\nay} = (2+\log{k}+\log{d})$ bits. The verifier is very efficient when naysaying the first clause, and only slightly faster than the original verifier for the second clause.
+
+\paragraph{SPHINCS+~\cite{CCS:BHKNRS19}.} \todo{proof this paragraph} The signature verifier in SPHINCS+ checks several Merkle authentication proofs, requiring hundreds of hash evaluations. An efficient naysayer proof can be easily devised akin to the naysayer proof described in~\Cref{sec:fri_naysayer}. The naysayer prover simply points to the hash evaluation in one of the Merkle-trees where the signature verification fails. 
 
 \subsubsection{Verifiable Shuffles}\label{sec:vshuffle_naysayer}
 Verifiable shuffles are applied in many (blockchain) applications such as single secret leader election algorithms~\cite{AFT:Boneh20}, mix-nets~\cite{CACM:Chaum81}, cryptocurrency mixers~\cite{EPRINT:SNBB19}, and e-voting~\cite{USENIX:Adida08}. The state-of-the-art proof system for proving the correctness of a shuffle is due to Bayer and Groth~\cite{EC:BayGro12}. Their proof system is computationally heavy to verify on-chain as the proof size is $\mathcal{O}(\sqrt{n})$ and verification time is $\mathcal{O}(n)$, where $n$ is the number of shuffled elements. 
