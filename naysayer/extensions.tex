@@ -1,22 +1,21 @@
 \subsection{Extensions and Future Work}\label{sec:naysayer_extensions}
 
-\todo{Mention zkVMs} 
+\todo{edit this section}
 
-\noemi{moved here:} Many proof systems have some repetitive structure in their verification algorithm. This structure allows for more efficient naysaying. Examples include proofs with multi-round amplification, verification as a conjunction of repeated checks (e.g., multiple bilinear pairing checks~\cite{EPRINT:GabWilCio19}), or recursive reduction (e.g., Pietrzak's proof of exponentiation~\cite{ITCS:Pietrzak19b}).
+In the months since the publication of the paper~\cite{FC:SerGlaBon24}, naysayer proofs have already received interest from various groups of practitioners hoping to deploy them in production. Since this is a new paradigm, we see many areas to investigate both for immediate deployments and improving our understanding of this space and its implications:
 
-\noemi{Currently, in the generic construction we require the prover to additionally run $\Pi.\vrfy$ to create the verification trace $\aux$. Is there a way to separate/outsource this to another party to reduce the added computational burden on a party already spending so much power to compute the proof?}
-
-\noemi{How to implement efficient and secure query access to the prover's verification trace? Some approaches can be blob data (aka trusted KZG) (see \Cref{sec:naysayer_storage}), prover binding+deterministic commitments (?), Merkle trees, etc.}
-
-\subsubsection{Yeasayer Proofs}
-
-\todo{edit} We distinguish between two types of naysayer proofs as follows.
 \begin{description}
-    \item \textbf{Type 1.} A prover of an NP-relation $\Rel_\Lang$ posts $(x,\pi' = (\com, \pi))$ to the public bulletin board claiming that $x \in \Lang$. If the proof $\pi$ is invalid with respect to the statement $x$, i.e., $\vrfy(\crs, x,\pi)=0$\footnote{assuming the trace in $\com$ is consistent with the computation of $\vrfy(\crs, x, \pi)$; otherwise, a naysayer can show that $\com$ is inconsistent with $\pi$}, then naysayer provers convince the resource-constrained verifier by sending a $\pi_{\nay}$ that this is indeed the case, i.e., $\vrfynay(\crs_{\nay}, (x,\pi), \pi_{\nay})=0$. 
-    \item \textbf{Type 2.} This family of naysayer proofs is even more efficient in the optimistic case, as the prover \emph{only sends the instance $x$} and no proofs at all, claiming without evidence that $(x,w) \in \Rel_\Lang$ (this is the same as in the fraud proof paradigm). On the other hand, if the prover's assertion is incorrect, i.e., $(x,w) \notin \Rel_\Lang$, then a naysayer prover provides the correct statement $x'$ such that $(x',w) \in \Rel_\Lang$ 
+    \item[\textbf{Rollup design space.}] Naysayer proofs can be viewed as a way (one of several) of combining two established solutions---verifiable computation and fraud proofs---to offer different tradeoffs. There may be other ways to combine these two paradigms to achieve different tradeoffs which can be more suited to certain application scenarios.
+    
+    \todo{edit:} Type-2 naysayer proofs are even more efficient in the optimistic case, as the prover \emph{only sends the instance $x$} and no proofs at all, claiming without evidence that $(x,w) \in \Rel_\Lang$ (this is the same as in the fraud proof paradigm). On the other hand, if the prover's assertion is incorrect, i.e., $(x,w) \notin \Rel_\Lang$, then a naysayer prover provides the correct statement $x'$ such that $(x',w) \in \Rel_\Lang$ 
     and a corresponding ``regular'' proof $\pi$ such that $\vrfy(\crs, x', \pi) = 1$. Importantly, $x'$ must correspond to the same witness $w$ (which must be known to the challenger). For example, in the case of rollups, the (public) witness $w$ is the set of transactions in the rollup, and the statement $x = (\mathsf{st}, \mathsf{st}')$ is the updated rollup state after applying the batch $w$. Therefore, an incorrect assertion represents an incorrect application of the update $w$. The correction $x'$ is the result of the proper application of $w$.
     This can be seen as a naysayer proof system where $\pi' = \varnothing$, $\aux_{\nay} = w$, $\pi_{\nay} = (x', \pi_{x'})$, and $\vrfynay$ runs $\Pi.\vrfy(\crs, x', \pi_{x'})$.
+    We conjecture that in most applications, in the worst case, type-2 naysayer proofs are more costly than type-1 naysayer proofs (both compute and storage).
+
+    \item[\textbf{Naysaying zkVMs.}] An emerging trend in zk-rollups are so-called ``zero{\hyp}knowledge virtual machines'', or zkVMs (again, the ``zk'' part may or may not hold). \noemi{This kinda creates an $\aux$ already (not for verification, but for the original computation); basically rephrases the statement as a conjunction of state transitions.}
+    \item[\textbf{Other naysayer constructions.}] In our application-specific naysayer constructions, we looked at naysaying proof systems where verification has some repetitive structure. Are there other proof systems which have particularly efficient or useful naysayer proofs? 
+    \item[\textbf{Computing $\aux$.}] A drawback of (generic) naysayer proofs is that the prover must additionally run $\Pi.\vrfy$ to create the verification trace $\aux$. Is there a way to separate/outsource this to another party to reduce the added computational burden on a party already spending so much power to compute the proof?
+    \item[\textbf{Implementing query access.}] As mentioned in \Cref{sec:naysayer_storage}, a straightforward way to implement efficient and secure query access to $\pi'$ is to assume some secure data availability service (e.g., Ethereum blob data). Are there other approaches to realizing this access trustlessly?
+    % blob data (aka trusted KZG) (see \Cref{sec:naysayer_storage}), prover binding+deterministic commitments (?), Merkle trees
+    \item[]
 \end{description}
-We conjecture that in most applications, in the worst case, type-2 naysayer proofs are more costly than type-1 naysayer proofs (both compute and storage).
-It is an interesting open question which applications are more suited to type-1 or type-2 naysayer proofs considering both optimistic and pessimistic costs. To thoroughly model this question, one must take into account the verifier's compute cost, the (naysayer) proof storage costs, as well as the probability of the prover sending an invalid proof. We leave this problem to future work.
-In the rest of \Cref{sec:naysayer}, we solely focus on type-1 naysayer proofs.

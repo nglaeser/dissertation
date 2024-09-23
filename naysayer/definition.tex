@@ -17,7 +17,7 @@ Given a non-interactive proof system $\Pi = (\setup, \prove, \vrfy)$ for a NP la
 %Naysayer proofs are most interesting if $\vrfynay$ takes less time than directly verifying the proof $\pi$, i.e., running the $\vrfy$ algorithm. 
 A trivial naysayer proof system always exists in which $\pi_\nay = \top$, $\pi' = (\pi, \perp)$, and $\vrfynay$ simply runs the original verification procedure, outputting $0$ if $\Pi.\vrfy(\crs, x, \pi) = 0$ and $\perp$ otherwise.
 We say a proof system $\Pi$ is \emph{efficiently naysayable} if there exists a corresponding naysayer proof system $\Pi_{\nay}$ such that $\vrfynay$ is asymptotically faster than $\vrfy$. If $\vrfynay$ is only concretely faster than $\vrfy$, we say $\Pi_{\nay}$ is a \emph{weakly efficient} naysayer proof. Note that some proof systems already have constant proof size and verification time~\cite{EC:Groth16,C:Schnorr89} and therefore can, at best, admit only weakly efficient naysayer proofs. 
-Moreover, if $\td_\nay = \perp$, we say $\Pi_\nay$ is a \emph{public} naysayer proof (see \Cref{sec:naysayer_apps} for an example of a non-public naysayer proof). 
+Moreover, if $\td_\nay = \perp$, we say $\Pi_\nay$ is a \emph{public} naysayer proof (see \Cref{sec:vshuffle_naysayer} for an example of a non-public naysayer proof). 
 
 \begin{definition}[Naysayer completeness]
     Given a proof system $\Pi$, a naysayer proof system $\Pi_{\nay} = (\setup, \prove, \naysay, \vrfynay)$ is \emph{complete} if, for all honestly generated $\crs, \crs_{\nay}$ and all values of $\aux$,\footnotemark
