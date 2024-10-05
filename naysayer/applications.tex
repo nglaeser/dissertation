@@ -1,8 +1,10 @@
 \subsection{Constructions}\label{sec:naysayer_apps}
 
-In \Cref{sec:merkle_naysayer}, we show a concrete example of the generic naysayer construction from \Cref{thm:naysayer} applied to Merkle trees. 
+Our first construction (\Cref{sec:merkle_naysayer}) is a concrete example of the generic naysayer construction from \Cref{thm:naysayer}, applied to Merkle trees. 
+We then highlight three naysayer proof constructions which take advantage of repetition in the verification procedure to achieve better naysayer performance: the FRI polynomial commitment scheme (\Cref{sec:fri_naysayer}) and two post-quantum signature schemes (\Cref{sec:pqsig_naysayer}). 
 
-\todo{moved here, edit:} Many proof systems have some repetitive structure in their verification algorithm. This structure allows for more efficient naysaying. Examples include proofs with multi-round amplification, verification as a conjunction of repeated checks (e.g., multiple bilinear pairing checks~\cite{EPRINT:GabWilCio19}), or recursive reduction (e.g., Pietrzak's proof of exponentiation~\cite{ITCS:Pietrzak19b}).
+Many proof systems have some repetitive structure in their verification algorithm. This structure allows for more efficient naysaying. A common example is a verification check which is a conjunction of multiple independent checks: since all the statements in the conjunction must hold for a proof to be accepted, for naysaying it suffices to point out a single clause of the conjunction which does not hold. Our constructions in this section fall into this category. Other examples are Plonk proofs~\cite{EPRINT:GabWilCio19}, whose verification requires multiple bilinear pairing checks, or proofs with multi-round soundness amplification.
+% recursive reduction (e.g., Pietrzak's proof of exponentiation~\cite{ITCS:Pietrzak19b}).
 
 We then highlight three naysayer proof constructions which take advantage of repetition in the verification algorithm to achieve better naysayer performance: the FRI polynomial commitment scheme (\Cref{sec:fri_naysayer}) and two post-quantum signature schemes (\Cref{sec:pqsig_naysayer}). 
 % In this section, we highlight three naysayer proof constructions which take advantage of such repetition to achieve better performance: the FRI polynomial commitment scheme (\Cref{sec:fri_naysayer}) and two post-quantum signature schemes (\Cref{sec:pqsig_naysayer}). 
@@ -16,13 +18,56 @@ estimate the performance of each naysayer proof system compared to that of the o
 \subsubsection{Merkle Commitments}\label{sec:merkle_naysayer}
 \input{naysayer/figs/merkle-diagram}
 
+\begin{table}[h]
+   \centering
+    \setlength{\belowbottomsep}{6pt}
+    \begin{tabular}{l c c} 
+    \toprule
+     & \textbf{Proof size}
+     & \textbf{Verification}
+     \\ \midrule
+     Original proof
+     & $\log{n}\ \mathbb{H}$
+     & $\log{n}\ \mathbb{H}$
+     \\\midrule
+     Naysayer proof
+     & $\log\log{n}\ \mathbb{B}$
+     & $1\mathbb{H}$
+    \\ \bottomrule
+    \end{tabular}
+    \caption{Cost savings of the naysayer paradigm applied to Merkle proofs. $\mathbb{H} =$ hash output size/hash operations, $\mathbb{B} =$ bits.}
+    \label{tab:merkle_asym}
+   \end{table}
+
 Merkle trees~\cite{C:Merkle87} and their variants are ubiquitous in modern systems, including Ethereum's state storage~\cite{ethereum_trie}. A Merkle tree can be used to commit to a vector $\vec{v}$ of elements as shown in \Cref{fig:merkle-diagram}, with the root $h$ acting as a commitment to $\vec{v}$. The party who created the tree can prove the inclusion of some element $v_i$ at position $i$ in the tree by providing the corresponding copath. 
 
-For example, to open the leaf at position 2, a prover provides its value $v_2$ and an opening proof $\pi = (h_{011}, h_{00}, h_{1})$ consisting of the copath from the leaf $v_2$ to the root $h$. The proof $\pi$ is checked by using its contents to recompute the root $h'$ starting with $v_2$, then checking that $h = h'$. This involves recomputing the nodes along the path from the leaf to the root (the blue nodes in the figure). These nodes can be seen as a ``verification trace'' for the proof $\pi$.
+For example, to open the leaf at position 2, a prover provides its value $v_2$ and an opening proof $\pi = (h_{011}, h_{00}, h_{1})$ consisting of the copath from the leaf $v_2$ to the root $h$. The proof $\pi$ is checked by using its contents to recompute the root $h'$ starting with $v_2$, then checking that $h = h'$. This involves recomputing the nodes along the path from the leaf to the root (the gray nodes in the figure). These nodes can be seen as a ``verification trace'' for the proof $\pi$.
     
 In the context of a naysayer proof system, the prover provides $\pi$ along with the verfication trace $\aux = (h_{010}, h_{01}, h_{0})$. A naysayer can point out an error at a particular point of the trace by submitting the incorrect index of $\aux$ (e.g., $\pi_\nay = 1$ to indicate $h_{01}$). The naysayer verifier checks $\pi_\nay$ by computing a single hash using $\pi$ and oracle access to $\aux$, e.g., checking $H(h_{010}, h_{011}) \stackrel{?}{=} h_{01}$, where $h_{010}, h_{01} \in \aux$ and $h_{011} \in \pi$. This is the generic construction from \Cref{thm:naysayer}.
 
 \subsubsection{FRI}\label{sec:fri_naysayer}
+
+\begin{table}[h]
+   \centering
+    \setlength{\belowbottomsep}{6pt}
+    \begin{tabular}{l c c} 
+    \toprule
+     & \textbf{Proof size}
+     & \textbf{Verification}
+     \\ \midrule
+     Original proof
+     & $\bigO{\secpar\log^2{d}}\mathbb{H}+\bigO{\secpar\log{d}}\FF$\ 
+     & $\bigO{\secpar\log^2{d}}\mathbb{H}+\bigO{\secpar\log{d}}\FF$\ 
+     \\\midrule
+     \multirow{2}*{Naysayer proof}
+     & \multirow{2}*{$2\log(q\log{d})+1\ \mathbb{B}$} 
+     & best: $\bigO{1}\FF$ \\
+     && worst: $\bigO{\log{d}}\mathbb{H}$
+    \\ \bottomrule
+    \end{tabular}
+    \caption{Cost savings of the naysayer paradigm applied to FRI opening proofs. $\mathbb{H} =$ hash output size/hash operations, $\FF=$ field element size/operations, $\mathbb{B} =$ bits.}
+    \label{tab:fri_asym}
+   \end{table}
 
 The Fast Reed-Solomon IOP of proximity (FRI)~\cite{ICALP:BBHR18} is used as a building block in many non-interactive proof systems, including the STARK IOP~\cite{EPRINT:BBHR18}.
 Below, we describe only the parts of FRI as applied in STARK. We refer the reader to the cited works for details.
@@ -33,6 +78,28 @@ Each leaf is an evaluation of $p(X)$ on the set $L_0 \subset \FF$, where $\rho^{
 A FRI proof is invalid if any of the above checks fails. Therefore a straightforward naysayer proof $\pi^{\mathsf{FRI}}_{\nay}=(i,j,k)$ need only point out a single Merkle proof (the $j$th proof for the $i$th query, $i\in[q], j \in [2\log{d}]$) or a single arithmetic check $k \in [q\log{d}]$ which fails. The naysayer verifier only needs to recompute that particular check: $\bigO{\log{\rho^{-1}d}}$ hashes in the former case\footnote{One could use a Merkle naysayer proof (\Cref{sec:merkle_naysayer}) to further reduce the naysayer verification from checking a full Merkle path to a single hash evaluation.} or a few arithmetic operations over $\FF$ in the latter.
 
 \subsubsection{Post-quantum Signature Schemes}\label{sec:pqsig_naysayer}
+
+\begin{table}[h]
+   \centering
+    \setlength{\belowbottomsep}{6pt}
+    \begin{tabular}{l c c} 
+    \toprule
+     & \textbf{Proof size}
+     & \textbf{Verification}
+     \\ \midrule
+     Original proof
+     & $\bigO{\secpar}\FF$\  
+     & $\bigO{\secpar}\FF+1\mathbb{H}$\  
+     \\\midrule
+     \multirow{2}*{Naysayer proof}
+     & \multirow{2}*{$2+\log{k}+\log{d}\ \mathbb{B}$}
+     & best: $\mathcal{O}(1)\FF$ \\
+     && worst: $\bigO{\secpar}\FF+1\mathbb{H}$
+    \\ \bottomrule
+    \end{tabular}
+    \caption{Cost savings of the naysayer paradigm applied to CRYSTALS-Dilithium signatures. $\mathbb{H} =$ hash output size/hash operations, $\FF=$ field element size/operations, $\mathbb{B} =$ bits. Since the parameter $k$ depends on $\secpar$ and $d$ is a constant, $\sizeof{\pi_\nay} \in \bigO{\log{\secpar}}$.}
+    \label{tab:dilithium_asym}
+\end{table}
 
 With the advent of account abstraction~\cite{accountabstraction}, Ethereum users can define their own preferred digital signature schemes, including post-quantum signatures as recently standardized by NIST~\cite{CCS:BHKNRS19,TCHES:DKLLS18,NISTPQC:FALCON22}.
 Compared to their classical counterparts, post-quantum signatures generally have either substantially larger signatures or substantially larger public keys.\footnote{Considering the NIST-standardized post-quantum signature schemes, Dilithium has 1.3KB public keys and 2.4KB signatures for its lowest provided security level (NIST level 2)~\cite{dilithium-spec}; the ``small'' variant of SPHINCS+ for NIST level 1 has 32B public keys but 7.8KB signatures~\cite{sphincsplus-spec}; and FALCON at level 1 has 897B public keys and 666B signatures~\cite{falcon-spec}. By comparison, 2048-bit RSA requires only 256B both for public keys and signatures while offering comparable security~\cite{keylength} (only against classical adversaries, of course).}
@@ -59,6 +126,28 @@ Overall, $\pi_\nay$ is a tuple $(a, b, i, j)$ indicating a clause $a \in [2]$ of
 \paragraph{SPHINCS+~\cite{CCS:BHKNRS19}.} The signature verifier in SPHINCS+ checks several Merkle authentication proofs, requiring hundreds or even thousands of hash evaluations. An efficient naysayer proof can be easily devised akin to the Merkle naysayer described in~\Cref{sec:merkle_naysayer}. Given a verification trace, the naysayer prover simply points to the hash evaluation in one of the Merkle-trees where the signature verification fails. 
 
 \subsubsection{Verifiable Shuffles}\label{sec:vshuffle_naysayer}
+
+\begin{table}[h]
+   \centering
+    \setlength{\belowbottomsep}{6pt}
+    \begin{tabular}{l c c} 
+    \toprule
+     & \textbf{Proof size}
+     & \textbf{Verification}
+     \\ \midrule
+     Original proof
+     & $\bigO{\sqrt{n}}\GG$
+     & $\bigO{n}\GG$ 
+     \\\midrule
+     Naysayer proof
+     & $\log{n}\ \mathbb{B}+3\GG+1\FF$ 
+     & $\bigO{1}\GG + 1\mathbb{H}$
+    \\ \bottomrule
+    \end{tabular}
+    \caption{Cost savings of the naysayer paradigm applied to Bayer-Groth shuffles. $\mathbb{H} =$ hash output size/hash operations, $\GG=$ group element size/operations, $\mathbb{B} =$ bits.}
+    \label{tab:shuffle_asym}
+   \end{table}
+
 Verifiable shuffles are applied in many (blockchain) applications such as single secret leader election algorithms~\cite{AFT:Boneh20}, mix-nets~\cite{CACM:Chaum81}, cryptocurrency mixers~\cite{EPRINT:SNBB19}, and e-voting~\cite{USENIX:Adida08}. The state-of-the-art proof system for proving the correctness of a shuffle is due to Bayer and Groth~\cite{EC:BayGro12}. Their proof system is computationally heavy to verify on-chain as the proof size is $\mathcal{O}(\sqrt{n})$ and verification time is $\mathcal{O}(n)$, where $n$ is the number of shuffled elements. 
 
 Most shuffling protocols (of public keys, re-randomizable commitments, or ElGamal ciphertexts) admit a particularly efficient naysayer proof if the naysayer knows at least one of the shuffled elements. Let us consider the simple case of shuffling public keys. The shuffler wishes to prove membership in the following  NP language:
@@ -75,10 +164,13 @@ Suppose a party knows that for some $j\in[n]$, the prover did not correctly incl
 \]
 where $\Lang_{DH}$ is the language of Diffie-Hellman tuples\footnote{Membership in $\Lang_{DH}$ can be shown via a proof of knowledge of discrete logarithm equality~\cite{C:ChaPed92} consisting of 2 group elements and 1 field element which can be verified with 4 exponentiations and 2 multiplications in the group.}. To produce such a proof, however, the naysayer must know the discrete logarithm $\witness_j$. Unlike our previous examples, which were public naysayer proofs, this is an example of a private $\naysay$ algorithm using $\td_\nay := \witness_j$. The naysayer proof is $\pi_\nay := (j, \pk_j', \pi_{DH})$. The Diffie-Hellman proof can be checked in constant time and, with the right data structure for the permuted list (e.g., a hash table), so can the list non-membership. This, $\pi_\nay$ is a $\bigO{\log{n}}$-sized naysayer proof with $\bigO{1}$-verification, yielding in exponential savings compared to verifying the original Bayer-Groth shuffle proof.
 
-\subsubsection{Evaluation}
-We analyze the asymptotic cost savings for the verifiers in the four examples discussed in \Cref{sec:merkle_naysayer,sec:fri_naysayer,sec:pqsig_naysayer,sec:vshuffle_naysayer} in \Cref{tab:apps_table}. Note that the verifier speedup is exponential for verifiable shuffles and logarithmic for the FRI openings. For CRYSTALS-Dilithium, our naysayer proof is only weakly efficient (see \Cref{sec:naysayer_def}) as there is no asymptotic gap in the complexity of the original signature verification and the naysayer verification in the worst case.
+% \subsubsection{Evaluation}
+\subsubsection{Summary}
 
-\input{naysayer/apps-table}
+% \input{naysayer/apps-table}
+
+We showed the asymptotic cost savings of the verifiers in the four examples discussed in \Cref{sec:merkle_naysayer,sec:fri_naysayer,sec:pqsig_naysayer,sec:vshuffle_naysayer} in their respective tables. Note that the verifier speedup is exponential for verifiable shuffles and logarithmic for the Merkle and FRI openings. For CRYSTALS-Dilithium, our naysayer proof is only \emph{weakly efficient} (see \Cref{sec:naysayer_def}) as there is no asymptotic gap in the complexity of the original signature verification and the naysayer verification in the worst case.
 
 As for proof size, in all the examples, our naysayer proofs are logarithmically smaller than the original proofs.
-Furthermore, in most cases, the naysayer proof consists of an \emph{integer} index or indices rather that group or field elements; representing the former requires only a few bits compared to the latter (which are normally at least $\secpar$ bits long). This means that, in practice, naysayer proofs can offer practically smaller proofs sizes even when the original proof is constant-size (e.g., a few group elements). \todo{Need to check this with some common circuit sizes (e.g., the STARK verification circuit) and group element sizes (e.g., BN254 curve G1 element or other).}
+(Note this does not include the size of $\aux$; we will see in the next section that this does not affect the performance of the verifier.)
+Furthermore, in most cases, the naysayer proof consists of an \emph{integer} index or indices rather that group or field elements; representing the former requires only a few bits compared to the latter (which are normally at least $\secpar$ bits long). This means that, in practice, naysayer proofs can offer \emph{practically} smaller proofs sizes even when they are not asymptotically smaller, such as when the original proof is constant-size (e.g., a few group elements). \todo{Need to check this with some common circuit sizes (e.g., the STARK verification circuit) and group element sizes (e.g., BN254 curve G1 element or other).}

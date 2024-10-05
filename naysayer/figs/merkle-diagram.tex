@@ -1,8 +1,8 @@
-\begin{figure*}[tbh]
+\begin{figure*}[tb]
     \centering
     \begin{tikzpicture}[par/.style={sloped,fill=white,inner sep=-.4ex}]
     \tikzstyle{circ} = [circle, draw]
-    \tikzstyle{path} = [circle, draw, fill=cyan]
+    \tikzstyle{path} = [circle, draw, fill=lightgray]
     \tikzstyle{copath} = [circle, draw, fill=black]
         \node[path] (root) {};
         % level 1
@@ -64,6 +64,6 @@
         \node[yshift=1em] at (ll) {$h_{00}$};
         \node[yshift=1em,xshift=1em] at (lrr) {$h_{011}$};
     \end{tikzpicture}
-    \caption{Each node in a Merkle tree consists of a hash of its children. The root $h$ is a commitment to the vector of leaves $(v_0, v_1, \dots, v_7)$. An opening proof for the element $v_2$ is its copath (black nodes); the ``verification trace'' for the proof is the path (blue nodes).}
+    \caption{Each node in a Merkle tree consists of a hash of its children. The root $h$ is a commitment to the vector of leaves $(v_0, v_1, \dots, v_7)$. An opening proof for the element $v_2$ is its copath (black nodes); the ``verification trace'' for the proof is the path (gray nodes).}
     \label{fig:merkle-diagram}
 \end{figure*}

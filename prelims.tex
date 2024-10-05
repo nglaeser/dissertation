@@ -14,7 +14,7 @@ We distinguish the key-pairs used in a signature scheme ($\vk, \sk$ for ``verifi
 
 \subsection{Non-interactive proof systems}\label{sec:nizks}
 
-\todo{NP-languages and relations} \noemi{A language is some subset of strings. Every NP language has a corresponding polynomially-decidable relation (i.e., decidable by a circuit $C(x,w)$ such that $\sizeof{C} \in \poly[\sizeof{x}]$) such that if $x \in \Lang, \exists w \suchthat\allowbreak (x,w) \in \Rel_\Lang$ where $w$ is polynomial in $\sizeof{x}$.}
+A \emph{language} $\Lang \subseteq \{0,1\}^*$ is a set of elements. For our purposes, we will only consider the set of NP languages. Every language $\Lang \in \npol$ has a corresponding polynomially-decidable relation $\Rel_\Lang$ (i.e., decidable by a circuit $C(x,w)$ such that $\sizeof{C} \in \poly[\sizeof{x}]$) such that if $x \in \Lang, \exists w \suchthat (x,w) \in \Rel_\Lang$, with $w \in \poly[\sizeof{x}]$.
 
 \begin{definition}[Non-interactive proof system] A non-interactive proof system $\Pi$ for some NP language $\Lang$ is a tuple of PPT algorithms $(\setup, \prove, \vrfy)$:
     \begin{itemize}
@@ -23,7 +23,7 @@ We distinguish the key-pairs used in a signature scheme ($\vk, \sk$ for ``verifi
         \item \underline{$\vrfy(\crs, x,\pi) \rightarrow \{0,1\}$:} Given the $\crs$ and a proof $\pi$ for the instance $x$, output a bit indicating accept or reject.
     \end{itemize}
 
-We require (perfect) \emph{completeness}, meaning that for all $(x,\witness) \in \Rel_Lang$,
+We require (perfect) \emph{completeness}, meaning that for all $(x,\witness) \in \Rel_\Lang$,
 \begin{equation*}
     \Pr\left[
         \vrfy(\crs, x, \pi)=1 
@@ -36,7 +36,7 @@ We require (perfect) \emph{completeness}, meaning that for all $(x,\witness) \in
 \end{equation*}
 \end{definition}
 
-\begin{definition}[soundness] Soundness requires that for all $x \notin \Lang$, $\secpar \in \NN$, and all PPT adversaries $\adv$,
+\begin{definition}[computational soundness] Soundness requires that for all $x \notin \Lang$, $\secpar \in \NN$, and all PPT adversaries $\adv$,
 \begin{equation*}
     \Pr\left[
         \vrfy(\crs, x, \pi)=1 
@@ -51,10 +51,10 @@ We require (perfect) \emph{completeness}, meaning that for all $(x,\witness) \in
 
 We refer the reader to \cite{Thaler23,GoldreichFoC} for a formal description of other properties of proof systems (e.g., correctness, zero-knowledge). 
 
-There are numerous definitions of succinctness adopted for proof systems in the literature. In this work, we require succinct proof systems only to have proofs which are sublinear in $\sizeof{w}$ and ``work-saving'' verification (faster than $C(x,w)$)\footnote{\url{https://a16zcrypto.com/posts/article/17-misconceptions-about-snarks/\#section--3}}:
+There are numerous definitions of succinctness adopted for proof systems in the literature. In this work, we require succinct proof systems only to have proofs which are sublinear in the size of the witness and ``work-saving'' verification:\footnote{\url{https://a16zcrypto.com/posts/article/17-misconceptions-about-snarks/\#section--3}}
 
-\begin{definition}[succinct]
-    We say a proof system $\Pi$ is \emph{succinct} if $\sizeof{\pi} \in o(\sizeof{\witness})$ and $\Pi.\vrfy(\crs, x, \pi)$ runs in time $o(\poly{\sizeof{x}})$.
+\begin{definition}[succinctness]
+    We say a proof system $\Pi$ is \emph{succinct} if $\sizeof{\pi} \in o(\sizeof{x} + \sizeof{\witness})$ and $\Pi.\vrfy(\crs, x, \pi)$ runs in time $\sizeof{x} + o(\sizeof{\witness})$.
 \end{definition}
 
 % For an instance $(x;\omega)$ of an NP language $\mathcal{R}$, we denote the public and private witness elements before and after the semicolon, respectively.

@@ -6,12 +6,12 @@
 
 In most blockchains with programming capabilities, e.g., Ethereum~\cite{ethereum_yellowpaper}, developers are incentivized to minimize the storage and computation complexity of on-chain programs. Applications with high compute or storage incur significant fees, commonly referred to as \emph{gas}, to compensate validators in the network. Often, these costs are passed on to users of an application. 
 
-High gas costs have motivated many applications to utilize \emph{verifiable computation (VC)}~\cite{C:GenGenPar10}, off-loading expensive operations to powerful but untrusted off-chain entities who perform arbitrary computation and provide a succinct non-interactive proof (SNARK) that the claimed result is correct.
-This computation can even depend on secret inputs not known to the verifier in the case of zero-knowledge proofs (i.e., zkSNARKs).
+High gas costs have motivated many applications to utilize \emph{verifiable computation (VC)}~\cite{C:GenGenPar10}, off-loading expensive operations to powerful but untrusted off-chain entities who perform arbitrary computation and provide a short proof\footnote{More precisely, a succinct non-interactive argument of knowledge, or SNARK.} that the claimed result is correct.
+This computation can even depend on secret inputs not known to the verifier by relying on zero-knowledge proofs (i.e., zkSNARKs).
  %In some cases (though not all), this proof is also zero-knowledge, hiding some inputs to the computation. This is commonly referred to as a \emph{zk-rollup} (even if it is not zero-knowledge).
 
 VC leads to a paradigm in which smart contracts, while capable of arbitrary computation, primarily act as verifiers and outsource all significant computation off-chain (see \Cref{fig:vc}). A motivating application is so-called ``zk''-\emph{rollups}\footnotemark~\cite{starknet,zksync,aztec,dydx,scroll}, which combine transactions from many users into a single smart contract which verifies a proof that all have been executed correctly.
-\footnotetext{Note that the ``zk'' part of the name is often a misnomer, since these services do not necessarily offer the zero-knowledge property, and in fact they often do not.} 
+\footnotetext{The ``zk'' part of the name is often a misnomer, since these services do not necessarily offer the zero-knowledge property, and in fact most do not.} 
 However, verifying these proofs can still be costly. For example, the StarkEx rollup 
 %contract verifying the state transitions of the off-chain StarkEx marketplace 
 has spent hundreds of thousands of dollars to date to verify FRI polynomial commitment opening proofs.\footnote{\url{https://etherscan.io/address/0x3e6118da317f7a433031f03bb71ab870d87dd2dd}}
@@ -30,19 +30,19 @@ Otherwise, if no party successfully naysays the original proof before the end of
 To deter denial of service, naysayers may be required to post collateral, which is forfeited if their naysayer proof is incorrect.
 
 This paradigm potentially saves the verifier work in two ways. 
-First, in the optimistic case, where the proof is not challenged, the verifier does no work at all (the same is true of fraud proofs; see \Cref{sec:naysayer_related}). We expect this to almost always be the case in practice. Second, even in the pessimistic case, we will see below that checking the naysayer proof can be much more efficient than checking the original proof.
-In other words, the naysayer acts as a helper to the verifier by reducing the cost of the verification procedure in fraudulent cases. At worst, checking the naysayer proof is equivalent to verifying the original proof (this is the trivial naysayer construction; see \Cref{sec:naysayer_def}).
+First, in the optimistic case, where the proof is not challenged, the verifier does no work at all (just like the related fraud proof paradigm; see \Cref{sec:naysayer_related}). We expect this to almost always be the case in practice. Second, even in the pessimistic case, we will see below that checking the naysayer proof can be much more efficient than checking the original proof.
+In other words, the naysayer acts as a helper to the verifier by reducing the cost of the verification procedure in fraudulent cases. At worst, checking the naysayer proof is equivalent to verifying the original proof (this is the trivial naysayer construction).
 
 Naysayer proofs enable other interesting trade-offs. 
 % for instance, %for a proof system with transparent setup and large proofs, the \naysayer proof could be instantiated generically using a short proof system with trusted setup (e.g., \cite{groth16}), or using a lower security level. 
-For instance, naysayer proofs might be run at a lower security level than the original proof system.
-A violation of the naysayer proof system's soundness undermines the \emph{completeness} of the original proof system. %, but not its soundness. 
-For an application like a rollup service, this results only in a loss of liveness; importantly, the rollup users' funds would remain secure. 
+For instance, naysayer proofs can be instantiated with a lower security level than the original proof system.
+This is because a violation of the naysayer proof system's soundness undermines only the \emph{completeness} of the original proof system. %, but not its soundness. 
+For an application like a rollup service, this would result in a loss of liveness; importantly, the rollup users' funds would remain secure. 
 Liveness could be restored by falling back to full proof verification on-chain.
 
 %Move this to later? Conclusion?
 %The naysayer paradigm introduces a new set of criteria for evaluating the efficiency of proof systems. Previously, developers were solely focusing on the proof size and verification cost of a proof system; this paradigm allows one to instead optimize for a proof system's proof size \emph{and its accompanying naysayer proof size and verification cost}. We further detail the implications of these new selection criteria in~\Cref{sec:evaluation}.
 
-We will formally define naysayer proofs in~\Cref{sec:naysayer_def} and show that every succinct proof system has a logarithmic-size and constant-time naysayer proof. First, we discuss related work in \Cref{sec:naysayer_related} and define our system model in more detail in \Cref{sec:naysayer_model}.
+We will formally define naysayer proofs in~\Cref{sec:naysayer_def} and show that every succinct proof system has a logarithmic-size and constant-time naysayer proof. Before that, we discuss related work in \Cref{sec:naysayer_related} and define our system model in more detail in \Cref{sec:naysayer_model}.
 In~\Cref{sec:naysayer_apps}, we construct naysayer proofs for four concrete proof systems and evaluate their succinctness. % in comparison with verifying the original proof. 
 We discuss storage considerations in \Cref{sec:naysayer_storage} and conclude with some open directions in~\Cref{sec:naysayer_extensions}.

@@ -1,87 +1,29 @@
 %------------------BEGIN Naysayer cost savings TABLE--------------
 %-----------------------------------------
-\begin{table}[tb]
+\begin{table}[h]
    \centering
    \makebox[\linewidth]{
     \setlength{\belowbottomsep}{6pt}
     \begin{tabular}{l c c c c} 
     \toprule
-     & \textbf{Merkle opening}
-     & \textbf{FRI opening} & \textbf{CRYSTALS-D.} 
+     & \textbf{Merkle}
+     & \textbf{FRI} & \textbf{CRYSTALS-D.} 
    %   & \textbf{SPHINCS+}\todo{}
-     & \textbf{Shuffle proof} \\ [0.5ex] 
+     & \textbf{Shuffle} \\ [0.5ex] 
      \midrule
-     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-     %%%%%%%%%%% original proof size %%%%%%%%%%%
-     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-     $\sizeof{\pi}$ 
+     Efficient naysayer?
      % Merkle tree
-     & $\log{n}\ \mathbb{H}$
+     & \yes
      % FRI
-     & $\bigO{\secpar\log^2{d}}\mathbb{H}+\bigO{\secpar\log{d}}\FF$\ 
+     & \yes
      % Dilithium
-     & $\bigO{\secpar}\FF$\  
-   %   % SPHINCS+
-   %   & $\bigO{\secpar}\FF$\  
+     & \halfcirc
      % shuffle
-     & $\bigO{\sqrt{n}}\GG$\  \\ 
-     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-     %%%%%%%%%%% original verification %%%%%%%%%%%
-     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-     $\vrfy$ 
-     % Merkle tree
-     & $\log{n}\ \mathbb{H}$
-     % FRI
-     & $\bigO{\secpar\log^2{d}}\mathbb{H} + \bigO{\secpar\log{d}}\FF$\ 
-     % Dilithium
-     & $\bigO{\secpar}\FF+1\mathbb{H}$\  
-   %   % SPHINCS+
-   %   & $\bigO{\secpar}\mathbb{H}$\  
-     % shuffle
-     & $\bigO{n}\GG$\  \\\midrule
-     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-     %%%%%%%%%%% naysayer proof size %%%%%%%%%%%
-     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-     $\sizeof{\pi_\nay}$ 
-     % Merkle tree
-     & $\log\log{n}\ \mathbb{B}$
-     % FRI
-     & $2\log(q\log{d})+1\ \mathbb{B}$ 
-     % Dilithium
-     & $2+\log{k}+\log{d}\ \mathbb{B}$
-   %   % SPHINCS+
-   %   & $1\FF$
-     % shuffle
-     & $\log{n}\ \mathbb{B}+3\GG+1\FF$  \\
-     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-     %%%%%%%%%%% naysayer verification %%%%%%%%%%%
-     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-     $\vrfynay$ (best) %%% best-case
-     % Merkle tree
-     & $1\mathbb{H}$
-     % FRI
-     & $\bigO{1}\FF$ 
-     % Dilithium
-     & $\mathcal{O}(1)\FF$  
-   %   % SPHINCS+
-   %   & $1\mathbb{H}$  
-     % shuffle
-     & $\bigO{1}\GG + 1\mathbb{H}$  \\
-     $\vrfynay$ (worst) %%% worst-case
-     % Merkle tree
-     & ''
-     % FRI
-     & $\bigO{\log{d}}\mathbb{H}$ 
-     % Dilithium
-     & $\bigO{\secpar}\FF+1\mathbb{H}$  
-   %   % SPHINCS+
-   %   & $1\mathbb{H}$  
-     % shuffle
-     & ''  \\
-    \bottomrule
+     & \yes
+    \\ \bottomrule
     \end{tabular}
     }
-    \caption{Cost savings of the naysayer paradigm for the example applications in this section. $\FF,\GG,\mathbb{H}$ respectively denote either field elements/group elements/hash output sizes, or field/group/hash operations. We use $\mathbb{B}$ to indicate bits. In the case of naysayer proof sizes, we are able give exact numbers; therefore, we wish to point out that for Dilithium, $\sizeof{\pi_\nay} \in \bigO{\log{\secpar}}$ since the parameter $k$ depends on $\secpar$ and $d$ is a constant. \todo{Can I get some estimated numbers here by looking at the implementations/papers of the underlying schemes, and then just the field/group element sizes in the relevant curves for the naysayer?}}
+    \caption{\todo{Can I get some estimated numbers here by looking at the implementations/papers of the underlying schemes, and then just the field/group element sizes in the relevant curves for the naysayer?}}
     \label{tab:apps_table}
    \end{table}
    %--------------------END Naysayer cost savings TABLE--------------
