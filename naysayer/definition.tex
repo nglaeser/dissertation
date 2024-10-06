@@ -97,7 +97,7 @@ Soundness follows by the completeness of $\Pi$. If $(x,w) \in \Rel_\Lang$ and $\
 
 Succinctness of $\pi_\nay$ follows from the fact that $\sizeof{i} = \log{\sizeof{\Pi.\vrfy(\crs, \cdot, \cdot)}} = 
 % \bigOmega{\log{\sizeof{C}}} = 
-\polylog{\sizeof{x}, \sizeof{\witness}} \in o(\sizeof{x} + \sizeof{\witness})$ and that the runtime of $\vrfynay$ is constant.
+\bigO{\log(\sizeof{x}, \sizeof{\witness})} \in o(\sizeof{x} + \sizeof{\witness})$ and that the runtime of $\vrfynay$ is constant.
 \end{proof}
 
 The proof of \Cref{thm:naysayer} gives a generic way to build a succinct naysayer proof system for any proof system $\Pi$ with polynomial-time verification. For succinct proof systems, the generic construction even allows efficient (sublinear) naysaying, since the runtime of $\naysay$ depends only on the runtime of $\Pi.\vrfy$, which is sublinear if $\Pi$ is succinct.

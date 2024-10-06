@@ -77,6 +77,10 @@ Each leaf is an evaluation of $p(X)$ on the set $L_0 \subset \FF$, where $\rho^{
 
 A FRI proof is invalid if any of the above checks fails. Therefore a straightforward naysayer proof $\pi^{\mathsf{FRI}}_{\nay}=(i,j,k)$ need only point out a single Merkle proof (the $j$th proof for the $i$th query, $i\in[q], j \in [2\log{d}]$) or a single arithmetic check $k \in [q\log{d}]$ which fails. The naysayer verifier only needs to recompute that particular check: $\bigO{\log{\rho^{-1}d}}$ hashes in the former case\footnote{One could use a Merkle naysayer proof (\Cref{sec:merkle_naysayer}) to further reduce the naysayer verification from checking a full Merkle path to a single hash evaluation.} or a few arithmetic operations over $\FF$ in the latter.
 
+This approach can lead to incredible concrete savings: 
+According to \cite{EPRINT:Habock22}, for $\secpar = 128$, $d=2^{12}$,\footnote{This is smaller than most polynomial degrees used in production systems today.} 
+$\rho = 2^{-3}$, $q=91$, $\delta=9$, the size of a vanilla FRI opening proof (i.e., without concrete optimizations) can be estimated at around 322KB. A naysayer proof for the same parameter settings is $2\log(q\log{d}) + 1 \approx 2\cdot 10 + 1 = 21$ bits < $3$ bytes.
+
 \subsubsection{Post-quantum Signature Schemes}\label{sec:pqsig_naysayer}
 
 \begin{table}[h]
@@ -172,5 +176,5 @@ where $\Lang_{DH}$ is the language of Diffie-Hellman tuples\footnote{Membership 
 We showed the asymptotic cost savings of the verifiers in the four examples discussed in \Cref{sec:merkle_naysayer,sec:fri_naysayer,sec:pqsig_naysayer,sec:vshuffle_naysayer} in their respective tables. Note that the verifier speedup is exponential for verifiable shuffles and logarithmic for the Merkle and FRI openings. For CRYSTALS-Dilithium, our naysayer proof is only \emph{weakly efficient} (see \Cref{sec:naysayer_def}) as there is no asymptotic gap in the complexity of the original signature verification and the naysayer verification in the worst case.
 
 As for proof size, in all the examples, our naysayer proofs are logarithmically smaller than the original proofs.
-(Note this does not include the size of $\aux$; we will see in the next section that this does not affect the performance of the verifier.)
-Furthermore, in most cases, the naysayer proof consists of an \emph{integer} index or indices rather that group or field elements; representing the former requires only a few bits compared to the latter (which are normally at least $\secpar$ bits long). This means that, in practice, naysayer proofs can offer \emph{practically} smaller proofs sizes even when they are not asymptotically smaller, such as when the original proof is constant-size (e.g., a few group elements). \todo{Need to check this with some common circuit sizes (e.g., the STARK verification circuit) and group element sizes (e.g., BN254 curve G1 element or other).}
+(Note this calculation does not include the size of $\aux$, but we will see in the next section that $\aux$ does not meaningfully impact the proof size for the verifier.)
+Furthermore, in most cases, the naysayer proof consists of an \emph{integer} index or indices rather than group or field elements. Representing the former requires only a few bits compared to the latter (which are normally at least $\secpar$ bits long), so in practice, naysayer proofs can offer \emph{practically} smaller proofs sizes even when they are not asymptotically smaller. This can lead to savings even when the original proof is constant-size (e.g., a few group elements).

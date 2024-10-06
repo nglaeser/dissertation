@@ -1,8 +1,6 @@
 \subsection{Extensions and Future Work}\label{sec:naysayer_extensions}
 
-\todo{edit this section}
-
-In the months since the publication of the paper~\cite{FC:SerGlaBon24}, naysayer proofs have already received interest from various groups of practitioners hoping to deploy them in production. Since this is a new paradigm, we see many areas to investigate both for immediate deployments and improving our understanding of this space and its implications:
+In the months since the publication of the original paper~\cite{FC:SerGlaBon24}, naysayer proofs have already received attention from various groups of practitioners hoping to deploy them in production. We see many interesting directions for investigation, both for immediate deployments and to improve our understanding of this new paradigm and its implications.
 
 \begin{description}
     \item[\textbf{Rollup design space.}] Naysayer proofs can be viewed as a way (one of several) of combining two established solutions---verifiable computation and fraud proofs---to offer different tradeoffs. There may be other ways to combine these two paradigms to achieve different tradeoffs which can be more suited to certain application scenarios.
@@ -11,6 +9,8 @@ In the months since the publication of the paper~\cite{FC:SerGlaBon24}, naysayer
     and a corresponding ``regular'' proof $\pi$ such that $\vrfy(\crs, x', \pi) = 1$. Importantly, $x'$ must correspond to the same witness $w$ (which must be known to the challenger). For example, in the case of rollups, the (public) witness $w$ is the set of transactions in the rollup, and the statement $x = (\mathsf{st}, \mathsf{st}')$ is the updated rollup state after applying the batch $w$. Therefore, an incorrect assertion represents an incorrect application of the update $w$. The correction $x'$ is the result of the proper application of $w$.
     This can be seen as a naysayer proof system where $\pi' = \varnothing$, $\aux_{\nay} = w$, $\pi_{\nay} = (x', \pi_{x'})$, and $\vrfynay$ runs $\Pi.\vrfy(\crs, x', \pi_{x'})$.
     We conjecture that in most applications, in the worst case, type-2 naysayer proofs are more costly than type-1 naysayer proofs (both compute and storage).
+
+    \todo{continue editing from here}
 
     \item[\textbf{Naysaying zkVMs.}] An emerging trend in zk-rollups are so-called ``zero{\hyp}knowledge virtual machines'', or zkVMs (again, the ``zk'' part may or may not hold). \noemi{This kinda creates an $\aux$ already (not for verification, but for the original computation); basically rephrases the statement as a conjunction of state transitions.}
     \item[\textbf{Other naysayer constructions.}] In our application-specific naysayer constructions, we looked at naysaying proof systems where verification has some repetitive structure. Are there other proof systems which have particularly efficient or useful naysayer proofs? 
