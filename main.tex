@@ -1,8 +1,9 @@
 % !TEX root = .
+% \documentclass{report}
 \documentclass{article}
+% \documentclass{book}
 % \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-% \documentclass{report}
 \usepackage{graphicx} % Required for inserting images
 \usepackage{xcolor}
 \usepackage{dashbox}
@@ -29,6 +30,7 @@
 \usepackage{wasysym}
 \usepackage{cleveref}
 % \usepackage[nottoc,notlot,notlof]{tocbibind}
+\usepackage{minitoc}
 \usepackage[resetlabels]{multibib}
 \newcites{This}{Basis of this Dissertation}
 \newcites{Other}{Other Publications by the Author}
@@ -111,13 +113,16 @@ All three of these works will be deployed in practice or have seen interest from
 }
 
 \newpage %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \dominitoc % minitoc initialization
 \tableofcontents
 
 \newpage %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \input{intro}
 
+\newpage %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \input{prelims}
 
+\newpage %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Naysayer Proofs}\label{sec:naysayer}
 \textit{(Parts of this section are taken/adapted from \cite{FC:SerGlaBon24}.)}
 
@@ -130,10 +135,12 @@ All three of these works will be deployed in practice or have seen interest from
 \input{naysayer/storage}
 \input{naysayer/extensions}
 
+\newpage %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{On-chain Voting and Auctions}\label{sec:cicada}
 \textit{(Parts of this section are taken/adapted from \cite{CTB:GSZB24}.)}
 
 \input{cicada/intro}
+\input{cicada/prelims}
 \input{cicada/related}
 \input{cicada/results}
 \input{cicada/model}
@@ -145,12 +152,15 @@ All three of these works will be deployed in practice or have seen interest from
 \input{cicada/eval}
 \input{cicada/extensions}
 
+\newpage %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{{\HCWL}s}\label{sec:hcwl}
 \textit{(Parts of this section are taken/adapted from \cite{GGJLM24}.)}
+
 \input{ksp/intro}
 \input{ksp/results}
 \input{ksp/tech-overview}
 \input{ksp/related}
+\input{ksp/prelims}
 \input{ksp/model}
 \input{ksp/keyshares}
 \input{ksp/hotproofs}
@@ -162,6 +172,7 @@ All three of these works will be deployed in practice or have seen interest from
 \input{ksp/frost-construction}
 \input{ksp/frost-security}
 
+\newpage %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \input{conclusion}
 
 {\small

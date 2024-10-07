@@ -81,6 +81,8 @@ This approach can lead to incredible concrete savings:
 According to \cite{EPRINT:Habock22}, for $\secpar = 128$, $d=2^{12}$,\footnote{This is smaller than most polynomial degrees used in production systems today.} 
 $\rho = 2^{-3}$, $q=91$, $\delta=9$, the size of a vanilla FRI opening proof (i.e., without concrete optimizations) can be estimated at around 322KB. A naysayer proof for the same parameter settings is $2\log(q\log{d}) + 1 \approx 2\cdot 10 + 1 = 21$ bits < $3$ bytes.
 
+% \noemi{This note by Justin helped me find the above numbers in the Hab\"ock eprint: \url{https://people.cs.georgetown.edu/jthaler/Ligero-FRI-proof-size.pdf}}
+
 \subsubsection{Post-quantum Signature Schemes}\label{sec:pqsig_naysayer}
 
 \begin{table}[h]

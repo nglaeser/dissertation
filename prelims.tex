@@ -1,4 +1,5 @@
 \section{Preliminaries}\label{sec:prelims}
+% \minitoc
 
 We use $[n]$ to denote the range $\{1, \dots, n\}$. For other ranges (mostly zero-indexed), we explicitly write the (inclusive) endpoints, e.g., $[0,n]$. 
 Concatenation of vectors $\vec{x},\vec{y}$ is written as $\vec{x} || \vec{y}$. 
@@ -51,185 +52,13 @@ We require (perfect) \emph{completeness}, meaning that for all $(x,\witness) \in
 
 We refer the reader to \cite{Thaler23,GoldreichFoC} for a formal description of other properties of proof systems (e.g., correctness, zero-knowledge). 
 
-There are numerous definitions of succinctness adopted for proof systems in the literature. In this work, we require succinct proof systems only to have proofs which are sublinear in the size of the witness and ``work-saving'' verification:\footnote{\url{https://a16zcrypto.com/posts/article/17-misconceptions-about-snarks/\#section--3}}
+There are numerous definitions of succinctness adopted for proof systems in the literature. In this work, we require succinct proof systems only to have proofs which are sublinear in the size of the witness and ``work-saving'' verification~\cite{snark-misconceptions}:
 
 \begin{definition}[succinctness]
     We say a proof system $\Pi$ is \emph{succinct} if $\sizeof{\pi} \in o(\sizeof{x} + \sizeof{\witness})$ and $\Pi.\vrfy(\crs, x, \pi)$ runs in time $\sizeof{x} + o(\sizeof{\witness})$.
 \end{definition}
 
 % For an instance $(x;\omega)$ of an NP language $\mathcal{R}$, we denote the public and private witness elements before and after the semicolon, respectively.
-
-\subsection{Time-Lock Puzzles}\label{sec:tlp}
-
-A time-lock puzzle (TLP)~\cite{RivShaWag96} consists of three efficient algorithms $\mathsf{TLP} = (\mathsf{Setup}, \mathsf{Gen}, \mathsf{Solve})$ allowing a party to ``encrypt'' a message to the future. To recover the solution, one needs to perform a computation that is believed to be inherently sequential, with a parameterizable number of steps.
-
-\begin{definition}[Time-lock puzzle~\cite{RivShaWag96}] A time-lock puzzle scheme $\sf TLP = (\Setup, \mathsf{Gen}, \mathsf{Solve})$ for solution space $\mathcal{X}$ consists of the following three efficient algorithms:
-    \begin{itemize}
-        \item \underline{$\mathsf{TLP.Setup}(\secparam, \Ttime) \randout \pparam$:} The (potentially trusted) setup algorithm takes as input a security parameter $\secparam$ and a difficulty (time) parameter $\Ttime$, and outputs public parameters $\pparam$. % (usually a group $\mathbb{G}$ with $\lambda$ bits of security). 
-        % Typically $\mathbb{G}$ is a group of unknown order, e.g., the group $\mathbb{Z}^{*}_N$. 
-        \item \underline{$\mathsf{TLP.Gen}(\pparam, s) \randout Z$:} Given a solution $s \in \X$, the puzzle generation algorithm efficiently computes a time-lock puzzle $Z$.
-        \item \underline{$\mathsf{TLP.Solve}(\pparam, Z) \rightarrow s$:} Given a TLP $Z$, the puzzle-solving algorithm requires at least $\Ttime$ sequential steps to output the solution $s$.
-    \end{itemize}
-\end{definition}
-
-Informally, we say that a TLP scheme is \emph{correct} if $\mathsf{TLP.Gen}$ is efficiently computable, and $\tlp.{\sf Solve}$ always recovers the original solution $s$ to a validly constructed puzzle. A TLP scheme is \emph{secure} if $Z$ hides the solution $s$ and no adversary can compute $\mathsf{TLP.Solve}$ in fewer than $\Ttime$ steps with non-negligible probability. For the formal definitions, see~\cite{C:MalThy19}.
-
-\paragraph{Homomorphic TLPs.}
-Malavolta and Thyagarajan~\cite{C:MalThy19} introduce \emph{homomorphic} TLPs (HTLPs). An HTLP is defined with respect to a circuit class $\mathcal{C}$ and has an additional algorithm $\sf Eval$ defined as:
-\begin{itemize}
-    \item \underline{$\htlp.{\sf Eval}(\pparam, C, Z_1, \dots, Z_m) \rightarrow Z_*$:} Given the public parameters, a circuit $C \in \mathcal{C}$ where $C: \X^m \rightarrow \X$, and input puzzles $Z_1, \dots, Z_m$, the homomorphic evaluation algorithm outputs a puzzle $Z_*$.
-\end{itemize}
-
-Correctness requires that $\htlp.{\sf Solve}(Z_*)$
-% the puzzle obtained by homomorphically applying the circuit $C$ to $m$ puzzles 
-should contain the expected solution, namely $C(s_1, \dots, s_m)$, where $s_i \gets \htlp.{\sf Solve}(Z_i)$. Again, we refer the reader to \cite{C:MalThy19} for the formal definition. Moving forward, we will use $\boxplus$ for homomorphic addition and $\cdot$ for scalar multiplication of HTLPs. For the homomorphic application of a linear function $f$, we write $f(Z_1, \dots, Z_m)$.
-
-% \noemi{The definition is slightly more complicated since it also requires the new HTLP to be solvable in the same amount of steps; let's just give an informal def and refer reader to \cite{malavolta2019homomorphic} for details.}
-% For correctness, we require that the following holds for all $\secpar, \Ttime \in \mathbb{N}$, $C \in \mathcal{C}$, and $s_1, \dots, s_m \in \ZZ$:
-% \[
-%     \Pr\left[
-%         \htlp.{\sf Solve}(\pparam, Z_*) = C(s_1, \dots, s_m) 
-%         \middle| 
-%         \begin{array}{c}
-%             \pparam \sample \htlp.{\sf Setup}(\secparam, \Ttime)\\
-%             Z_i \sample \htlp.{\sf Gen}(\pparam, s)~\forall i\in [m]~\land\\
-%             Z_* \gets \htlp.{\sf Eval}(\pparam, C, Z_1, \dots, Z_m)
-%         \end{array}
-%     \right] = 1
-% \]
-
-% removed the below because we're not using this shorthand anymore
-% Later in the paper, we may apply $\sf Eval$ to \emph{vectors} of puzzles of common size $k$ to indicate element-wise application of the function, e.g., $\{Z_1'', \dots, Z_k''\} \gets \htlp.{\sf Eval}(\pparam, f, \{Z_1, \dots, Z_k\}, \{Z_1', \dots, Z_k'\})$ means $Z_i'' \gets \htlp.{\sf Eval}(\pparam, C, Z_i, Z_i')$ for all $i \in [k]$.
-
-\subsection{HTLP Constructions}\label{app:htlp_constructions}
-
-Malavolta and Thyagarajan~\cite{C:MalThy19} give two HTLP constructions with linear and multiplicative homomorphisms, respectively. They require $N$ to be a \emph{strong} semiprime, i.e., $N = p \cdot q$ such that $p = 2p' + 1$ and $q = 2q' + 1$ where $p', q'$ are also prime. The linearly-homomorphic HTLP is based on Paillier encryption~\cite{C:Paillier99}, while the multiplicative homomorphism is achieved by working over the subgroup $\JJ_N \subseteq \ZZ_N^*$ of elements with Jacobi symbol $+1$. 
-We recall their constructions below.
-% We recall their constructions in \Cref{fig:mt19-HTLP}.
-
-% \begin{figure}[tb]
-%     \centering
-%     \begin{mdframed}
-    \begin{construction}[Linear HTLP~\cite{C:MalThy19}.]\label{con:paillierHTLP}
-    \hfill
-    \begin{itemize}
-        \item \underline{$\htlp.\Setup(\secparam, \Ttime) \randout \pparam$:} Sample a strong semiprime $N$ and a generator $g \sample \ZZ_N^*$, then compute $h = g^{2^\Ttime} \mod{N} \in \ZZ_N^*$. (This can be computed efficiently using the factorization of $N$). Output $\pparam := (N, g, h)$.
-        \item \underline{$\htlp.{\sf Gen}(\pparam, s; r) \rightarrow Z$:} Given a value $s \in \ZZ_N$, use randomness $r \in \ZZ_{N^2}$ to compute and output
-            $$Z := (g^r \mod{N},\ h^{r \cdot N} \cdot (1+N)^s \mod{N^2}) \in \JJ_N \times \ZZ_{N^2}^*$$
-        \item \underline{$\htlp.\Open(\pparam, Z, r) \rightarrow s$:} Parse $Z := (u,v)$ and compute $w := u^{2^T} \mod{N} \allowbreak= h^r$ via repeated squaring. Output $s := \frac{(v/w^N \mod{N^2})- 1}{N}$.
-        \item \underline{$\htlp.{\sf Eval}(\pparam, f, Z_1, Z_2) \rightarrow Z$:} To evaluate a linear function $f(x_1, x_2) = b + a_1 x_1 + a_2 x_2$ homomorphically on puzzles $Z_1 := (u_1, v_1)$ and $Z_2 := (u_2, v_2)$, return
-        $$Z = (u_1^{a_1} \cdot u_2^{a_2} \mod{N}, v_1^{a_1} \cdot v_2^{a_2} \cdot (1+N)^b \mod{N^2}).$$
-    \end{itemize}
-    \end{construction}
-
-\noindent Correctness holds because for all $s \in \ZZ_N$ and $Z = (u,v) \gets \htlp.{\sf Gen}(\pparam, s)$,
-\begin{equation}\label{eq:correctness1}
-\htlp.\Open(\pparam, Z) = \frac{(v/(h^R)^N \mod{N^2})-1}{N} = \frac{((1+N)^s) - 1}{N} = s
-\end{equation}
-since $(1+N)^x = 1+Nx \mod{N^2}$.
-Correctness of the homomorphism follows since for all linear functions $f(x_1, x_2) = b + a_1 x_1 + a_2 x_2$ and all $Z_i = (u_i, v_i) \in {\sf Im}(\htlp.{\sf Gen}(\pparam, s_i; r_i))$ for $i \in \{1,2\}$,\footnote{For space and clarity we drop the moduli and assume that we are working in the appropriate ring in each coordinate (namely $\mathbb{Z}_N$ and $\mathbb{Z}_{N^2}$, respectively).}
-% \begin{equation}\label{eq:correctness2}
-% \begin{aligned}
-\begin{align*}
-&\htlp\rlap{$.{\sf Eval}(\pparam, f, Z_1, Z_2) = (u_1^{a_1} \cdot u_2^{a_2}, (1+N)^b \cdot v_1^{a_1} \cdot v_2^{a_2})$} && \\
-&= (g^{r_1 a_1} \cdot g^{r_2 a_2}, &&(1+N)^b \cdot h^{r_1 N a_1} \cdot (1+N)^{s_1 a_1} \cdot h^{r_2 N a_2} \cdot (1+N)^{s_2 a_2})\\
-&= (g^{r_1 a_1 + r_2 a_2},         &&h^{(r_1 a_1 + r_2 a_2) \cdot N} \cdot (1+N)^{b + s_1 a_1 + s_2 a_2}) \\
-&\rlap{$= \htlp.{\sf Gen}(\pparam, f(s_1, s_2); r_1 a_1 + r_2 a_2)$} &&
-\end{align*}
-% \end{aligned}
-% \end{equation}
-which opens to $f(s_1, s_2)$ by \cref{eq:correctness1}.
-
-
-    \begin{construction}[Multiplicative HTLP~\cite{C:MalThy19}.]\label{con:multHTLP}
-    \hfill
-    \begin{itemize}
-        \item \underline{$\htlp.\Setup(\secparam, \Ttime) \randout \pparam$:} Same as \Cref{con:paillierHTLP}.
-        \item \underline{$\htlp.{\sf Gen}(\pparam, s; r) \rightarrow Z$:} Given a value $s \in \JJ_N$, use randomness $r \in \ZZ_{N^2}$ to compute and output
-            $$Z := (g^r \mod{N},\ h^r \cdot s \mod{N}) \in \ZZ_N^* \times \ZZ_N^*$$
-        \item \underline{$\htlp.\Open(\pparam, Z, r) \rightarrow s$:} Parse $Z := (u,v)$ and compute $w := u^{2^T} \mod{N} \allowbreak= h^r$ via repeated squaring. Output $s := v/w$.
-        \item \underline{$\htlp.{\sf Eval}(\pparam, f, Z_1, Z_2) \rightarrow Z$:} To evaluate a multiplicative function $f(x_1, x_2) \allowbreak= a x_1 x_2$ homomorphically on puzzles $Z_1 := (u_1, v_1)$ and $Z_2 := (u_2, v_2)$, return
-        $$Z = (u_1 \cdot u_2 \mod{N}, a \cdot v_1 \cdot v_2 \mod{N})$$
-    \end{itemize}
-    \end{construction}
-%     \end{mdframed}
-%     \caption{The HTLP constructions of \cite{C:MalThy19}.}
-%     \label{fig:mt19-HTLP}
-% \end{figure}
-
-\noindent \Cref{con:multHTLP} operates over the solution space $\JJ_N$ (instead of $\ZZ_N$).
-It is easy to see that $\htlp.\Open(\pparam,\allowbreak \htlp.{\sf Gen}(\pparam, s)) = s$ for all $s \in \ZZ_N^*$. Furthermore, for all $f(x_1, x_2) = a x_1 x_2$ and all $Z_i = (u_i, v_i) \in {\sf Im}(\htlp.{\sf Gen}(\pparam,\allowbreak s_i; r_i))$ for $i \in \{1,2\}$,
-\begin{align*}
-    \htlp&\rlap{$.{\sf Eval}(\pparam, f, Z_1, Z_2) = (u_1 \cdot u_2 \mod{N}, a \cdot v_1 \cdot v_2 \mod{N})$} &&\\
-    &= (g^{r_1} g^{r_2} \mod{N}, &&h^{r_1} h^{r_2} \cdot a s_1 s_2 \mod{N})\\
-    &= (g^{r_1 + r_2} \mod{N},   &&h^{r_1 + r_2} \cdot a s_1 s_2 \mod{N})\\
-    &\rlap{$= \htlp.{\sf Gen}(\pparam, f(s_1, s_2); r_1 + r_2)$}. &&
-\end{align*}
-% Thus correctness holds.
-
-% \begin{mdframed}
-% \begin{construction}[Multiplicative HTLP~\cite{liu2022towards}]
-% \hfill
-% \begin{description}
-%     \item[$\htlp.\Setup(\secparam, \Ttime) \randout \pparam$.]
-%         \item[$\htlp.{\sf Gen}(\pparam, s; r) \randout Z$.] Encode the solution $s \in \mathbb{Z}_n^*$ as $m = s\chi^\sigma \in \mathbb{J}_n$, where 
-%             $$\chi \in \mathbb{Z}_n^* \setminus \mathbb{J}_n,
-%             \sigma = \begin{cases}
-%                 0 & J_n(s) = 1\\
-%                 1 & J_n(s) = -1
-%             \end{cases}.$$
-%     Then use the multiplicative and linear HTLPs of \cite{malavolta2019homomorphic} on $m$ and $\sigma$, respectively.
-%     \item[$\htlp.\Open(\pparam, Z, r) \randout s$.]
-%     \item[$\htlp.{\sf Eval}(\pparam, f, Z_1, Z_2) \randout Z$.]
-% \end{description}
-% \end{construction}
-% \end{mdframed}
-
-% Malavolta and Thyagarajan~\cite{C:MalThy19} construct two homomorphic time-lock puzzles (HTLPs) with, respectively, linear and multiplicative homomorphisms in groups of unknown order. For our purposes we are only interested in the former, which is based on the Paillier cryptosystem~\cite{EC:Paillier99}. It uses $N=pq$ a strong semiprime, $g \sample \ZZ_N^*$ and $h = g^{2^\Ttime}$, and has solution space $\ZZ_N$. A puzzle $Z$ is constructed as
-% \begin{equation}\label{eq:paillierHTLP}
-% (g^r, h^{r \cdot N} (1+N)^s) \in \mathbb{J}_N \times \ZZ_{N^2}^*
-% \end{equation}
-% where $\JJ_N$ is the subgroup of $\subseteq \ZZ_N^*$ of elements with Jacobi symbol +1.
-% To recover $s$, a solver must recompute $h^r = (g^r)^{2^\Ttime}$, which is believed to be an inherently sequential computation in a group of unknown order.
-
-\subsection{Vector Packing}\label{sec:packing}
-
-\begin{definition}[Vector packing]\label{def:packing}
-A setup algorithm $\PSetup$ and pair of efficiently computable bijective functions $(\pack,\unpack)$ is called a \emph{packing scheme} and has the following syntax:
-    \begin{itemize}
-        \item \underline{$\PSetup(\ell, w) \to \pparam$:} Given a vector dimension $\ell$ and maximum entry $w$, output public parameters $\pparam$.
-        \item \underline{$\pack(\pparam, \Vec{a}) \to s$:} Encode $\Vec{a} \in (\ZZ^+)^\ell$ as a positive integer $s \in \ZZ^+$. 
-        \item \underline{$\unpack(\pparam, s) \to \Vec{a}$:} Given $s \in \ZZ^+$, recover a vector $\Vec{a} \in (\ZZ^+)^\ell$. 
-    \end{itemize}
-For \emph{correctness} we require $\unpack(\pack(\Vec{a}))=\Vec{a}$ for all $\Vec{a}\in (\ZZ^+)^\ell$.
-\end{definition}
-
-The classic approach to packing~\cite{ACNS:Groth05,EC:HirSak00} uses a \emph{positional numeral system (PNS)} to encode a vector of entries bounded by $w$ as a single integer in base $M := w$ (see \Cref{con:packingPNS} below).
-%More specifically, the vector $\vec{a}=(a_1, \dots, a_m)$ with $\forall j \in [m]:a_j < w$ is encoded as a sum of powers of $M$: the ballot contains a single integer $s := \sum_{j=1}^m a_j M^{j-1}$. Then $a_j$ can be obtained as $s \mod{M^{j-1}}$, 
-Instead, we will set $M:= nw+1$ to accommodate the homomorphic addition of all $n$ users' vectors: each voter submits a length-$m$ vector with entries $\leq w$. Summing over $n$ voters, the result is a length-$m$ vector with a maximum entry value $nw$; to prevent overflow, we set $M = nw+1$.
-
-\begin{construction}[Packing from Positional Numeral System]\label{con:packingPNS}
-\hfill
-\begin{itemize}%[topsep=2pt]
-    \item \underline{$\PSetup(\ell, w) \to M$:} Return $M := w + 1$.
-    \item \underline{$\pack(M, \Vec{a}) \to s$:} Output $s := \sum_{j=1}^{\sizeof{\vec{a}}} a_j M^{j-1}$.
-    \item \underline{$\unpack(M, s) \to \Vec{a}$:} Let $\ell := \ceil{\log_M{s}}$. For $j \in [\ell]$, compute the $j$th entry of $\Vec{a}$ as $a_j := s \mod{M^{j-1}}$.
-\end{itemize}
-\end{construction}
-
-Besides PNS packing, we also introduce an alternative approach in \Cref{con:packingRNS} which is based on the \emph{residue numeral system (RNS)}. The idea of the RNS packing is to interpret the entries of $\vec{a}$ as prime residues of a single unique integer $s$, which can be found efficiently using the Chinese Remainder Theorem (CRT). In other words, for all $j \in [\ell]$, $s$ captures $a_j$ as $s \bmod p_j$.
-
-\begin{construction}[Packing from Residue Numeral System]\label{con:packingRNS}
-\hfill
-\begin{itemize}%[topsep=2pt]
-    % \textit{Public parameters:}~$\pparam:=(p_1,\dots,p_m)$ primes s.t. $\min\limits_{j\in[m]}p_j\geq M(=nw+1)$.\\
-    \item \underline{$\PSetup(\ell, w) \to \vec{p}$:} Let $M := w + 1$ and sample $\ell$ distinct primes $p_1, \dots, p_\ell$ s.t. $p_j \geq M\ \forall j \in [\ell]$. Return $\vec{p} := (p_1, \dots, p_\ell)$.
-    \item \underline{$\pack(\vec{p}, \Vec{a}) \to s$:} Given $\Vec{a} \in (\ZZ^+)^\ell$, use the CRT to find the unique $s \in \ZZ^+$ s.t. $s\equiv a_j \pmod{p_j}~\forall j\in[\ell]$.
-    \item \underline{$\unpack(\vec{p}, s) \to \Vec{a}$:} return $(a_1, \dots, a_\ell)$ where $a_j \equiv s \mod{p_j}\ \forall j \in [\ell]$.
-\end{itemize}
-\end{construction}
-
-A major advantage of this approach is that, in contrast to the PNS approach, which is only homomorphic for SIMD (single instruction, multiple data) addition, the RNS encoding is fully SIMD homomorphic: the sum of vector encodings $\sum_{i \in [n]} s_i$ encodes the vector $\vec{a}_{+} = \sum_{i \in [n]} \vec{a}_i$, and the product $\prod_{i \in [n]} s_i$ encodes the vector $\vec{a}_{\times} = \prod_{i \in [n]} \vec{a}_i$. 
 
 \subsection{Bilinear Pairings}\label{sec:pairings}
 
@@ -276,7 +105,7 @@ For notational convenience, let $\share(s,t,n; r)[i]$ denote the $i$th share of 
 
 \subsection{Digital Signatures}\label{sec:signatures}
 
-A \emph{digital signature}~\todo{\cite{todo}} is a cryptographic primitive which \todo{...}
+A \emph{digital signature} is a cryptographic primitive which \todo{...}
 
 \subsubsection{BLS Signatures}\label{sec:bls}
 
@@ -322,9 +151,9 @@ Notice that the reconstruction simply performs Shamir reconstruction of the sign
 \noemi{Schnorr (threshold) signatures; \cite{EPRINT:Lindell22} and \cite{SAC:KomGol20} use different definitions of Schnorr, are they equivalent?}
 
 \paragraph{Threshold variants}
-Many protocols exist for threshold Schnorr signatures~\todo{\cite{todo}}, each offering a different combination of properties. \todo{...}
+Many protocols exist for threshold Schnorr signatures \cite{SAC:KomGol20,C:BCKMTZ22,EPRINT:Lindell22,EPRINT:BatLonMen22}, each offering a different combination of properties. \todo{...}
 
-The BLS threshold signature scheme~\cite{AC:BonLynSha01} is fully non-interactive, meaning that signing occurs in one round.
+\todo{Move this paragraph to \Cref{sec:hcwl}} The BLS threshold signature scheme~\cite{AC:BonLynSha01} is fully non-interactive, meaning that signing occurs in one round.
 FROST is a ``somewhat'' non-interactive threshold signature scheme~\cite{EPRINT:BelTesZhu22} in the sense that the \emph{signing} procedure consists of a single round, but there is another round of message-independent pre-processing.     
 
 \subsection{KZG polynomial commitments}\label{sec:kzg}
@@ -384,49 +213,3 @@ A PoK of the committed value can be computed using a Sigma protocol due to Okamo
    \caption{The proof system $\Pi_{\sf ped}$ used to prove knowledge of the opening to a Pedersen commitment~\cite{C:Okamoto92}.}
    \label{fig:pi_ped}
 \end{figure*}
-
-\subsection{Leftover Hash Lemma}\label{sec:lhl}  
-
-We use the presentation of the leftover hash lemma (LHL)~\cite{FOCS:ImpZuc89} from\break \cite{EC:AMPR19}.\footnote{We specifically use the improved version from the Journal of Cryptology version of this paper.}  Let $\left(\mathcal{X},\oplus\right)$ be a finite group of size $\left|\mathcal{X}\right|$, and let $n$ be a positive integer. For any fixed $2n$-vector of group elements $\mathbf{x} = \left\lbrace x_{j,b} \right\rbrace_{j\in \left[ n \right],b\in\left\lbrace 0,1 \right\rbrace} \in\mathcal{X}^{2n}$, denote by $\mathcal{S}_{\mathbf{x}}$ the following distribution:
-\begin{equation}
-	\mathcal{S}_{\mathbf{x}} = \Big\{\bigoplus_{j\in[n]}x_{j,r_j} : \left(r_1,\cdots,r_n\right)\gets\left\lbrace 0,1 \right\rbrace^n\Big\}.\nonumber
-\end{equation}
-Also, let $\mathcal{U}_{\mathcal{X}}$ denote the uniform distribution over $\mathcal{X}$, and let $\Delta \left(\mathcal{D}_1,\mathcal{D}_2\right)$ denote the statistical distance between the distributions $\mathcal{D}_1$ and $\mathcal{D}_2$. We will use the following special case of leftover hash lemma~\cite{FOCS:ImpZuc89}. The proof can be found in the JoC version of~\cite{EC:AMPR19}.
-
-\begin{lemma}{\textnormal{(Leftover Hash Lemma.)}}
-	\label{lemma:LHL}	
-	Let $\left(\mathcal{X},\oplus\right)$ be a finite group, and let $\mathcal{S}_{\mathbf{x}}$ and $\mathcal{U}_{\mathcal{X}}$ be two distributions over $\mathcal{X}$ as defined above. For any (large enough) positive integer $n$, it holds that
-	\begin{equation}
-		\Pr_{\mathbf{x}\gets\mathcal{X}^{2n}}\left[\Delta\left(\mathcal{S}_{\mathbf{x}},\mathcal{U}_{\mathcal{X}}\right)> \sqrt[4]{\frac{\sizeof{\mathcal{X}}}{2^n}}  \right]\leq \sqrt[4]{\frac{\sizeof{\mathcal{X}}}{2^n}} \nonumber.
-	\end{equation}
-	In particular, for any $n > \log(\sizeof{\mathcal{X}}) + \omega(\log(\lambda))$, if $\mathbf{x}$ is sampled uniformly then with overwhelming probability the statistical distance between two distributions is negligible.
-\end{lemma}
-
-\subsection{Universal Composability (UC) Framework}\label{sec:uc}
-
-In the universal composability (UC) framework~\cite{FOCS:Canetti01}, the security requirements of a protocol are defined via an \emph{ideal functionality} which is executed by a trusted party. To prove that a protocol \emph{UC-realizes} a given ideal functionality, we show that the execution of this protocol (in the real or hybrid world) can be \emph{emulated} in the ideal world, where in both worlds there is an additional adversary $\env$ (the environment) which models arbitrary concurrent protocol executions. Specifically, we show that for any adversary $\adv$ attacking the protocol execution in the real world (by controlling communication channels and corrupting parties involved in the protocol execution), there exists an adversary $\Sim$ (the simulator) in the ideal world who can produce a protocol execution which no environment $\env$ can distinguish from the real-world execution.
-
-Below we describe the UC framework as it is presented in \cite{EPRINT:CLOS02}. 
-All parties are represented as probabilistic interactive Turing machines (ITMs) with input, output, and ingoing/outgoing communication tapes. For simplicity, we assume that all communication is authenticated, so an adversary can only delay but not forge or modify messages from parties involved in the protocol. Therefore, the order of message delivery is also not guaranteed (asynchronous communication). We consider a PPT malicious, adaptive adversary who can corrupt or tamper with parties at any point during the protocol execution.
-%(modeled in the ideal world via the interfaces in \Cref{fig:FSign3}).
-
-The execution in both worlds consists of a series of sequential party activations. Only one party can be activated at a time (by writing a message on its input tape). In the real world, the execution of a protocol $\Pi$ occurs among parties $P_1, \dots, P_n$ with adversary $\adv$ and environment $\env$. In the ideal world, interaction takes place between dummy parties $\tilde{P}_1, \dots, \tilde{P}_n$ communicating with the ideal functionality $\F$, with the adversary (simulator) $\Sim$ and environment $\env$. Every copy of $\F$ is identified by a unique session identifier $\texttt{sid}$. 
-% The environment $\env$ can read all parties' output tapes and write to any party's input tape, including the adversary $\adv$ or $\Sim$. $\adv$ can read the outgoing communication tapes of all parties $P_i$ and \emph{deliver} messages between parties by writing them on the corresponding incoming communication tape (this models the asynchronous but authenticated communication). $\adv$ can also \emph{corrupt} any party $P_i$, and $\env$ will be notified. In the ideal world, the dummy parties simply copy any input they receive to their outgoing communication tape. $\Sim$ interacts primarily with the ideal functionality $\F$ in several ways: it can \emph{read} the public headers of any messages on its incoming and and outgoing communication tapes, \emph{write} on $\F$'s incoming communication tape, or \emph{deliver} messages from $\F$ to a dummy party or vice versa. It can also \emph{corrupt} any dummy party $\tilde{P}_i$, and $\env$ and $\F$ will be notified.
-
-In both the real and ideal worlds, the environment is activated first and activates either the adversary ($\adv$ resp. $\Sim$) or an uncorrupted (dummy) party by writing on its input tape. If $\adv$ (resp. $\Sim$) is activated, it can take an action or return control to $\env$. After a (dummy) party (or $\F$) is activated, control returns to $\env$. The protocol execution ends when $\env$ completes an activation without writing on the input tape of another party.
-
-We denote with $\real_{\Pi,\adv,\env}(\secpar,x)$ the random variable describing the output of the real-world execution of $\Pi$ with security parameter $\secpar$ and input $x$ in the presence of adversary $\adv$ and environment $\env$. We write the corresponding distribution ensemble as $\{ \real_{\Pi,\adv,\env}(\secpar, x) \}_{\secpar \in \mathbb{N}, x \in \{0,1\}^*}$. The output of the ideal-world interaction with ideal functionality $\F$, adversary (simulator) $\Sim$, and environment $\env$ is represented by the random variable $\ideal_{\F,\Sim,\env}(\secpar, x)$ and corresponding distribution ensemble $\{ \ideal_{\F,\Sim,\env}(\secpar, x) \}_{\secpar \in \mathbb{N}, x \in \{0,1\}^*}$.
-
-The actions each party can take are summarized below:
-\begin{itemize}
-   \item Environment $\env$: \textbf{read} output tapes of the adversary ($\adv$ or $\Sim$) and any uncorrupted (dummy) parties; then \textbf{write} on the input tape of one party (the adversary $\adv$ or $\Sim$ or any uncorrupted (dummy) parties).
-   \item Adversary $\adv$: \textbf{read} its own tapes and the outgoing communication tapes of all parties; then \textbf{deliver} a pending message to party by writing it on the recipient's ingoing communication tape \emph{or} \textbf{corrupt} a party (which becomes inactive: its tapes are given to $\adv$ and $\adv$ controls its actions from this point on, and $\env$ is notified of the corruption).
-   \item Real-world party $P_i$: only follows its code (potentially writing to its output tape or sending messages via its outgoing communication tape).
-   \item Dummy party $\tilde{P}_i$: acts only as a simple relay with the ideal functionality $\F$, copying inputs from its input tape to its outgoing communication tape (to $\F$) and any messages received on its ingoing communication tape (from $\F$) to its output tape.
-   \item Adversary $\Sim$: \textbf{read} its own input tape and the public headers (see below) of the messages on $\F$'s and dummy parties' outgoing communication tapes; then \textbf{deliver} a message to $\F$ from a dummy party or vice versa by copying it from the sender's outgoing communication tape to the recipient's incoming communication tape \emph{or} \textbf{send} its own message to $\F$ by writing on the latter's incoming communication tape \emph{or} \textbf{corrupt} a dummy party (which becomes inactive: its tapes are given to $\Sim$ and $\Sim$ controls its actions from this point on, and $\env$ and $\F$ are notified of the corruption).
-   \item Ideal functionality $\F$: \textbf{read} incoming communication tape; then \textbf{send} any messages specified by its definition to the dummy parties and/or adversary $\Sim$ by writing to its outgoing communication tape.
-\end{itemize}
-
-\begin{definition}
-    We say a protocol $\Pi$ \emph{UC-realizes} an ideal functionality $\F$ if for any PPT adversary $\adv$, there exists a simulator $\Sim$ such that for any environment $\env$, the distribution ensembles $\{ \real_{\Pi,\adv,\env}(\secpar, x) \}_{\secpar \in \mathbb{N}, x \in \bin^*}$ and $\{ \ideal_{\F,\Sim,\env}(\secpar,\allowbreak x) \}_{\secpar \in \mathbb{N},x \in \bin^*}$ are computationally indistinguishable.
-\end{definition}

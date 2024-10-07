@@ -1,0 +1,176 @@
+\subsection{Additional Preliminaries}
+
+\paragraph{Special Notation} We will use $n$ as the number of users, $m$ as the number of candidates, and $w$ as the maximum weight to be allocated to any one candidate in a ballot/bid ($n,m,w \in \mathbb{N}$). For simplicity and without loss of generality, we assume the user identities are unique integers $i \in [n]$.
+We generally use $i \in [n]$ to index users and $j \in [m]$ for candidates.
+
+\subsubsection{Time-Lock Puzzles}\label{sec:tlp}
+
+A time-lock puzzle (TLP)~\cite{RivShaWag96} consists of three efficient algorithms $\mathsf{TLP} = (\mathsf{Setup}, \mathsf{Gen}, \mathsf{Solve})$ allowing a party to ``encrypt'' a message to the future. To recover the solution, one needs to perform a computation that is believed to be inherently sequential, with a parameterizable number of steps.
+
+\begin{definition}[Time-lock puzzle~\cite{RivShaWag96}] A time-lock puzzle scheme $\sf TLP = (\Setup, \mathsf{Gen}, \mathsf{Solve})$ for solution space $\mathcal{X}$ consists of the following three efficient algorithms:
+    \begin{itemize}
+        \item \underline{$\mathsf{TLP.Setup}(\secparam, \Ttime) \randout \pparam$:} The (potentially trusted) setup algorithm takes as input a security parameter $\secparam$ and a difficulty (time) parameter $\Ttime$, and outputs public parameters $\pparam$. % (usually a group $\mathbb{G}$ with $\lambda$ bits of security). 
+        % Typically $\mathbb{G}$ is a group of unknown order, e.g., the group $\mathbb{Z}^{*}_N$. 
+        \item \underline{$\mathsf{TLP.Gen}(\pparam, s) \randout Z$:} Given a solution $s \in \X$, the puzzle generation algorithm efficiently computes a time-lock puzzle $Z$.
+        \item \underline{$\mathsf{TLP.Solve}(\pparam, Z) \rightarrow s$:} Given a TLP $Z$, the puzzle-solving algorithm requires at least $\Ttime$ sequential steps to output the solution $s$.
+    \end{itemize}
+\end{definition}
+
+Informally, we say that a TLP scheme is \emph{correct} if $\mathsf{TLP.Gen}$ is efficiently computable, and $\tlp.{\sf Solve}$ always recovers the original solution $s$ to a validly constructed puzzle. A TLP scheme is \emph{secure} if $Z$ hides the solution $s$ and no adversary can compute $\mathsf{TLP.Solve}$ in fewer than $\Ttime$ steps with non-negligible probability. For the formal definitions, see~\cite{C:MalThy19}.
+
+\paragraph{Homomorphic TLPs.}
+Malavolta and Thyagarajan~\cite{C:MalThy19} introduce \emph{homomorphic} TLPs (HTLPs). An HTLP is defined with respect to a circuit class $\mathcal{C}$ and has an additional algorithm $\sf Eval$ defined as:
+\begin{itemize}
+    \item \underline{$\htlp.{\sf Eval}(\pparam, C, Z_1, \dots, Z_m) \rightarrow Z_*$:} Given the public parameters, a circuit $C \in \mathcal{C}$ where $C: \X^m \rightarrow \X$, and input puzzles $Z_1, \dots, Z_m$, the homomorphic evaluation algorithm outputs a puzzle $Z_*$.
+\end{itemize}
+
+Correctness requires that $\htlp.{\sf Solve}(Z_*)$
+% the puzzle obtained by homomorphically applying the circuit $C$ to $m$ puzzles 
+should contain the expected solution, namely $C(s_1, \dots, s_m)$, where $s_i \gets \htlp.{\sf Solve}(Z_i)$. Again, we refer the reader to \cite{C:MalThy19} for the formal definition. Moving forward, we will use $\boxplus$ for homomorphic addition and $\cdot$ for scalar multiplication of HTLPs. For the homomorphic application of a linear function $f$, we write $f(Z_1, \dots, Z_m)$.
+
+% \noemi{The definition is slightly more complicated since it also requires the new HTLP to be solvable in the same amount of steps; let's just give an informal def and refer reader to \cite{malavolta2019homomorphic} for details.}
+% For correctness, we require that the following holds for all $\secpar, \Ttime \in \mathbb{N}$, $C \in \mathcal{C}$, and $s_1, \dots, s_m \in \ZZ$:
+% \[
+%     \Pr\left[
+%         \htlp.{\sf Solve}(\pparam, Z_*) = C(s_1, \dots, s_m) 
+%         \middle| 
+%         \begin{array}{c}
+%             \pparam \sample \htlp.{\sf Setup}(\secparam, \Ttime)\\
+%             Z_i \sample \htlp.{\sf Gen}(\pparam, s)~\forall i\in [m]~\land\\
+%             Z_* \gets \htlp.{\sf Eval}(\pparam, C, Z_1, \dots, Z_m)
+%         \end{array}
+%     \right] = 1
+% \]
+
+% removed the below because we're not using this shorthand anymore
+% Later in the paper, we may apply $\sf Eval$ to \emph{vectors} of puzzles of common size $k$ to indicate element-wise application of the function, e.g., $\{Z_1'', \dots, Z_k''\} \gets \htlp.{\sf Eval}(\pparam, f, \{Z_1, \dots, Z_k\}, \{Z_1', \dots, Z_k'\})$ means $Z_i'' \gets \htlp.{\sf Eval}(\pparam, C, Z_i, Z_i')$ for all $i \in [k]$.
+
+\subsubsection{HTLP Constructions}\label{app:htlp_constructions}
+
+Malavolta and Thyagarajan~\cite{C:MalThy19} give two HTLP constructions with linear and multiplicative homomorphisms, respectively. They require $N$ to be a \emph{strong} semiprime, i.e., $N = p \cdot q$ such that $p = 2p' + 1$ and $q = 2q' + 1$ where $p', q'$ are also prime. The linearly-homomorphic HTLP is based on Paillier encryption~\cite{EC:Paillier99}, while the multiplicative homomorphism is achieved by working over the subgroup $\JJ_N \subseteq \ZZ_N^*$ of elements with Jacobi symbol $+1$. 
+We recall their constructions below.
+% We recall their constructions in \Cref{fig:mt19-HTLP}.
+
+% \begin{figure}[tb]
+%     \centering
+%     \begin{mdframed}
+    \begin{construction}[Linear HTLP~\cite{C:MalThy19}]\label{con:paillierHTLP}
+    \hfill
+    \begin{itemize}
+        \item \underline{$\htlp.\Setup(\secparam, \Ttime) \randout \pparam$:} Sample a strong semiprime $N$ and a generator $g \sample \ZZ_N^*$, then compute $h = g^{2^\Ttime} \mod{N} \in \ZZ_N^*$. (This can be computed efficiently using the factorization of $N$). Output $\pparam := (N, g, h)$.
+        \item \underline{$\htlp.{\sf Gen}(\pparam, s; r) \rightarrow Z$:} Given a value $s \in \ZZ_N$, use randomness $r \in \ZZ_{N^2}$ to compute and output
+            $$Z := (g^r \mod{N},\ h^{r \cdot N} \cdot (1+N)^s \mod{N^2}) \in \JJ_N \times \ZZ_{N^2}^*$$
+        \item \underline{$\htlp.\Open(\pparam, Z, r) \rightarrow s$:} Parse $Z := (u,v)$ and compute $w := u^{2^T} \mod{N} \allowbreak= h^r$ via repeated squaring. Output $s := \frac{(v/w^N \mod{N^2})- 1}{N}$.
+        \item \underline{$\htlp.{\sf Eval}(\pparam, f, Z_1, Z_2) \rightarrow Z$:} To evaluate a linear function $f(x_1, x_2) = b + a_1 x_1 + a_2 x_2$ homomorphically on puzzles $Z_1 := (u_1, v_1)$ and $Z_2 := (u_2, v_2)$, return
+        $$Z = (u_1^{a_1} \cdot u_2^{a_2} \mod{N}, v_1^{a_1} \cdot v_2^{a_2} \cdot (1+N)^b \mod{N^2}).$$
+    \end{itemize}
+    \end{construction}
+
+\noindent Correctness holds because for all $s \in \ZZ_N$ and $Z = (u,v) \gets \htlp.{\sf Gen}(\pparam, s)$,
+\begin{equation}\label{eq:correctness1}
+\htlp.\Open(\pparam, Z) = \frac{(v/(h^R)^N \mod{N^2})-1}{N} = \frac{((1+N)^s) - 1}{N} = s
+\end{equation}
+since $(1+N)^x = 1+Nx \mod{N^2}$.
+Correctness of the homomorphism follows since for all linear functions $f(x_1, x_2) = b + a_1 x_1 + a_2 x_2$ and all $Z_i = (u_i, v_i) \in {\sf Im}(\htlp.{\sf Gen}(\pparam, s_i; r_i))$ for $i \in \{1,2\}$,\footnote{For space and clarity we drop the moduli and assume that we are working in the appropriate ring in each coordinate (namely $\mathbb{Z}_N$ and $\mathbb{Z}_{N^2}$, respectively).}
+% \begin{equation}\label{eq:correctness2}
+% \begin{aligned}
+\begin{align*}
+&\htlp\rlap{$.{\sf Eval}(\pparam, f, Z_1, Z_2) = (u_1^{a_1} \cdot u_2^{a_2}, (1+N)^b \cdot v_1^{a_1} \cdot v_2^{a_2})$} && \\
+&= (g^{r_1 a_1} \cdot g^{r_2 a_2}, &&(1+N)^b \cdot h^{r_1 N a_1} \cdot (1+N)^{s_1 a_1} \cdot h^{r_2 N a_2} \cdot (1+N)^{s_2 a_2})\\
+&= (g^{r_1 a_1 + r_2 a_2},         &&h^{(r_1 a_1 + r_2 a_2) \cdot N} \cdot (1+N)^{b + s_1 a_1 + s_2 a_2}) \\
+&\rlap{$= \htlp.{\sf Gen}(\pparam, f(s_1, s_2); r_1 a_1 + r_2 a_2)$} &&
+\end{align*}
+% \end{aligned}
+% \end{equation}
+which opens to $f(s_1, s_2)$ by \cref{eq:correctness1}.
+
+
+    \begin{construction}[Multiplicative HTLP~\cite{C:MalThy19}]\label{con:multHTLP}
+    \hfill
+    \begin{itemize}
+        \item \underline{$\htlp.\Setup(\secparam, \Ttime) \randout \pparam$:} Same as \Cref{con:paillierHTLP}.
+        \item \underline{$\htlp.{\sf Gen}(\pparam, s; r) \rightarrow Z$:} Given a value $s \in \JJ_N$, use randomness $r \in \ZZ_{N^2}$ to compute and output
+            $$Z := (g^r \mod{N},\ h^r \cdot s \mod{N}) \in \ZZ_N^* \times \ZZ_N^*$$
+        \item \underline{$\htlp.\Open(\pparam, Z, r) \rightarrow s$:} Parse $Z := (u,v)$ and compute $w := u^{2^T} \mod{N} \allowbreak= h^r$ via repeated squaring. Output $s := v/w$.
+        \item \underline{$\htlp.{\sf Eval}(\pparam, f, Z_1, Z_2) \rightarrow Z$:} To evaluate a multiplicative function $f(x_1, x_2) \allowbreak= a x_1 x_2$ homomorphically on puzzles $Z_1 := (u_1, v_1)$ and $Z_2 := (u_2, v_2)$, return
+        $$Z = (u_1 \cdot u_2 \mod{N}, a \cdot v_1 \cdot v_2 \mod{N})$$
+    \end{itemize}
+    \end{construction}
+%     \end{mdframed}
+%     \caption{The HTLP constructions of \cite{C:MalThy19}.}
+%     \label{fig:mt19-HTLP}
+% \end{figure}
+
+\noindent \Cref{con:multHTLP} operates over the solution space $\JJ_N$ (instead of $\ZZ_N$).
+It is easy to see that $\htlp.\Open(\pparam,\allowbreak \htlp.{\sf Gen}(\pparam, s)) = s$ for all $s \in \ZZ_N^*$. Furthermore, for all $f(x_1, x_2) = a x_1 x_2$ and all $Z_i = (u_i, v_i) \in {\sf Im}(\htlp.{\sf Gen}(\pparam,\allowbreak s_i; r_i))$ for $i \in \{1,2\}$,
+\begin{align*}
+    \htlp&\rlap{$.{\sf Eval}(\pparam, f, Z_1, Z_2) = (u_1 \cdot u_2 \mod{N}, a \cdot v_1 \cdot v_2 \mod{N})$} &&\\
+    &= (g^{r_1} g^{r_2} \mod{N}, &&h^{r_1} h^{r_2} \cdot a s_1 s_2 \mod{N})\\
+    &= (g^{r_1 + r_2} \mod{N},   &&h^{r_1 + r_2} \cdot a s_1 s_2 \mod{N})\\
+    &\rlap{$= \htlp.{\sf Gen}(\pparam, f(s_1, s_2); r_1 + r_2)$}. &&
+\end{align*}
+% Thus correctness holds.
+
+% \begin{mdframed}
+% \begin{construction}[Multiplicative HTLP~\cite{liu2022towards}]
+% \hfill
+% \begin{description}
+%     \item[$\htlp.\Setup(\secparam, \Ttime) \randout \pparam$.]
+%         \item[$\htlp.{\sf Gen}(\pparam, s; r) \randout Z$.] Encode the solution $s \in \mathbb{Z}_n^*$ as $m = s\chi^\sigma \in \mathbb{J}_n$, where 
+%             $$\chi \in \mathbb{Z}_n^* \setminus \mathbb{J}_n,
+%             \sigma = \begin{cases}
+%                 0 & J_n(s) = 1\\
+%                 1 & J_n(s) = -1
+%             \end{cases}.$$
+%     Then use the multiplicative and linear HTLPs of \cite{malavolta2019homomorphic} on $m$ and $\sigma$, respectively.
+%     \item[$\htlp.\Open(\pparam, Z, r) \randout s$.]
+%     \item[$\htlp.{\sf Eval}(\pparam, f, Z_1, Z_2) \randout Z$.]
+% \end{description}
+% \end{construction}
+% \end{mdframed}
+
+% Malavolta and Thyagarajan~\cite{C:MalThy19} construct two homomorphic time-lock puzzles (HTLPs) with, respectively, linear and multiplicative homomorphisms in groups of unknown order. For our purposes we are only interested in the former, which is based on the Paillier cryptosystem~\cite{EC:Paillier99}. It uses $N=pq$ a strong semiprime, $g \sample \ZZ_N^*$ and $h = g^{2^\Ttime}$, and has solution space $\ZZ_N$. A puzzle $Z$ is constructed as
+% \begin{equation}\label{eq:paillierHTLP}
+% (g^r, h^{r \cdot N} (1+N)^s) \in \mathbb{J}_N \times \ZZ_{N^2}^*
+% \end{equation}
+% where $\JJ_N$ is the subgroup of $\subseteq \ZZ_N^*$ of elements with Jacobi symbol +1.
+% To recover $s$, a solver must recompute $h^r = (g^r)^{2^\Ttime}$, which is believed to be an inherently sequential computation in a group of unknown order.
+
+\subsubsection{Vector Packing}\label{sec:packing}
+
+\begin{definition}[Vector packing]\label{def:packing}
+A setup algorithm $\PSetup$ and pair of efficiently computable bijective functions $(\pack,\unpack)$ is called a \emph{packing scheme} and has the following syntax:
+    \begin{itemize}
+        \item \underline{$\PSetup(\ell, w) \to \pparam$:} Given a vector dimension $\ell$ and maximum entry $w$, output public parameters $\pparam$.
+        \item \underline{$\pack(\pparam, \Vec{a}) \to s$:} Encode $\Vec{a} \in (\ZZ^+)^\ell$ as a positive integer $s \in \ZZ^+$. 
+        \item \underline{$\unpack(\pparam, s) \to \Vec{a}$:} Given $s \in \ZZ^+$, recover a vector $\Vec{a} \in (\ZZ^+)^\ell$. 
+    \end{itemize}
+For \emph{correctness} we require $\unpack(\pack(\Vec{a}))=\Vec{a}$ for all $\Vec{a}\in (\ZZ^+)^\ell$.
+\end{definition}
+
+The classic approach to packing~\cite{ACNS:Groth05,EC:HirSak00} uses a \emph{positional numeral system (PNS)} to encode a vector of entries bounded by $w$ as a single integer in base $M := w$ (see \Cref{con:packingPNS} below).
+%More specifically, the vector $\vec{a}=(a_1, \dots, a_m)$ with $\forall j \in [m]:a_j < w$ is encoded as a sum of powers of $M$: the ballot contains a single integer $s := \sum_{j=1}^m a_j M^{j-1}$. Then $a_j$ can be obtained as $s \mod{M^{j-1}}$, 
+Instead, we will set $M:= nw+1$ to accommodate the homomorphic addition of all $n$ users' vectors: each voter submits a length-$m$ vector with entries $\leq w$. Summing over $n$ voters, the result is a length-$m$ vector with a maximum entry value $nw$; to prevent overflow, we set $M = nw+1$.
+
+\begin{construction}[Packing from Positional Numeral System]\label{con:packingPNS}
+\hfill
+\begin{itemize}%[topsep=2pt]
+    \item \underline{$\PSetup(\ell, w) \to M$:} Return $M := w + 1$.
+    \item \underline{$\pack(M, \Vec{a}) \to s$:} Output $s := \sum_{j=1}^{\sizeof{\vec{a}}} a_j M^{j-1}$.
+    \item \underline{$\unpack(M, s) \to \Vec{a}$:} Let $\ell := \ceil{\log_M{s}}$. For $j \in [\ell]$, compute the $j$th entry of $\Vec{a}$ as $a_j := s \mod{M^{j-1}}$.
+\end{itemize}
+\end{construction}
+
+Besides PNS packing, we also introduce an alternative approach in \Cref{con:packingRNS} which is based on the \emph{residue numeral system (RNS)}. The idea of the RNS packing is to interpret the entries of $\vec{a}$ as prime residues of a single unique integer $s$, which can be found efficiently using the Chinese Remainder Theorem (CRT). In other words, for all $j \in [\ell]$, $s$ captures $a_j$ as $s \bmod p_j$.
+
+\begin{construction}[Packing from Residue Numeral System]\label{con:packingRNS}
+\hfill
+\begin{itemize}%[topsep=2pt]
+    % \textit{Public parameters:}~$\pparam:=(p_1,\dots,p_m)$ primes s.t. $\min\limits_{j\in[m]}p_j\geq M(=nw+1)$.\\
+    \item \underline{$\PSetup(\ell, w) \to \vec{p}$:} Let $M := w + 1$ and sample $\ell$ distinct primes $p_1, \dots, p_\ell$ s.t. $p_j \geq M\ \forall j \in [\ell]$. Return $\vec{p} := (p_1, \dots, p_\ell)$.
+    \item \underline{$\pack(\vec{p}, \Vec{a}) \to s$:} Given $\Vec{a} \in (\ZZ^+)^\ell$, use the CRT to find the unique $s \in \ZZ^+$ s.t. $s\equiv a_j \pmod{p_j}~\forall j\in[\ell]$.
+    \item \underline{$\unpack(\vec{p}, s) \to \Vec{a}$:} return $(a_1, \dots, a_\ell)$ where $a_j \equiv s \mod{p_j}\ \forall j \in [\ell]$.
+\end{itemize}
+\end{construction}
+
+A major advantage of this approach is that, in contrast to the PNS approach, which is only homomorphic for SIMD (single instruction, multiple data) addition, the RNS encoding is fully SIMD homomorphic: the sum of vector encodings $\sum_{i \in [n]} s_i$ encodes the vector $\vec{a}_{+} = \sum_{i \in [n]} \vec{a}_i$, and the product $\prod_{i \in [n]} s_i$ encodes the vector $\vec{a}_{\times} = \prod_{i \in [n]} \vec{a}_i$. 

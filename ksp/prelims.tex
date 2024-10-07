@@ -1,0 +1,47 @@
+\subsection{Additional Preliminaries}
+
+\subsubsection{Leftover Hash Lemma}\label{sec:lhl}  
+
+We use the presentation of the leftover hash lemma (LHL)~\cite{FOCS:ImpZuc89} from\break \cite{EC:AMPR19}.\footnote{We specifically use the improved version from the Journal of Cryptology version of this paper.}  Let $\left(\mathcal{X},\oplus\right)$ be a finite group of size $\left|\mathcal{X}\right|$, and let $n$ be a positive integer. For any fixed $2n$-vector of group elements $\mathbf{x} = \left\lbrace x_{j,b} \right\rbrace_{j\in \left[ n \right],b\in\left\lbrace 0,1 \right\rbrace} \in\mathcal{X}^{2n}$, denote by $\mathcal{S}_{\mathbf{x}}$ the following distribution:
+\begin{equation}
+	\mathcal{S}_{\mathbf{x}} = \Big\{\bigoplus_{j\in[n]}x_{j,r_j} : \left(r_1,\cdots,r_n\right)\gets\left\lbrace 0,1 \right\rbrace^n\Big\}.\nonumber
+\end{equation}
+Also, let $\mathcal{U}_{\mathcal{X}}$ denote the uniform distribution over $\mathcal{X}$, and let $\Delta \left(\mathcal{D}_1,\mathcal{D}_2\right)$ denote the statistical distance between the distributions $\mathcal{D}_1$ and $\mathcal{D}_2$. We will use the following special case of leftover hash lemma~\cite{FOCS:ImpZuc89}. The proof can be found in the JoC version of~\cite{EC:AMPR19}.
+
+\begin{lemma}{\textnormal{(Leftover Hash Lemma.)}}
+	\label{lemma:LHL}	
+	Let $\left(\mathcal{X},\oplus\right)$ be a finite group, and let $\mathcal{S}_{\mathbf{x}}$ and $\mathcal{U}_{\mathcal{X}}$ be two distributions over $\mathcal{X}$ as defined above. For any (large enough) positive integer $n$, it holds that
+	\begin{equation}
+		\Pr_{\mathbf{x}\gets\mathcal{X}^{2n}}\left[\Delta\left(\mathcal{S}_{\mathbf{x}},\mathcal{U}_{\mathcal{X}}\right)> \sqrt[4]{\frac{\sizeof{\mathcal{X}}}{2^n}}  \right]\leq \sqrt[4]{\frac{\sizeof{\mathcal{X}}}{2^n}} \nonumber.
+	\end{equation}
+	In particular, for any $n > \log(\sizeof{\mathcal{X}}) + \omega(\log(\lambda))$, if $\mathbf{x}$ is sampled uniformly then with overwhelming probability the statistical distance between two distributions is negligible.
+\end{lemma}
+
+\subsubsection{Universal Composability (UC) Framework}\label{sec:uc}
+
+In the universal composability (UC) framework~\cite{FOCS:Canetti01}, the security requirements of a protocol are defined via an \emph{ideal functionality} which is executed by a trusted party. To prove that a protocol \emph{UC-realizes} a given ideal functionality, we show that the execution of this protocol (in the real or hybrid world) can be \emph{emulated} in the ideal world, where in both worlds there is an additional adversary $\env$ (the environment) which models arbitrary concurrent protocol executions. Specifically, we show that for any adversary $\adv$ attacking the protocol execution in the real world (by controlling communication channels and corrupting parties involved in the protocol execution), there exists an adversary $\Sim$ (the simulator) in the ideal world who can produce a protocol execution which no environment $\env$ can distinguish from the real-world execution.
+
+Below we describe the UC framework as it is presented in \cite{EPRINT:CLOS02}. 
+All parties are represented as probabilistic interactive Turing machines (ITMs) with input, output, and ingoing/outgoing communication tapes. For simplicity, we assume that all communication is authenticated, so an adversary can only delay but not forge or modify messages from parties involved in the protocol. Therefore, the order of message delivery is also not guaranteed (asynchronous communication). We consider a PPT malicious, adaptive adversary who can corrupt or tamper with parties at any point during the protocol execution.
+%(modeled in the ideal world via the interfaces in \Cref{fig:FSign3}).
+
+The execution in both worlds consists of a series of sequential party activations. Only one party can be activated at a time (by writing a message on its input tape). In the real world, the execution of a protocol $\Pi$ occurs among parties $P_1, \dots, P_n$ with adversary $\adv$ and environment $\env$. In the ideal world, interaction takes place between dummy parties $\tilde{P}_1, \dots, \tilde{P}_n$ communicating with the ideal functionality $\F$, with the adversary (simulator) $\Sim$ and environment $\env$. Every copy of $\F$ is identified by a unique session identifier $\texttt{sid}$. 
+% The environment $\env$ can read all parties' output tapes and write to any party's input tape, including the adversary $\adv$ or $\Sim$. $\adv$ can read the outgoing communication tapes of all parties $P_i$ and \emph{deliver} messages between parties by writing them on the corresponding incoming communication tape (this models the asynchronous but authenticated communication). $\adv$ can also \emph{corrupt} any party $P_i$, and $\env$ will be notified. In the ideal world, the dummy parties simply copy any input they receive to their outgoing communication tape. $\Sim$ interacts primarily with the ideal functionality $\F$ in several ways: it can \emph{read} the public headers of any messages on its incoming and and outgoing communication tapes, \emph{write} on $\F$'s incoming communication tape, or \emph{deliver} messages from $\F$ to a dummy party or vice versa. It can also \emph{corrupt} any dummy party $\tilde{P}_i$, and $\env$ and $\F$ will be notified.
+
+In both the real and ideal worlds, the environment is activated first and activates either the adversary ($\adv$ resp. $\Sim$) or an uncorrupted (dummy) party by writing on its input tape. If $\adv$ (resp. $\Sim$) is activated, it can take an action or return control to $\env$. After a (dummy) party (or $\F$) is activated, control returns to $\env$. The protocol execution ends when $\env$ completes an activation without writing on the input tape of another party.
+
+We denote with $\real_{\Pi,\adv,\env}(\secpar,x)$ the random variable describing the output of the real-world execution of $\Pi$ with security parameter $\secpar$ and input $x$ in the presence of adversary $\adv$ and environment $\env$. We write the corresponding distribution ensemble as $\{ \real_{\Pi,\adv,\env}(\secpar, x) \}_{\secpar \in \mathbb{N}, x \in \{0,1\}^*}$. The output of the ideal-world interaction with ideal functionality $\F$, adversary (simulator) $\Sim$, and environment $\env$ is represented by the random variable $\ideal_{\F,\Sim,\env}(\secpar, x)$ and corresponding distribution ensemble $\{ \ideal_{\F,\Sim,\env}(\secpar, x) \}_{\secpar \in \mathbb{N}, x \in \{0,1\}^*}$.
+
+The actions each party can take are summarized below:
+\begin{itemize}
+   \item Environment $\env$: \textbf{read} output tapes of the adversary ($\adv$ or $\Sim$) and any uncorrupted (dummy) parties; then \textbf{write} on the input tape of one party (the adversary $\adv$ or $\Sim$ or any uncorrupted (dummy) parties).
+   \item Adversary $\adv$: \textbf{read} its own tapes and the outgoing communication tapes of all parties; then \textbf{deliver} a pending message to party by writing it on the recipient's ingoing communication tape \emph{or} \textbf{corrupt} a party (which becomes inactive: its tapes are given to $\adv$ and $\adv$ controls its actions from this point on, and $\env$ is notified of the corruption).
+   \item Real-world party $P_i$: only follows its code (potentially writing to its output tape or sending messages via its outgoing communication tape).
+   \item Dummy party $\tilde{P}_i$: acts only as a simple relay with the ideal functionality $\F$, copying inputs from its input tape to its outgoing communication tape (to $\F$) and any messages received on its ingoing communication tape (from $\F$) to its output tape.
+   \item Adversary $\Sim$: \textbf{read} its own input tape and the public headers (see below) of the messages on $\F$'s and dummy parties' outgoing communication tapes; then \textbf{deliver} a message to $\F$ from a dummy party or vice versa by copying it from the sender's outgoing communication tape to the recipient's incoming communication tape \emph{or} \textbf{send} its own message to $\F$ by writing on the latter's incoming communication tape \emph{or} \textbf{corrupt} a dummy party (which becomes inactive: its tapes are given to $\Sim$ and $\Sim$ controls its actions from this point on, and $\env$ and $\F$ are notified of the corruption).
+   \item Ideal functionality $\F$: \textbf{read} incoming communication tape; then \textbf{send} any messages specified by its definition to the dummy parties and/or adversary $\Sim$ by writing to its outgoing communication tape.
+\end{itemize}
+
+\begin{definition}
+    We say a protocol $\Pi$ \emph{UC-realizes} an ideal functionality $\F$ if for any PPT adversary $\adv$, there exists a simulator $\Sim$ such that for any environment $\env$, the distribution ensembles $\{ \real_{\Pi,\adv,\env}(\secpar, x) \}_{\secpar \in \mathbb{N}, x \in \bin^*}$ and $\{ \ideal_{\F,\Sim,\env}(\secpar,\allowbreak x) \}_{\secpar \in \mathbb{N},x \in \bin^*}$ are computationally indistinguishable.
+\end{definition}
