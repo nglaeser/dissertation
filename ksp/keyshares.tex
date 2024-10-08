@@ -1,4 +1,4 @@
-\subsection{Malleable Encryption for eXponents (\mex)}\label{sec:mex}
+\section{Malleable Encryption for eXponents (\mex)}\label{sec:mex}
 
 As explained above, the core idea of our construction is for each hot party to store an encryption of the institution's signing key share $\sk_i$, with the corresponding decryption key kept on the cold storage.
 That is, each institution will generate an encryption key pair $(\ek_i, \dk_i)$ and store the hot key share $\sk_i^\hot := \enc(\ek_i, \sk_i)$ in the hot storage and $\sk_i^\cold := \dk_i$ in the cold storage.
@@ -39,7 +39,7 @@ Given a ciphertext $ct \in \GG \times \ZZ_p$ and a shift $\delta \in \ZZ_p$, par
 \end{itemize}
 \end{construction}
 
-\subsubsection{Additive Secret Sharing from MEX}
+\subsection{Additive Secret Sharing from MEX}
 
 The $\enc$ algorithm in \Cref{con:enc} takes an explicit randomness input $r$. In the context of our wallet construction, encryption will take place at the same time as signing key generation, and instead of sampling fresh randomness $r \in \ZZ_p$ for each hot party's ciphertext (hot key share), we will sample a single value $r$. The signing key-pair is set to $(\vk, \sk) := (g^r, r)$.\footnote{This means we can leave out the redundant first element, so each ciphertext will consist of a single group element.} The result is that each party $P_i^\hot$'s ciphertext uses the mask $\lhlhash(\ek_i^{\sk}) = \lhlhash(\vk^{\dk_i})$, which allows the corresponding cold party $P_i^\cold$ to decrypt using only a client's verification key $\vk$ and without receiving or storing any additional per-client randomness.
 % Like ElGamal encryption, our construction will mask the message $m$ with an element derived from the encryption key $\ek$. However, instead of sampling fresh randomness $\rho \sample \ZZ_p$ and using the mask $\ek^\rho$, we use a value derived from $\vk = g^{\sk}$ and $\ek = g^{\dk}$, namely $\ek^{\sk} = \vk^{\dk}$ (this can be viewed as a sort of Diffie-Hellman key exchange). 

@@ -1,4 +1,4 @@
-\subsection{Constructions}\label{sec:naysayer_apps}
+\section{Constructions}\label{sec:naysayer_apps}
 
 Our first construction (\Cref{sec:merkle_naysayer}) is a concrete example of the generic naysayer construction from \Cref{thm:naysayer}, applied to Merkle trees. 
 We then highlight three naysayer proof constructions which take advantage of repetition in the verification procedure to achieve better naysayer performance: the FRI polynomial commitment scheme (\Cref{sec:fri_naysayer}) and two post-quantum signature schemes (\Cref{sec:pqsig_naysayer}). 
@@ -15,9 +15,7 @@ Finally, in \Cref{sec:eval} we
 % summarize the succinctness of each naysayer proof compared to that of the original proof system.
 estimate the performance of each naysayer proof system compared to that of the original proof system.
 
-\subsubsection{Merkle Commitments}\label{sec:merkle_naysayer}
-\input{naysayer/figs/merkle-diagram}
-
+\subsection{Merkle Commitments}\label{sec:merkle_naysayer}
 \begin{table}[h]
    \centering
     \setlength{\belowbottomsep}{6pt}
@@ -39,13 +37,15 @@ estimate the performance of each naysayer proof system compared to that of the o
     \label{tab:merkle_asym}
    \end{table}
 
+\input{naysayer/figs/merkle-diagram}
+
 Merkle trees~\cite{C:Merkle87} and their variants are ubiquitous in modern systems, including Ethereum's state storage~\cite{ethereum_trie}. A Merkle tree can be used to commit to a vector $\vec{v}$ of elements as shown in \Cref{fig:merkle-diagram}, with the root $h$ acting as a commitment to $\vec{v}$. The party who created the tree can prove the inclusion of some element $v_i$ at position $i$ in the tree by providing the corresponding copath. 
 
 For example, to open the leaf at position 2, a prover provides its value $v_2$ and an opening proof $\pi = (h_{011}, h_{00}, h_{1})$ consisting of the copath from the leaf $v_2$ to the root $h$. The proof $\pi$ is checked by using its contents to recompute the root $h'$ starting with $v_2$, then checking that $h = h'$. This involves recomputing the nodes along the path from the leaf to the root (the gray nodes in the figure). These nodes can be seen as a ``verification trace'' for the proof $\pi$.
     
 In the context of a naysayer proof system, the prover provides $\pi$ along with the verfication trace $\aux = (h_{010}, h_{01}, h_{0})$. A naysayer can point out an error at a particular point of the trace by submitting the incorrect index of $\aux$ (e.g., $\pi_\nay = 1$ to indicate $h_{01}$). The naysayer verifier checks $\pi_\nay$ by computing a single hash using $\pi$ and oracle access to $\aux$, e.g., checking $H(h_{010}, h_{011}) \stackrel{?}{=} h_{01}$, where $h_{010}, h_{01} \in \aux$ and $h_{011} \in \pi$. This is the generic construction from \Cref{thm:naysayer}.
 
-\subsubsection{FRI}\label{sec:fri_naysayer}
+\subsection{FRI}\label{sec:fri_naysayer}
 
 \begin{table}[h]
    \centering
@@ -83,7 +83,7 @@ $\rho = 2^{-3}$, $q=91$, $\delta=9$, the size of a vanilla FRI opening proof (i.
 
 % \noemi{This note by Justin helped me find the above numbers in the Hab\"ock eprint: \url{https://people.cs.georgetown.edu/jthaler/Ligero-FRI-proof-size.pdf}}
 
-\subsubsection{Post-quantum Signature Schemes}\label{sec:pqsig_naysayer}
+\subsection{Post-quantum Signature Schemes}\label{sec:pqsig_naysayer}
 
 \begin{table}[h]
    \centering
@@ -131,7 +131,7 @@ Overall, $\pi_\nay$ is a tuple $(a, b, i, j)$ indicating a clause $a \in [2]$ of
 
 \paragraph{SPHINCS+~\cite{CCS:BHKNRS19}.} The signature verifier in SPHINCS+ checks several Merkle authentication proofs, requiring hundreds or even thousands of hash evaluations. An efficient naysayer proof can be easily devised akin to the Merkle naysayer described in~\Cref{sec:merkle_naysayer}. Given a verification trace, the naysayer prover simply points to the hash evaluation in one of the Merkle-trees where the signature verification fails. 
 
-\subsubsection{Verifiable Shuffles}\label{sec:vshuffle_naysayer}
+\subsection{Verifiable Shuffles}\label{sec:vshuffle_naysayer}
 
 \begin{table}[h]
    \centering
@@ -170,8 +170,8 @@ Suppose a party knows that for some $j\in[n]$, the prover did not correctly incl
 \]
 where $\Lang_{DH}$ is the language of Diffie-Hellman tuples\footnote{Membership in $\Lang_{DH}$ can be shown via a proof of knowledge of discrete logarithm equality~\cite{C:ChaPed92} consisting of 2 group elements and 1 field element which can be verified with 4 exponentiations and 2 multiplications in the group.}. To produce such a proof, however, the naysayer must know the discrete logarithm $\witness_j$. Unlike our previous examples, which were public naysayer proofs, this is an example of a private $\naysay$ algorithm using $\td_\nay := \witness_j$. The naysayer proof is $\pi_\nay := (j, \pk_j', \pi_{DH})$. The Diffie-Hellman proof can be checked in constant time and, with the right data structure for the permuted list (e.g., a hash table), so can the list non-membership. This, $\pi_\nay$ is a $\bigO{\log{n}}$-sized naysayer proof with $\bigO{1}$-verification, yielding in exponential savings compared to verifying the original Bayer-Groth shuffle proof.
 
-% \subsubsection{Evaluation}
-\subsubsection{Summary}
+% \subsection{Evaluation}
+\subsection{Summary}
 
 % \input{naysayer/apps-table}
 

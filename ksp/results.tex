@@ -1,4 +1,4 @@
-\subsection{Our Results}
+\section{Our Results}
 
 We introduce a new type of wallet which combines offline components with the threshold wallet approach to achieve stronger security guarantees. In our model, each threshold signer consists of two parties: an online \emph{hot} storage and an offline, resource-constrained \emph{cold} storage, e.g., a secure enclave, trusted execution environment, or perhaps something even more sophisticated.  Producing a threshold signature on any message should require the involvement of both the hot and cold parties while minimizing the computation and communication on the part of the cold party. Wallet owners should also be able to request proofs from any party, hot or cold, that it retains its share of the secret key. Finally, it should be possible to periodically refresh the shares of the online parties to thwart an adversary who slowly and incrementally corrupts parties in the system. We describe each of our contributions in more detail below.
 

@@ -1,4 +1,4 @@
-\subsection{Storage Considerations}\label{sec:naysayer_storage}
+\section{Storage Considerations}\label{sec:naysayer_storage}
 
 So far, we have assumed that the naysayer verifier can read the instance $x$, the original proof $\pi$ and $\aux$, and the naysayer proof $\pi_\nay$ entirely. A naysayer proof system thus requires increased storage (long-term for $\aux$, and temporary for $\pi_{\nay}$ only in case of a challenge). However, the verifier only needs to compute $\vrfynay$ instead of $\vrfy$. A useful naysayer proof system should therefore compensate for the increased storage by considerably reducing verification costs.
 

@@ -1,4 +1,4 @@
-\subsection{Formalizing Time-Locked Voting and Auction Protocols}\label{sec:syntax}
+\section{Formalizing Time-Locked Voting and Auction Protocols}\label{sec:syntax}
 
 We introduce a generic syntax for a time-locked voting/auction protocol. Any such protocol is defined for a base \emph{scoring function} $\Score: \X^n \to \Y$ (e.g., second-price auction, range voting), which takes as input $n$ submissions (bids/ballots) $s_1, \dots, s_n$ in the submission domain $\X$ and computes the election/auction result $\Score(s_1, \dots, s_n) \in \Y$. It is useful to break down the scoring function into the ``tally'' or aggregation function $\tally: \X^n \to \X'$ and the finalization function $\final: \X' \to \Y$, i.e., $\Score = \final \circ \tally$.
 For example, in first-past-the-post voting, the tally function $t$ is addition, and the finalization function $f$ is $\argmax$ over the final tally/bids.

@@ -1,4 +1,4 @@
-\subsection{The Cicada Framework}
+\section{The Cicada Framework}
 
 We present Cicada, our framework for non-interactive private auctions/elections, in \Cref{fig:cicada}. Cicada can be applied to voting and auction schemes where the scoring function $\Score = f \circ t$ has a linear tally function $t$. The framework uses a linear HTLP (\Cref{sec:tlp}), vector packing scheme (\Cref{sec:packing}), and matching NIZK (\Cref{sec:sigmas}) to ensure correctness of submissions by proving both the well-formedness of the puzzle and the solution's membership in $\X$.
 
@@ -20,7 +20,7 @@ Intuitively, submission privacy follows from the security of the HTLP and zero-k
 As we will see next, this captures many common schemes such as cumulative voting and sealed-bid auctions. 
 Cicada introduces a crucial design choice via the packing parameter $\ell\in[m]$, which defines a storage-computation trade-off that we detail in~\Cref{sec:implementation}. %The on-chain footprint of a protocol is minimized by using a ballot correctness proof system $\sf NIZK$ with low verification cost. % this seems kind of obvious? And if anything it belongs in the implementation section
 
-% \subsection{Application to voting schemes}\label{sec:voting}
+% \section{Application to voting schemes}\label{sec:voting}
 
 % \todo{revisit this} The main reason we are interested in building protocols for cardinal voting schemes is that they allow voters to express more fine-grained preferences. Put differently, they bypass Arrow's impossibility theorem~\cite{arrow1950difficulty}, i.e., cardinal voting schemes satisfy non-dictatorship, unrestricted domain, independence of irrelevant alternatives and Pareto efficient. 
 

@@ -1,7 +1,7 @@
-\subsection{Extensions}\label{sec:cicada_extensions}
+\section{Extensions}\label{sec:cicada_extensions}
 We introduce extensions to the Cicada framework that may be useful in future applications.
 
-\subsubsection{Everlasting ballot privacy for HTLP-based protocols}\label{sec:everlasting_ballot_privacy}
+\subsection{Everlasting ballot privacy for HTLP-based protocols}\label{sec:everlasting_ballot_privacy}
 
 \input{cicada/protocols/batching}
 
@@ -56,14 +56,14 @@ This idea opens up a new design space for the MPC protocol used for batching, su
 
 % For simplicity, consider a protocol in which each user submits a single HTLP $Z_{\sf userID} := (Z_{\sf userID}^{(0)}, Z_{\sf userID}^{(1)})$ to the contract. With this modification, the user would instead submit only the second component $Z_{\sf userID}^{(1)}$ along with some masked version of the first component. \noemi{unclear how best to avoid leaking $\Delta r$ when the before/after of the update is known in the clear (e.g., if the accumulated vote HTLP is currently $g^{r_t}$, and after your update it's $g^{r_{t+1}}$, your update is easily deducible as $g^{r_{t+1}}/g^{r_{t}}$)... solutions could be batching updates (parties incentivized to batch anyway to reduce fees) or distributing shares of 1 at some point and weighting contribution by share.}
 
-% \subsection{Adding Coercion Resistance}\label{sec:coercion_resistance}
+% \section{Adding Coercion Resistance}\label{sec:coercion_resistance}
 % In certain applications, it is desirable to provide coercion-resistance~\cite{juels2005coercion} for the voters.
 % \istvan{todo: for each user the contract stores their latest ballot. They can add the ``negative'' of their previous ballot to the tally. And now the user just needs to submit their new ballot which is subsequently added to the tally. The cost of this approach is that now all the votes need to be stored in the storage which might add $\approx 200,000$ gas more per ballot for the first submission.}
 % Another potential solution might be to add the ballot randomizers to an accumulator/zero-knowledge sets.
 
 % \todo{there is an impossibility result (\url{https://hackingdistributed.com/2018/07/02/on-chain-vote-buying/}) that coercion-resistance in the permissionless setting requires trusted hardware (trusted setup)}
 
-\subsubsection{Succinct ballot-correctness proofs}\label{sec:succinct_ballot_correctness}
+\subsection{Succinct ballot-correctness proofs}\label{sec:succinct_ballot_correctness}
 
 Real-world elections often have hundreds of candidates, e.g., Optimism's retroactive public good funding~\cite{retropgf_voterguide}. However, the state-of-the-art ballot correctness proofs~\cite{C:BBCGI23,ACNS:Groth05} for all voting schemes (e.g., FPTP, approval voting, etc.) are linear in the number of candidates, rendering these schemes impractical in the blockchain setting. To counter these issues, we design constant-size ballot correctness proofs with constant verification time at the expense of an added preprocessing phase. The high-level idea is as follows. All correct ballots (e.g., $\{ \pack(s) : s\in\{0,1\}^{m}\}$ in the case of approval voting) are inserted into an accumulator or polynomial commitment (PC)~\cite{AC:KatZavGol10} during a transparent preprocessing phase. When users submit their votes $Z \sample \htlp.\mathsf{Gen}(s)$, they prove in zero-knowledge that $Z$ encodes a correct ballot, i.e., the users show that the solution $s$ of $Z$ had been previously inserted into the accumulator or PC with a succinct (blinded) membership proof~\cite{CCS:ZBKMNS22}.
 % We detail our succinct ballot-correctness proof using the KZG commitment in \Cref{app:succinct}.
@@ -77,10 +77,10 @@ Let us assume that users have established during a preprocessing phase (\Cref{fi
 
 First, given a ballot $Z=(g^r,h^ry^s) \in \tilde{\GG}_1 \times \tilde{\GG}_2$, the user creates an elliptic curve point $Z_1=h^r_1y^s_1 \in \GG_1$ for random generators $h_1,y_1\sample\mathbb{G}_1$ in a pairing-friendly group. Using the discrete logarithm across different groups techniques developed in~\cite{EPRINT:COPZ22}, the user can show that $Z$ and $Z_1$ have the same discrete logarithms $r$ and $s$ with for their bases $h,y\in\mathbb{G},h_1,y_1\in\mathbb{G}_1$, respectively. Now that $Z_1$ and the polynomial commitment are in the same pairing-friendly group $\GG_1$, the user can create a blinded KZG opening proof~\cite{CCS:ZBKMNS22} to prove ballot correctness. Specifically, the proof $\pi$ shows that the value $s$ in $Z_1$ matches an evaluation of the polynomial $f$ committed by $\mathsf{com}$ at some (hidden) point $j$, i.e., $f(j)=s$. Note that the verifier only sees constant-size commitments of $f,j$, and $s$. Since the blinded KZG proof $\pi$ is also constant-size, this strategy yields the first succinct ballot-correctness proofs for many common voting schemes, e.g., approval and range voting.
 
-\subsubsection{Coercion-Resistance}\label{sec:extension_coercion_resistance}
+\subsection{Coercion-Resistance}\label{sec:extension_coercion_resistance}
 Lastly, we briefly outline how one could add coercion-resistance~\cite{WPES:JueCatJak05} to our framework. In the e-voting literature, there are two main pathways to obtaining coercion-resistance: receipt-freeness or allowing unlikable revotes. Receipt-freeness seems challenging to achieve in the blockchain context, and we leave it to future work.  Therefore, we follow the revoting paradigm akin to Lueks et al. ~\cite{USENIX:LueQueTro20}. One can allow indistinguishable revotes as follows. We could store our ballots in a zero-knowledge set (e.g., Semaphore is a readily available implementation of this concept for Ethereum~\cite{semaphore}). Additionally, we would need to store a Merkle tree of nullifiers on-chain containing the ballots that are revoked due to revoting. Whenever users want to revote, they could prove in zero-knowledge that they revoke a previous ballot that they inserted in the zero-knowledge set while they reveal the accompanying nullifier and insert it into the nullifier tree. We leave it to future work to flesh out the technical details and implementation of such an extension.
 
-\subsubsection{Bayesian truth serum}\label{sec:bayesian_truth}
+\subsection{Bayesian truth serum}\label{sec:bayesian_truth}
 
 Bayesian truth serum~\cite{Prelec04} is a method for eliciting truthful subjective answers where objective truth does not exist or is not knowable. The core of the idea is to reward answers that are ``surprisingly common'' by leveraging respondents' own predictions of what will be common. Thus, for a question with many (mutually exclusive) potential answers, the score of user $i$ responding $\vec{x}_i := (x_{i1}, \dots, x_{im})$ and $\vec{y}_i := (y_{i1}, \dots, y_{im})$ is calculated as
 %
@@ -144,7 +144,7 @@ The aggregation algorithm $\Aggr((\Z_{\tallyx}^{\sf tally}, \Z_{\tallyy}^{\sf ta
     \end{enumerate}
 \end{enumerate}
 
-\subsubsection{A trusted setup protocol for the CJSS scheme}\label{sec:seq_mpc_tlp}
+\subsection{A trusted setup protocol for the CJSS scheme}\label{sec:seq_mpc_tlp}
 
 Chvojka, Jager, Slamanig, and Striecks~\cite{ESORICS:CJSS21} describe how to combine a public-key encryption scheme with a TLP to obtain a private voting or auction protocols which, unlike the HTLP-based approach suggested by~\cite{C:MalThy19}, is ``solve one, get many for free''. The high-level idea of the protocol is to encrypt each user's bid with a common public key whose corresponding secret key is inserted into a TLP (see~\Cref{fig:solve_one_protocol}). Therefore, none of the bids can be decrypted until the corresponding encryption secret key is obtained by solving the TLP. One drawback of this scheme, however, is that it requires an additional trusted setup procedure to create a TLP containing the secret key corresponding to the encryption public key used. Furthermore, unlike the HTLP approach, the setup cannot be reused and must be re-run for every protocol invocation.
 

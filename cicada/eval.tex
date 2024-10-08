@@ -1,4 +1,4 @@
-\subsection{Implementation}\label{sec:implementation} 
+\section{Implementation}\label{sec:implementation} 
 
 % Assuming the off-chain solver has $2^{\tau}$ computational time \noemi{what's a proper unit for this?} on the discrete logarithm computation (e.g., using Pollard's rho algorithm~\cite{pollard1978monte}), the exponential ElGamal HTLP is $(n+1)^m\leq 2^{2\tau}$. Otherwise, the Paillier HTLP is faster. 
 % It is also necessary that $(nw+1)^m< \sizeof{\gp}$ to preserve the correctness of our schemes.
@@ -39,7 +39,7 @@ To illustrate two extremes of the packing spectrum, we implement two flavors of 
 The second approach applies $b$ aggregate HTLPs (i.e., $\ell = 1$): Each bidder $i$ submits $b$ HTLPs $\{Z_{ij}\}_{j \in [b]}$ and uses the same proof system as in binary voting to prove their well-formedness, i.e., the user inserted for each bit of the bid $0$ or $1$. The coordinator adds $2^i \cdot Z_{ij}$ to each corresponding aggregate HTLP $Z_j$.%\footnote{We implement\noemi{check this} an optimization in which the bidders perform the scalar multiplication on behalf of the coordinator, proving instead $\forall j\in[b]$, $(u=g^r\land v=h^r)\lor(u=g^r\land vy^{-2^i}=h^r)$.\noemi{not sure if it's easy to discuss at which $M > 2$ this stops being more efficient than having the contract do the multiplication?}\istvan{doesn't the contract need to do the multiplication anyways because of security reasons? You cannot trust the user computing $y^{-2^i}$.}}\istvan{see signal conversation for more discussion on this.}
 % We also describe the proof systems used for the implemented schemes in the full version.
 
-% \subsection{Empirical Performance Evaluation}\label{sec:empirical_performance}
+% \section{Empirical Performance Evaluation}\label{sec:empirical_performance}
 
 \begin{table*}[tb!]
     \makebox[\linewidth]{

@@ -1,9 +1,9 @@
-\subsection{Additional Preliminaries}
+\section{Additional Preliminaries}
 
 \paragraph{Special Notation} We will use $n$ as the number of users, $m$ as the number of candidates, and $w$ as the maximum weight to be allocated to any one candidate in a ballot/bid ($n,m,w \in \mathbb{N}$). For simplicity and without loss of generality, we assume the user identities are unique integers $i \in [n]$.
 We generally use $i \in [n]$ to index users and $j \in [m]$ for candidates.
 
-\subsubsection{Time-Lock Puzzles}\label{sec:tlp}
+\subsection{Time-Lock Puzzles}\label{sec:tlp}
 
 A time-lock puzzle (TLP)~\cite{RivShaWag96} consists of three efficient algorithms $\mathsf{TLP} = (\mathsf{Setup}, \mathsf{Gen}, \mathsf{Solve})$ allowing a party to ``encrypt'' a message to the future. To recover the solution, one needs to perform a computation that is believed to be inherently sequential, with a parameterizable number of steps.
 
@@ -45,7 +45,7 @@ should contain the expected solution, namely $C(s_1, \dots, s_m)$, where $s_i \g
 % removed the below because we're not using this shorthand anymore
 % Later in the paper, we may apply $\sf Eval$ to \emph{vectors} of puzzles of common size $k$ to indicate element-wise application of the function, e.g., $\{Z_1'', \dots, Z_k''\} \gets \htlp.{\sf Eval}(\pparam, f, \{Z_1, \dots, Z_k\}, \{Z_1', \dots, Z_k'\})$ means $Z_i'' \gets \htlp.{\sf Eval}(\pparam, C, Z_i, Z_i')$ for all $i \in [k]$.
 
-\subsubsection{HTLP Constructions}\label{app:htlp_constructions}
+\subsection{HTLP Constructions}\label{app:htlp_constructions}
 
 Malavolta and Thyagarajan~\cite{C:MalThy19} give two HTLP constructions with linear and multiplicative homomorphisms, respectively. They require $N$ to be a \emph{strong} semiprime, i.e., $N = p \cdot q$ such that $p = 2p' + 1$ and $q = 2q' + 1$ where $p', q'$ are also prime. The linearly-homomorphic HTLP is based on Paillier encryption~\cite{EC:Paillier99}, while the multiplicative homomorphism is achieved by working over the subgroup $\JJ_N \subseteq \ZZ_N^*$ of elements with Jacobi symbol $+1$. 
 We recall their constructions below.
@@ -136,7 +136,7 @@ It is easy to see that $\htlp.\Open(\pparam,\allowbreak \htlp.{\sf Gen}(\pparam,
 % where $\JJ_N$ is the subgroup of $\subseteq \ZZ_N^*$ of elements with Jacobi symbol +1.
 % To recover $s$, a solver must recompute $h^r = (g^r)^{2^\Ttime}$, which is believed to be an inherently sequential computation in a group of unknown order.
 
-\subsubsection{Vector Packing}\label{sec:packing}
+\subsection{Vector Packing}\label{sec:packing}
 
 \begin{definition}[Vector packing]\label{def:packing}
 A setup algorithm $\PSetup$ and pair of efficiently computable bijective functions $(\pack,\unpack)$ is called a \emph{packing scheme} and has the following syntax:

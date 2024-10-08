@@ -1,6 +1,6 @@
-\subsection{Proofs of Remembrance}\label{sec:hotproofs}
+\section{Proofs of Remembrance}\label{sec:hotproofs}
 
-% \subsection{Zero-knowledge proofs}\label{sec:zkp}
+% \section{Zero-knowledge proofs}\label{sec:zkp}
 
 We will use non-replayable zero-knowledge proofs of knowledge (ZKPoKs) for two languages. We refer the reader to \cite{Thaler23} for the definition of a ZKPoK. The PoKs for both our hot and cold parties are Sigma protocols, made non-interactive via the Fiat-Shamir transform~\cite{C:FiaSha86}. Non-replayability is enforced by including some unpredictable timestamp (e.g., current block number of some blockchain) in the payload of the Fiat-Shamir hash.
 
@@ -25,11 +25,11 @@ We begin with a strawman example where the hot storage shares are unencrypted an
 
 % In our construction, we will use the additive homomorphism of the KZG polynomial commitment scheme to prove well-formedness of parties' keyshares.
 
-% \subsection{Notation}
+% \section{Notation}
 
 % We use $\com_t, \pi_{\timeT}$ to denote the commitment and proof for a polynomial $f_{\timeT}$ representing parties' key shares (or $\tilde{f}_{\timeT}$ for encrypted key shares) at time step $\timeT$. We use $\com_{\timeT}', \pi_{\timeT}'$ for the commitment and proof of an update polynomial $z_{\timeT}$ (where the letter ``z'' is chosen since these polynomials encode shares of zero) used to update shares from time step $\timeT$ to $\timeT+1$. When a second index is present (e.g., $\pi_{\timeT,i}$), it is used to indicate a particular evaluation point (usually corresponding to a party). We will use an overline (e.g., $\overline{\pi}_{\timeT,i}$) to indicate that a value is blinded.
 
-\subsubsection{PoK of (Unencrypted) Key Share}\label{subsec:unenc_pok}
+\subsection{PoK of (Unencrypted) Key Share}\label{subsec:unenc_pok}
 
 Let $\crs$ be a degree-$(t-1)$ KZG CRS. At time $\timeT=0$, the client $C$ picks a random degree-$(t-1)$ polynomial $f_0(X) \in \ZZ_p[X]$ (its evaluation at 0 will be the signing key $\sk$) and publishes $\com_0 \gets \mathsf{KZG}.\Commit(\crs, f_0(X))$. 
 Each hot storage $P_i^\hot$ receives an opening $f_0(i)$ (i.e., the key share $\sk_i$) and evaluation proof $\pi_{0,i}$. 
@@ -52,7 +52,7 @@ The final ZKPoK is defined as $(\com_{\sf ped}, \pi_{\sf ped}, \overline{\pi}_{\
 \]
 (where the $\change{\text{boxed}}$ parts are changes to the original KZG verification check due to the blinding).
 
-\subsubsection{PoK of Encrypted Key Share}\label{subsec:enc_pok}
+\subsection{PoK of Encrypted Key Share}\label{subsec:enc_pok}
 
 Next, we modify the previous construction to accommodate an \emph{encrypted} initial key share $\hx_i := \lhlhash(\ek_{i,1}^x, \ek_{i,2}^x) + x_i$, where $x = f_0(0)$ and $x_i = f_0(i)$. After having computed every party's plaintext share $x_i$ (as above), the client $C$ will compute each encrypted key share $\hx_i$ and interpolate the degree-$(n-1)$ polynomial $\tilde{f}_0(X)$ where $\tilde{f}_0(i) = \hx_i$ for $i \in [n]$. 
 % \noemi{We need to make a note that we assume $\hx_i$ is computed correctly since $C$/$\Fs$ is assumed to be honest. That's why we don't prove the correctness of $\hx_i$ itself, only that it equals $\tilde{f}_0(i)$ where $\tilde{f}(X)$ is assumed to be computed correctly.}

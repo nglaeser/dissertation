@@ -1,4 +1,4 @@
-\subsubsection{Implementation and Evaluation}\label{sec:eval}
+\subsection{Implementation and Evaluation}\label{sec:eval}
 
 We implemented our construction in Rust using the BLS12-381 elliptic curve.\footnote{\url{https://github.com/hyperledger-labs/agora-key-share-proofs/}}
 Each element in $\GG_1$ is 48 bytes in compressed form, $\GG_2$ is 96 bytes, and $\ZZ_p$ is 32 bytes. Thus the sizes of $\vk$ and $\ek_i$ are both 96 bytes. The cold and hot shares $\dk_i$ and $\hx_i$, as well as the share refresh information $\delta_i$, are all 32 bytes. The (partial) signatures $\sigma_i^\hot, \sigma_i^\cold$, and $\sigma_i$, as well as the commitment $\com_\timeT$, are 48 bytes. %Exponentiations in $\GG_1$ and $\GG_2$ on our machine take \todo{} milliseconds, respectively.

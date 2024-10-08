@@ -1,4 +1,4 @@
-\subsection{Model}\label{sec:naysayer_model}
+\section{Model}\label{sec:naysayer_model}
 
 There are three entities in a naysayer proof system. We assume that all parties can read and write to a public bulletin board (e.g., a blockchain). Fix a function $f: \mathcal{X} \times \mathcal{W} \to \mathcal{Y}$ and let $\Lang_f$ be the language $\{(x, y): \exists \witness \suchthat y = f(x, \witness)\}$. Let $\Rel_f = \{((x, y), \witness)\}$ be the corresponding relation. We assume $f,x$ are known by all parties. When $f : \mathcal{Y} \times \mathcal{W} \to \mathcal{Y}$ is a state transition function with $y' = f(y, w)$, this corresponds to the rollup scenarios described above.
 \begin{description}

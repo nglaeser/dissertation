@@ -12,6 +12,9 @@ proposal-Noel/
 *.out
 *.synctex.gz
 *.toc
+# minitoc
+*.maf
+*.mtc*
 
 # MacOS
 .DS_Store

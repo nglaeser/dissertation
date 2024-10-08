@@ -1,6 +1,6 @@
-\subsection{Additional Preliminaries}
+\section{Additional Preliminaries}
 
-\subsubsection{Leftover Hash Lemma}\label{sec:lhl}  
+\subsection{Leftover Hash Lemma}\label{sec:lhl}  
 
 We use the presentation of the leftover hash lemma (LHL)~\cite{FOCS:ImpZuc89} from\break \cite{EC:AMPR19}.\footnote{We specifically use the improved version from the Journal of Cryptology version of this paper.}  Let $\left(\mathcal{X},\oplus\right)$ be a finite group of size $\left|\mathcal{X}\right|$, and let $n$ be a positive integer. For any fixed $2n$-vector of group elements $\mathbf{x} = \left\lbrace x_{j,b} \right\rbrace_{j\in \left[ n \right],b\in\left\lbrace 0,1 \right\rbrace} \in\mathcal{X}^{2n}$, denote by $\mathcal{S}_{\mathbf{x}}$ the following distribution:
 \begin{equation}
@@ -17,7 +17,7 @@ Also, let $\mathcal{U}_{\mathcal{X}}$ denote the uniform distribution over $\mat
 	In particular, for any $n > \log(\sizeof{\mathcal{X}}) + \omega(\log(\lambda))$, if $\mathbf{x}$ is sampled uniformly then with overwhelming probability the statistical distance between two distributions is negligible.
 \end{lemma}
 
-\subsubsection{Universal Composability (UC) Framework}\label{sec:uc}
+\subsection{Universal Composability (UC) Framework}\label{sec:uc}
 
 In the universal composability (UC) framework~\cite{FOCS:Canetti01}, the security requirements of a protocol are defined via an \emph{ideal functionality} which is executed by a trusted party. To prove that a protocol \emph{UC-realizes} a given ideal functionality, we show that the execution of this protocol (in the real or hybrid world) can be \emph{emulated} in the ideal world, where in both worlds there is an additional adversary $\env$ (the environment) which models arbitrary concurrent protocol executions. Specifically, we show that for any adversary $\adv$ attacking the protocol execution in the real world (by controlling communication channels and corrupting parties involved in the protocol execution), there exists an adversary $\Sim$ (the simulator) in the ideal world who can produce a protocol execution which no environment $\env$ can distinguish from the real-world execution.
 

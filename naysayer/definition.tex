@@ -1,4 +1,4 @@
-\subsection{Formal Definitions}\label{sec:naysayer_def}
+\section{Formal Definitions}\label{sec:naysayer_def}
 
 Next, we introduce a formal definition and syntax for naysayer proofs. A naysayer proof system $\Pi_{\nay}$ can be seen as a ``wrapper'' around an underlying proof system $\Pi$. For example, $\Pi_{\sf nay}$ defines a proving algorithm $\Pi_{\nay}.\prove$ which uses the original prover $\Pi.\prove$ as a subroutine.
 
@@ -52,7 +52,7 @@ Moreover, if $\td_\nay = \perp$, we say $\Pi_\nay$ is a \emph{public} naysayer p
         \end{array}
     \right] \leq\negl[\naysecpar].\footnotemark
 \end{equation*}
-\footnotetext{If we assume $\aux$ is computed correctly, the second line of the precondition can be simplified to see that $\Pi_\nay$ is a sound proof system for the language $\Lang_\nay = \{(x,\pi) : x \notin \Lang ~\lor~ \Pi.\vrfy(\crs, x, \pi) \neq 1 \}$.}
+\footnotetext{If we assume $\aux$ is computed correctly, the second line of the precondition can be simplified to see that $\Pi_\nay$ is required to be a sound proof system for the language $\Lang_\nay = \{(x,\pi) : x \notin \Lang ~\lor~ \Pi.\vrfy(\crs, x, \pi) \neq 1 \}$.}
 \end{definition}
 
 Next, we show that every proof system has corresponding naysayer proof system with a logarithmic-sized (in the size of the verification circuit) naysayer proofs and constant verification time (i.e., a succinct naysayer proof system). %We follow the blueprint of~\cite{FOCS:FeiLapSha90}.
