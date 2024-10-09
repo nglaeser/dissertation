@@ -1,0 +1,74 @@
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+
+\usepackage{graphicx} % Required for inserting images
+\usepackage{xcolor}
+\usepackage{dashbox}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta}
+\usetikzlibrary{patterns}
+\usepackage{xspace}
+\usepackage{xurl}
+\usepackage{booktabs,multicol,multirow}
+\usepackage{footnote} % for savenotes
+% separate sequence for symbol footnotes in chapter titles
+\usepackage{manyfoot}
+\DeclareNewFootnote{Ch}
+\renewcommand*{\thefootnoteCh}{\fnsymbol{footnoteCh}}
+\let\oldfootnotemarkCh\footnotemarkCh
+\renewcommand{\footnotemarkCh}{\protect\oldfootnotemarkCh}
+\usepackage{mdframed}
+\usepackage[backref=page]{hyperref}
+\renewcommand*{\backref}[1]{}
+\renewcommand*{\backrefalt}[4]{}
+\hypersetup{
+    breaklinks,
+    bookmarks,
+    colorlinks,
+    % final,
+    linkcolor=blue,
+    filecolor=magenta,
+    urlcolor=blue,
+    citecolor=blue,
+    pdfauthor = {Noemi Glaeser},
+	pdftitle ={Dissertation},
+}
+\usepackage{amsthm}
+\usepackage{amsmath,amsfonts,amssymb}
+\usepackage{wasysym}
+\usepackage{cleveref}
+
+% \usepackage[nottoc,notindex]{tocbibind} % breaks minitoc
+% other options: notlot, notlof
+\usepackage[english]{babel}
+% Change contents title to Table of Contents
+\addto\captionsenglish{% Replace "english" with the language you use
+  \renewcommand{\contentsname}%
+    {Table of contents}%
+}
+\usepackage{minitoc}
+% adjust spacing above minitoc
+% \renewcommand{\mtcgapbeforeheads}{20pt}
+\mtcsetfeature{minitoc}{before}{\vspace{-1cm}}
+\mtcsetfeature{minitoc}{after}{\vspace{1cm}}
+
+\usepackage[resetlabels]{multibib}
+\newcites{This}{Basis of this Dissertation}
+\newcites{Other}{Other Publications by the Author}
+\usepackage[
+    adversary,
+    asymptotics,
+    complexity,
+    keys,
+    lambda,
+    operators,
+    sets
+]{cryptocode}
+\usepackage{hyphenat}
+\hyphenation{inter-active}
+\hyphenation{block-chain}
+
+% Line spacing
+\usepackage{setspace}
+% Toggle for double spaced or not
+\newbool{doublespaced}

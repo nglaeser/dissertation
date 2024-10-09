@@ -2,66 +2,8 @@
 % \documentclass{report}
 % \documentclass{article}
 \documentclass{book}
-% \usepackage[utf8]{inputenc}
-\usepackage[T1]{fontenc}
-\usepackage{graphicx} % Required for inserting images
-\usepackage{xcolor}
-\usepackage{dashbox}
-\usepackage{tikz}
-\usetikzlibrary{arrows.meta}
-\usetikzlibrary{patterns}
-\usepackage{xspace}
-\usepackage{xurl}
-\usepackage{booktabs,multicol,multirow}
-\usepackage{footnote} % for savenotes
-% separate sequence for symbol footnotes in chapter titles
-\usepackage{manyfoot}
-\DeclareNewFootnote{Ch}
-\renewcommand*{\thefootnoteCh}{\fnsymbol{footnoteCh}}
-\let\oldfootnotemarkCh\footnotemarkCh
-\renewcommand{\footnotemarkCh}{\protect\oldfootnotemarkCh}
-\usepackage{mdframed}
-\usepackage[backref=page]{hyperref}
-\renewcommand*{\backref}[1]{}
-\renewcommand*{\backrefalt}[4]{}
-\hypersetup{
-    colorlinks=true,
-    linkcolor=blue,
-    filecolor=magenta,
-    urlcolor=blue,
-    citecolor=blue,
-}
-\usepackage{amsthm}
-\usepackage{amsmath,amsfonts,amssymb}
-\usepackage{wasysym}
-\usepackage{cleveref}
-% \usepackage[nottoc,notlot,notlof]{tocbibind}
-\usepackage{minitoc}
-% adjust spacing above minitoc
-% \renewcommand{\mtcgapbeforeheads}{20pt}
-\mtcsetfeature{minitoc}{before}{\vspace{-1cm}}
-\mtcsetfeature{minitoc}{after}{\vspace{1cm}}
-\usepackage[resetlabels]{multibib}
-\newcites{This}{Basis of this Dissertation}
-\newcites{Other}{Other Publications by the Author}
-\usepackage[
-    adversary,
-    asymptotics,
-    complexity,
-    keys,
-    lambda,
-    operators,
-    sets
-]{cryptocode}
-\usepackage{hyphenat}
-\hyphenation{inter-active}
-\hyphenation{block-chain}
-
+\input{header}
 \input{macros}
-\newcommand{\copied}[1]{\textcolor{red}{[copied] #1}}
-\newcommand{\noemi}[1]{\textcolor{magenta}{Noemi: #1}}
-\newcommand{\todo}[1]{\textcolor{red}{todo: #1}}
-\newcommand{\change}[1]{\ensuremath{\boxed{#1}}}
 
 % \title{Practical Cryptography for Blockchains: Secure Decentralized Protocols with Minimal Trust}
 \title{Practical Cryptography for Blockchains: Secure Protocols with Minimal Trust}
@@ -77,26 +19,24 @@
 
 \begin{document}
 
-\maketitle
-% \begin{abstract}
-% In 2008, Satoshi Nakamoto introduced Bitcoin, the first digital currency without a trusted authority whose security is maintained by a decentralized blockchain. Since then, a plethora of decentralized applications have been proposed utilizing blockchains as a public bulletin board. This growing popularity has put pressure on the ecosystem to prioritize scalability at the expense of trustlessness and decentralization.
+% \maketitle
+\frontmatter %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% pages without page numbers
+\pagestyle{empty}
+\singlespacing
+\include{abstractpage} %(must be first, required, non-numbered)
+\include{titlepage} %(must follow Abstract, required, non-numbered)
+\include{copyright} %(highly recommended, non-numbered)
 
-% This work explores the role cryptography has to play in the blockchain ecosystem to improve performance while maintaining minimal trust and strong security guarantees. 
-% % I discuss how to generically add universally composable security to any non-interactive zero-knowledge proof (NIZK), a crucial building block in many blockchain systems, in a way that is compatible with an updatable common reference string. This strengthens security for any system relying on NIZKs, including many blockchains and blockchain applications, while maintaining minimal trust assumptions. Next, I discuss how to improve the security of a class of coin mixing protocols by giving a formal security treatment of this class and patching the security of an existing, insecure protocol. 
-% I discuss a new paradigm for scalability, called \emph{naysayer proofs}, which sits between optimistic and zero-knowledge approaches.
-% Next, I show how to construct efficient, non-interactive, and fair on-chain protocols for a large class of elections and auctions without a trusted third party. 
-% Finally, I introduce a new type of threshold wallet which adds offline components at each custodian to improve security while maintaining distributed trust. Furthermore, the construction enables transparency by allowing the wallet owner to request custodians to prove ``remembrance'' of the secret key material.
-% All three of these works will be deployed in practice or have seen interest from practitioners in applying them. These examples show that advanced cryptography has the potential to meaningfully nudge the blockchain ecosystem towards increased security and reduced trust.
+% pages with lower-case Roman numbers (starting at ii)
+\pagestyle{plain}
+\setcounter{page}{2}
+\ifbool{doublespaced}{\doublespacing}{}
+% \include{preface} % or Foreword
+% \include{dedication}
+\include{acks}
+\ifbool{doublespaced}{\singlespacing}{}
 
-% % Blockchains are inherently public, [but sometimes we want privacy. We need to use crypto to do this. And so on and so forth\dots] \noemi{actually probably need to expand to also include ``security'', since the threshold sigs project isn't really about privacy}
-% % A key challenge in [my area of research] is [problem I halfway figured out how to solve]. (And so on and so forth\dots)
-% \end{abstract}
-
-\newpage
-\input{acks}
-
-\newpage %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% \section*{Basis of this Dissertation}
 \nociteThis{FC:SerGlaBon24,CTB:GSZB24,GGJLM24}
 \bibliographystyleThis{alpha}
 \bibliographyThis{
@@ -104,8 +44,6 @@
     cryptobib/crypto,
     extrarefs
 }
-
-% \section*{Other Publications by the Author}
 \nociteOther{CSF:AGRS24,CCS:GKMR23,CCS:GMMMTT22}
 \bibliographystyleOther{alpha}
 \bibliographyOther{
@@ -113,7 +51,6 @@
     cryptobib/crypto,
     extrarefs
 }
-
 % reactivate backrefs for References at end of doc
 \renewcommand*{\backrefalt}[4]{\scriptsize%
     \ifcase #1%
@@ -122,71 +59,34 @@
     \fi%
 }
 
-\newpage %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \dominitoc % minitoc initialization
+% \cleardoublepage
 \tableofcontents
+\adjustmtc % fix for minitoc OBO indexing
+% List of tables
+% List of figures
+% List of abbreviations
 
-\newpage %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\input{intro}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\ifbool{doublespaced}{\doublespacing}{}
+\mainmatter
 
-\newpage %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\input{prelims}
+\include{intro}
+\include{prelims}
+\include{naysayer/main}
+\include{cicada/main}
+\include{ksp/main}
+\include{conclusion}
 
-\newpage %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter[Naysayer Proofs]{Naysayer Proofs\footnotemarkCh}\label{sec:naysayer}
-\footnotetextCh{\textit{Portions of this section have been adapted from \cite{FC:SerGlaBon24}.}}
-\minitoc
+% \appendix
+% \include{appendix}
 
-\bigskip
-\input{naysayer/intro}
-\input{naysayer/related}
-\input{naysayer/model}
-\input{naysayer/definition}
-\input{naysayer/applications}
-\input{naysayer/storage}
-\input{naysayer/extensions}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\singlespacing
+\backmatter
 
-\newpage %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter[On-chain Voting and Auctions]{On-chain Voting and Auctions\footnotemarkCh}\label{sec:cicada}
-\footnotetextCh{\textit{Portions of this section have been adapted from \cite{CTB:GSZB24}.}}
-\minitoc
-
-\input{cicada/intro}
-\input{cicada/prelims}
-\input{cicada/related}
-\input{cicada/results}
-\input{cicada/model}
-\input{cicada/voting-schemes}
-\input{cicada/syntax}
-\input{cicada/cicada}
-\input{cicada/sigmas}
-\input{cicada/params}
-\input{cicada/eval}
-\input{cicada/extensions}
-
-\newpage %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter[{\HCWL}s]{{\HCWL}s\footnotemarkCh}\label{sec:hcwl}
-\footnotetextCh{\textit{Portions of this section have been adapted from \cite{GGJLM24}.}}
-\minitoc
-
-\input{ksp/intro}
-\input{ksp/results}
-\input{ksp/tech-overview}
-\input{ksp/related}
-\input{ksp/prelims}
-\input{ksp/model}
-\input{ksp/keyshares}
-\input{ksp/hotproofs}
-\input{ksp/bls-construction}
-\input{ksp/bls-security}
-\input{ksp/bls-eval}
-% \subsection{Extensions}
-\input{ksp/implementingFs}
-\input{ksp/frost-construction}
-\input{ksp/frost-security}
-
-\newpage %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\input{conclusion}
+% \include{glossary}
 
 {\small
 \bibliographystyle{alpha}
@@ -196,4 +96,7 @@
     extrarefs
 }
 }
+
+% \include{index}
+
 \end{document}

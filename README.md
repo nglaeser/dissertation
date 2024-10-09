@@ -21,6 +21,10 @@ Overleaf seems not to support submodules, so [CryptoBib](https://cryptobib.di.en
 
 - Inkscape (for `\includesvg`, see [this StackExchange answer](https://tex.stackexchange.com/a/523685)) -->
 
+## Setup
+
+Add the `-outdir=build` flag to your `latexmk` command (via [VSCode settings](https://github.com/James-Yu/LaTeX-Workshop/wiki/Compile#latex-tools), `latexmkrc` file, etc.).
+
 ## LaTeX Workshop shortcuts
 
 `Cmd + click`: Go to source code from PDF location
