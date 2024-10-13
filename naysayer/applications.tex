@@ -16,7 +16,8 @@ Finally, in \Cref{sec:eval} we
 estimate the performance of each naysayer proof system compared to that of the original proof system.
 
 \subsection{Merkle Commitments}\label{sec:merkle_naysayer}
-\begin{table}[h]
+
+\begin{table}[h!]
    \centering
     \setlength{\belowbottomsep}{6pt}
     \begin{tabular}{l c c} 
@@ -35,13 +36,13 @@ estimate the performance of each naysayer proof system compared to that of the o
     \end{tabular}
     \caption{Cost savings of the naysayer paradigm applied to Merkle proofs. $\mathbb{H} =$ hash output size/hash operations, $\mathbb{B} =$ bits.}
     \label{tab:merkle_asym}
-   \end{table}
-
-\input{naysayer/figs/merkle-diagram}
+\end{table}
 
 Merkle trees~\cite{C:Merkle87} and their variants are ubiquitous in modern systems, including Ethereum's state storage~\cite{ethereum_trie}. A Merkle tree can be used to commit to a vector $\vec{v}$ of elements as shown in \Cref{fig:merkle-diagram}, with the root $h$ acting as a commitment to $\vec{v}$. The party who created the tree can prove the inclusion of some element $v_i$ at position $i$ in the tree by providing the corresponding copath. 
 
 For example, to open the leaf at position 2, a prover provides its value $v_2$ and an opening proof $\pi = (h_{011}, h_{00}, h_{1})$ consisting of the copath from the leaf $v_2$ to the root $h$. The proof $\pi$ is checked by using its contents to recompute the root $h'$ starting with $v_2$, then checking that $h = h'$. This involves recomputing the nodes along the path from the leaf to the root (the gray nodes in the figure). These nodes can be seen as a ``verification trace'' for the proof $\pi$.
+
+\input{naysayer/figs/merkle-diagram}
     
 In the context of a naysayer proof system, the prover provides $\pi$ along with the verfication trace $\aux = (h_{010}, h_{01}, h_{0})$. A naysayer can point out an error at a particular point of the trace by submitting the incorrect index of $\aux$ (e.g., $\pi_\nay = 1$ to indicate $h_{01}$). The naysayer verifier checks $\pi_\nay$ by computing a single hash using $\pi$ and oracle access to $\aux$, e.g., checking $H(h_{010}, h_{011}) \stackrel{?}{=} h_{01}$, where $h_{010}, h_{01} \in \aux$ and $h_{011} \in \pi$. This is the generic construction from \Cref{thm:naysayer}.
 

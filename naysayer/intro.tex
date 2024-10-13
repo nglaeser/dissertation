@@ -1,14 +1,14 @@
- \begin{figure}[tbh]
-    \includegraphics[width=\textwidth]{naysayer/figs/vc.png}
-    \caption{\textbf{Using VC to move computation off-chain.} The off-chain ``prover'' applies the function $f$ to input $y$ and potentially an auxiliary off-chain input $w$ to get the result $y' = f(y, w)$. (In the case of a zk-rollup, $f$ is the state transition function, $y$ is the previous on-chain state, $w$ is a batch of transactions, and $y'$ is the new state after applying the transactions in $w$ to $y$.) It posts $y'$ and a proof $\pi$ of its correctness, which is verified on-chain before the output $y'$ is accepted. This paradigm does not require any challengers.}
-    \label{fig:vc}
- \end{figure}
-
 In most blockchains with programming capabilities, e.g., Ethereum~\cite{ethereum_yellowpaper}, developers are incentivized to minimize the storage and computation complexity of on-chain programs. Applications with high compute or storage incur significant fees, commonly referred to as \emph{gas}, to compensate validators in the network. Often, these costs are passed on to users of an application. 
 
 High gas costs have motivated many applications to utilize \emph{verifiable computation (VC)}~\cite{C:GenGenPar10}, off-loading expensive operations to powerful but untrusted off-chain entities who perform arbitrary computation and provide a short proof\footnote{More precisely, a succinct non-interactive argument of knowledge, or SNARK.} that the claimed result is correct.
 This computation can even depend on secret inputs not known to the verifier by relying on zero-knowledge proofs (i.e., zkSNARKs).
  %In some cases (though not all), this proof is also zero-knowledge, hiding some inputs to the computation. This is commonly referred to as a \emph{zk-rollup} (even if it is not zero-knowledge).
+
+ \begin{figure}[tbh]
+    \includegraphics[width=\textwidth]{naysayer/figs/vc.png}
+    \caption{\textbf{Using VC to move computation off-chain.} The off-chain ``prover'' applies the function $f$ to input $y$ and potentially an auxiliary off-chain input $w$ to get the result $y' = f(y, w)$. (In the case of a zk-rollup, $f$ is the state transition function, $y$ is the previous on-chain state, $w$ is a batch of transactions, and $y'$ is the new state after applying the transactions in $w$ to $y$.) It posts $y'$ and a proof $\pi$ of its correctness, which is verified on-chain before the output $y'$ is accepted. This paradigm does not require any challengers.\todo{update $\sf Vrfy$ to $\vrfy$ in fig}}
+    \label{fig:vc}
+ \end{figure}
 
 VC leads to a paradigm in which smart contracts, while capable of arbitrary computation, primarily act as verifiers and outsource all significant computation off-chain (see \Cref{fig:vc}). A motivating application is so-called ``zk''-\emph{rollups}\footnotemark~\cite{starknet,zksync,aztec,dydx,scroll}, which combine transactions from many users into a single smart contract which verifies a proof that all have been executed correctly.
 \footnotetext{The ``zk'' part of the name is often a misnomer, since these services do not necessarily offer the zero-knowledge property, and in fact most do not.} 

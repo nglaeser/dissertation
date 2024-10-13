@@ -6,10 +6,10 @@ Next, we introduce a formal definition and syntax for naysayer proofs. A naysaye
 Given a non-interactive proof system $\Pi = (\setup, \prove, \vrfy)$ for a NP language $\Lang$, the naysayer proof system corresponding to $\Pi$ is a tuple of PPT algorithms $\Pi_{\nay} = (\setup, \prove,\allowbreak \naysay, \vrfynay)$ defined as follows:
     \begin{description}
         \item[$\setup(\secparam, \naysecparam) \randout (\crs,\crs_{\nay})$:] Given (potentially different) security parameters $\secparam$ and $\naysecparam$, output two common reference strings $\crs$ and $\crs_{\nay}$. This algorithm may use private randomness.
-        \item[$\prove(\crs, x, \witness) \to \pi'$:] Given a statement $x$ and witness $\witness$ such that $(x,\allowbreak \witness) \in \Rel$, 
+        \item[$\prove(\crs, x, \witness) \to \pi'$:] Given a statement $x$ and witness $\witness$ such that $(x,\allowbreak \witness) \in \Rel_\Lang$, 
         % compute $\pi \gets \Pi.\prove(\crs, x,w)$ and a commitment $\com$ to the evaluation trace of $\Pi.\vrfy(\crs, x, \pi)$. 
         output $\pi' = (\pi, \aux)$, where $\pi \gets \Pi.\prove(\crs, x, \witness)$.
-        \item[$\naysay(\crs_\nay, (x,\pi'), \td_{\nay}) \rightarrow \pi_{\nay}$:] Given a statement $x$ and values $\pi' = (\pi,\allowbreak \aux)$ where $\pi$ is a (potentially invalid) proof that $x \in \Lang$ using the proof system $\Pi$, output a naysayer proof $\pi_\nay$ disputing $\pi$. This algorithm may also make use of some (private) trapdoor information $\td_\nay$.
+        \item[$\naysay(\crs_\nay, (x,\pi'), \td_{\nay}) \rightarrow \pi_{\nay}$:] Given a statement $x$ and values $\pi' = (\pi,\allowbreak \aux)$ where $\pi$ is a (potentially invalid) proof that $\exists \witness \suchthat (x,\witness) \in \Rel_\Lang$ using the proof system $\Pi$, output a naysayer proof $\pi_\nay$ disputing $\pi$. This algorithm may also make use of some (private) trapdoor information $\td_\nay \subseteq \witness$.
         \item[$\vrfynay(\crs_\nay, (x,\pi'), \pi_\nay) \rightarrow \{0, \perp\}$:] Given a statement-proof pair $(x,\allowbreak \pi')$ and a naysayer proof $\pi_\nay$ disputing $\pi'$, output a bit indicating whether the evidence is sufficient to reject (0) or inconclusive ($\perp$).
     \end{description}
 \end{definition}
