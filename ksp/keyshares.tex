@@ -1,32 +1,21 @@
-\section{Malleable Encryption for eXponents (\mex)}\label{sec:mex}
+\section{Hot and Cold Key Shares}\label{sec:keyshares}
 
-As explained above, the core idea of our construction is for each hot party to store an encryption of the institution's signing key share $\sk_i$, with the corresponding decryption key kept on the cold storage.
-That is, each institution will generate an encryption key pair $(\ek_i, \dk_i)$ and store the hot key share $\sk_i^\hot := \enc(\ek_i, \sk_i)$ in the hot storage and $\sk_i^\cold := \dk_i$ in the cold storage.
-% Each institution generates an encryption key pair $(\ek_i, \dk_i)$ for an encryption scheme with the decryption key $\dk_i$ to be kept exclusively in the cold storage. The hot storage will hold an encryption of $P_i$'s share $\sk_i$ of the signing key $\sk$ under this key pair, that is, the hot key share is $\sk_i^\hot := \enc(\ek_i, \sk_i)$. 
-We want to enable threshold signing of a message $m$ by allowing the hot and cold parties to derive signature shares $\sigma_i^\hot, \sigma_i^\cold$ for $m$ from their secret material $\sk_i^\hot, \sk_i^\cold$ (the secret key and ciphertext, respectively). Together, the signature shares can be used to recover a partial signature $\sigma_i$ of $m$ under $\sk_i$.
+The core idea of our construction is for each hot party to store an encryption of the signing key share $\sk_i$ given to the custodian, with the corresponding decryption key kept in cold storage.
+That is, each custodian will generate an encryption keypair $(\ek_i, \dk_i)$ and store the hot key share $\sk_i^\hot := \enc(\ek_i, \sk_i)$ in the hot storage and $\sk_i^\cold := \dk_i$ in the cold storage.
+We want to enable threshold signing of a message $m$ by allowing the hot and cold parties to derive signature shares $\sigma_i^\hot, \sigma_i^\cold$ for $m$ from their secret material $\sk_i^\hot, \sk_i^\cold$ (the secret key and ciphertext, respectively). Together, the signature shares can be used to recover a partial BLS signature $\sigma_i$ of $m$ under $\sk_i$.
 
-% Our construction uses a modified ElGamal-like encryption scheme to encrypt key shares. The homomorphic properties of the scheme will allow decryption of the key share ``in the exponent'' to obtain a message-specific partial BLS signature. 
-In this section, we describe an encryption scheme based on ElGamal~\cite{C:ElGamal84} whose malleability allows decryption of the hot key share ``in the exponent'' of a partial BLS signature.
-Recall that the ElGamal ciphertext for a message $m \in \GG$ is computed as $(g^r, \ek^r \cdot m) \in \GG^2$ where $\GG$ is a prime order group. In our case, however, $m = \sk_i$ will be a scalar element of $\ZZ_p$ (an ``exponent'').
-Adapting the encryption scheme to scalar messages, we can compute the ciphertext as $(g_2^r, \lhlhash(\ek^r) + m)$, where $\lhlhash$ is some function which maps $\ek^{\sk}$ to $\ZZ_p$ in a way that masks $m$. 
-% In fact, since $\GG_2$ only has order $p$ and we require $\log{p}$ bits of entropy in the output, $\lhlhash$ will need two group elements as input. This is easily 
-We will see below that this can be achieved by defining our encryption key $\ek$ to be a tuple $(\ek_1, \ek_2) \in \GG^2$ and letting $\lhlhash: \GG^2 \to \ZZ_p$.
-% be a random subset sum. 
-Now we can mask $m$ with the output of $\lhlhash$, and a cold party can undo this masking (in the exponent of the BLS signature) using $g^r$ and $\dk_1, \dk_2$.
-We call the resulting scheme Malleable Encryption for eXponents (MEX).
+Our construction uses a modified ElGamal~\cite{C:ElGamal84} encryption scheme to encrypt key shares. The homomorphic properties of the scheme will allow decryption of the key share ``in the exponent'' to obtain a message-specific partial BLS signature.
+Recall that the ElGamal ciphertext for a message $m \in \GG$ is computed as $(g^r, \ek^r \cdot m) \in \GG^2$ where $\GG$ is a prime order group and $g \in \GG$ is a generator. In our case, however, we will be encrypting secret key shares, which are field elements (specifically, elements of $\ZZ_p$).
 
-% \footnotetext{We do not require $\lhlhash$ to be collision-resistant, only that it extracts ``enough'' entropy to mask elements of $\ZZ_p$. We discuss this in more detail in \cref{sec:dkg}.}
-Like the original ElGamal encryption and as the name suggests, MEX is malleable (in this case, additively rather than multiplicatively), which allows ``shifting'' of the message $m$ in a ciphertext by an additive factor (via the $\sf Shift$ algorithm). We will use this property to enable proactive refresh of the hot (encrypted) key shares.
+Adapting ElGamal to plaintexts $m \in \ZZ_p$, we will compute a ciphertext as $(g^r, \lhlhash(\ek^r) + m) \in \GG \times \ZZ_p$, where $\lhlhash: \GG \to \ZZ_p$.
+Now $m$ is masked with the uniformly random output of $\lhlhash$ and can be unblinded using $\dk$ by recomputing $\lhlhash(\ek^r) = \lhlhash((g^r)^\dk)$.
+Like the original ElGamal encryption, this construction is malleable (in this case, additively rather than multiplicatively), which allows ``shifting'' of the message $m$ in a ciphertext by an additive factor (made explicit via the $\sf Shift$ algorithm). We will use this property to enable proactive refresh of the hot (encrypted) key shares.
 
-\begin{construction}[\mex]\label{con:enc}
-Let $\GG$ be a DLog-hard group of order $p$ with generator $g$. 
-% For values $x \in \GG_2^2$ and $a \in \ZZ_p$, we write $x^a$ to mean the exponentiation is done component-wise; conversely if $x \in \GG_2$ and $a \in \ZZ_p^2$, $x^a \in \GG_2^2$ means the base of the exponentiation is repeated. 
-Let $\lhlhash: \GG \rightarrow \ZZ_p$ be a hash function. 
-% Let $x \in \ZZ_p$ be a parameter of the scheme (in practice, we will use the signing key of the client). \noemi{this is not very elegant, maybe there's a better way to write it.} \anote{It can't be a fixed parameter.} \sanjam{need to discuss}
+\begin{construction}[additive ElGamal]\label{con:additive_elgamal}
+Let $\GG$ be a DLog-hard group of order $p$ with generator $g$ and $\lhlhash: \GG \rightarrow \ZZ_p$. 
 \begin{itemize}
 \item \underline{$(\ek, \dk) \gets \kgen(1^\lambda)$:}
 Sample $\dk \sample \ZZ_p$. Set $\ek := g^{\dk}$ and output $(\ek, \dk)$.
-% Same as classic ElGamal encryption (\Cref{con:elgamal}).
 
 \item \underline{$ct \gets \enc(\ek, m; r)$:}
 Given an encryption key $\ek \in \GG$ and a message $m \in \ZZ_p$, use randomness $r \in \ZZ_p$ to compute the ciphertext $ct := (g^r, m + \lhlhash(\ek^r))$.
@@ -39,12 +28,11 @@ Given a ciphertext $ct \in \GG \times \ZZ_p$ and a shift $\delta \in \ZZ_p$, par
 \end{itemize}
 \end{construction}
 
-\subsection{Additive Secret Sharing from MEX}
+\subsection{Additive Secret Sharing from Additive ElGamal}\label{sec:enc-lhl}
 
-The $\enc$ algorithm in \Cref{con:enc} takes an explicit randomness input $r$. In the context of our wallet construction, encryption will take place at the same time as signing key generation, and instead of sampling fresh randomness $r \in \ZZ_p$ for each hot party's ciphertext (hot key share), we will sample a single value $r$. The signing key-pair is set to $(\vk, \sk) := (g^r, r)$.\footnote{This means we can leave out the redundant first element, so each ciphertext will consist of a single group element.} The result is that each party $P_i^\hot$'s ciphertext uses the mask $\lhlhash(\ek_i^{\sk}) = \lhlhash(\vk^{\dk_i})$, which allows the corresponding cold party $P_i^\cold$ to decrypt using only a client's verification key $\vk$ and without receiving or storing any additional per-client randomness.
-% Like ElGamal encryption, our construction will mask the message $m$ with an element derived from the encryption key $\ek$. However, instead of sampling fresh randomness $\rho \sample \ZZ_p$ and using the mask $\ek^\rho$, we use a value derived from $\vk = g^{\sk}$ and $\ek = g^{\dk}$, namely $\ek^{\sk} = \vk^{\dk}$ (this can be viewed as a sort of Diffie-Hellman key exchange). 
+The $\enc$ algorithm in \Cref{con:additive_elgamal} takes an explicit randomness input $r$. In the context of our wallet construction, instead of sampling fresh randomness $r \in \ZZ_p$ for each hot party's ciphertext (hot key share), we will use a value based on the user secret being stored. In particular, when storing a signing keypair $(\vk := g^{\sk}, \sk)$, we will use $\sk$ as the encryption randomness.\footnote{This means we can leave out the redundant first element which now equals $\vk$, and each ciphertext will consist of a single group element.} Thus, $P_i^\hot$'s secret share uses the mask $\lhlhash(\ek_i^{\sk}) = \lhlhash(\vk^{\dk_i})$, which allows the corresponding cold party $P_i^\cold$ to decrypt using only a client's verification key $\vk$ and without receiving or storing any additional per-client randomness. We will discuss how to generate the hot shares \Cref{sec:bls-construction}.
 
-Because the input to $\lhlhash$ is no longer uniformly random, we now need $\lhlhash$ to be a hash function where the Leftover Hash Lemma (see \Cref{sec:lhl}) holds on random inputs. In order for the output of $\lhlhash$ to have sufficient entropy to mask $m$, this requires two group elements as input. Therefore, in our wallet construction we will use $\ek := (g^{\dk_1}, g^{\dk_2})$ and $ct := m + \lhlhash(\ek_1^\sk, \ek_2^\sk)$.
+Because the input to $\lhlhash$ is no longer uniformly random, we now need $\lhlhash$ to be a hash function where the Leftover Hash Lemma (see \Cref{sec:lhl}) holds on random inputs. In order for the output of $\lhlhash$ to have sufficient entropy to mask $m$, this requires two group elements as input. Therefore, our construction we will use $\ek := (g^{\dk_1}, g^{\dk_2})$ and $ct := m + \lhlhash(\ek_1^\sk, \ek_2^\sk)$.
 
 Although any function $\lhlhash$ which meets the above requirements suffices, it is desirable to find a very efficient construction since $\lhlhash$ will have to be computed by the cold party at signing time. One such $\lhlhash$ is a random subset sum.
 In more detail, $\lhlhash$ first represents its inputs $x_1, x_2 \in \GG$ as $\ell$-bit vectors $\vec{x}_1, \vec{x}_2 \in \{0,1\}^\ell$, where $\ell = \log{p}$. Let $\vec{r}_1, \vec{r}_2 \in \ZZ_p^{2 \ell}$ be (public) uniform vectors with $\vec{r}_k = (\vec{r}_{k,0}, \vec{r}_{k,1})$ for $k=1,2$. We will use bracket notation to index into the vector, i.e., $\vec{r}_{1,0}[i]$ is the $i$th element of $\vec{r}_{1,0}$.
@@ -52,4 +40,4 @@ Let $\lhlhash(x_1, x_2) := \lhlhash'(\vec{r}_1,\vec{x}_1) + \lhlhash'(\vec{r}_2,
 \[
 \lhlhash'(\vec{r} := (\vec{r}_0, \vec{r}_1),\vec{x}) := \sum_{b_i \in \vec{x}} \vec{r}_{b_i}[i]
 \]
-When we want to be specific about the randomness used in $\lhlhash$, we write $\lhlhash(x_1, x_2; \vec{k})$ for $\vec{k} \in \ZZ_p^{4\ell}$. By \Cref{lemma:LHL} in \Cref{sec:lhl}, the output of $\lhlhash$ is statistically indistinguishable from uniform.
+When we want to be specific about the randomness used in $\lhlhash$, we write $\lhlhash(x_1, x_2;\allowbreak \vec{k})$ for $\vec{k} \in \ZZ_p^{4\ell}$. By \Cref{lemma:LHL} in \Cref{sec:lhl}, the output of $\lhlhash$ is statistically indistinguishable from uniform.

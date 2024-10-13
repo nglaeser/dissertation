@@ -74,7 +74,7 @@ Note that as in the PNS approach, we set $M = nw + 1$ to accommodate homomorphic
 Although the RNS has found application in error correction~\cite{KPTOC22,TaiCha14}, side-channel resistance~\cite{TCHES:PFPB18}, and parallelization of arithmetic computations~\cite{AsiHosKon17,BajDuqMel06,GomTyaNam11,VNLVC20}, to our knowledge it has not been applied to voting schemes. We will show that RNS is in fact a natural fit for some voting schemes, in particular quadratic voting, where it results in more efficient proofs of ballot correctness. 
 
 \paragraph{Applied NIZKs in Groups of Unknown Order.}
-We will use \emph{non-interactive zero-knowledge} proofs (NIZKs) to enforce well-formedness of user submissions while maintaining their secrecy. This prevents users from ``poisoning'' the aggregate HTLP maintained by the on-chain coordinator. For efficiency, we make use of custom NIZKs (see \Cref{app:sigmas}).
+We will use \emph{non-interactive zero-knowledge} proofs (NIZKs) to enforce well-formedness of user submissions while maintaining their secrecy. This prevents users from ``poisoning'' the aggregate HTLP maintained by the on-chain coordinator. For efficiency, we make use of custom NIZKs (see \Cref{sec:sigmas}).
 % All our schemes will have a non-interactive bidding/voting phase, meaning users will submit their bids/ballots (in the form of HTLPs) to a coordinator (implemented as a smart contract). To avoid ``poisoning'' the running tally, the coordinator must be convinced of each submission's well-formedness before including it. 
 
 %\todo{May need to cite the following: Arithmetic sketching (bounded Hamming weight and norm)~\cite{boneh2023arithmetic}, Ballot well-formedness for various schemes~\cite{groth2005voting}, PoEqDLog~\cite{cryptoeprint:2020/1617}}
@@ -88,7 +88,7 @@ Previous ballot correctness proofs~\cite{ACNS:Groth05} and sigma protocols~\cite
 % As shown in~\cite{bangerter2005efficient}, certain impossibility results apply to the knowledge soundness of $\Sigma$-protocols instantiated in groups of unknown order. 
 To circumvent these impossibility results, we follow the blueprint of \cite{C:BonBunFis19} and instantiate our protocols in generic groups of unknown order~\cite{EC:DamKop02} with a common reference string.
 % and a non-smooth challenge sampled by the verifier~\cite{boneh2019batching}, often prime numbers for simplicity. On the other hand, one can also use random integers if they are sufficiently long to ensure they have at least one large prime factor to avoid ``smoothing'' attacks. % not true, this is not to avoid the impossibility result but specific to soundness of PoE-style proofs, see comment later
-We detail our protocols in \Cref{app:sigmas}.
+We detail our protocols in \Cref{sec:sigmas}.
 
 Our protocols are both practically efficient, private until the end of the voting/bidding phase, and provably secure, overcoming the following challenges:
 % aim to close these gaps in the literature. To the best of our knowledge, we are the first to suggest and implement practical, privacy-preserving, trust-minimized, non-interactive auction and voting protocols using $\htlp$s. Towards our goal, we face the following main technical challenges:

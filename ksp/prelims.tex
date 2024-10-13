@@ -45,3 +45,5 @@ The actions each party can take are summarized below:
 \begin{definition}
     We say a protocol $\Pi$ \emph{UC-realizes} an ideal functionality $\F$ if for any PPT adversary $\adv$, there exists a simulator $\Sim$ such that for any environment $\env$, the distribution ensembles $\{ \real_{\Pi,\adv,\env}(\secpar, x) \}_{\secpar \in \mathbb{N}, x \in \bin^*}$ and $\{ \ideal_{\F,\Sim,\env}(\secpar,\allowbreak x) \}_{\secpar \in \mathbb{N},x \in \bin^*}$ are computationally indistinguishable.
 \end{definition}
+
+\paragraph{A note on our ideal functionalities} As in some previous work~\cite{CCS:LinNof18,C:Katz24}, our UC functionalities contain some cryptographic operations specific to our construction. While this formulation is less general, it renders the analysis more straightforward and suffices for our purposes.

@@ -6,38 +6,21 @@ We will use non-replayable zero-knowledge proofs of knowledge (ZKPoKs) for two l
 
 % The first protocol we require is a simple proof of knowledge of discrete logarithm, denoted $\Pi_{\sf DL}$. It can be instantiated with a simple Schnorr protocol~\cite{C:Schnorr89} and made non-interactive with the Fiat-Shamir transform~\cite{C:FiaSha86}. The second language and thus its PoK are more complex, and we defer its description to \Cref{subsec:enc_pok}. 
 
-To prove knowledge of the cold share, i.e., its decryption key, each cold storages will use a proof of knowledge of discrete logarithm $\Pi_{\sf DL}$ for the language $\{y \in \GG : \exists w \in \ZZ_p ~\text{s.t.}\ y = g^w\}$. This can be instantiated with the classic Schnorr protocol~\cite{C:Schnorr89}.
+To prove knowledge of the cold share, i.e., its decryption key, each cold party will use a proof of knowledge of discrete logarithm $\Pi_{\sf DL}$ for the language $\{y \in \GG : \exists \witness \in \ZZ_p \suchthat y = g^\witness \}$. This can be instantiated with the classic Schnorr protocol~\cite{C:Schnorr89}.
 
-The proof of knowledge for the hot storages is more complicated. At setup time, each hot storage must receive, along with its encrypted share, a proof of knowledge for the share's well-formedness. This should prove that the hot share equals $\lhlhash(\ek_{i,1}^x, \ek_{i,2}^x)+x_i$ for some secret value $x$ such that $g^x = \vk$ and $x_i = \share(x,t,n)$, and that the same value of $x$ is used for every party. 
-% To ensure that every party receives a share of the same secret value $x$ using the same randomness $r$, the proofs should be computed with respect to commitments to these values.
+The proof of knowledge for the hot parties is more complicated. At setup time, each hot parties must receive, along with its encrypted share, a proof of knowledge for the share's well-formedness. This should prove that the hot share equals $\lhlhash(\ek_{i,1}^x, \ek_{i,2}^x)+x_i$ for some secret value $x$ such that $g^x = \vk$ and $x_i = \share(x,t,n)$, and that the same value of $x$ is used for every party. 
 Our core idea is to use a KZG commitment to the polynomial used in the Shamir sharing of $x$ and distribute an evaluation proof to each hot storage. The additive homomorphism of the commitments allows the public commitment, as well as each party's evaluation proof, to be updated when the shares are refreshed. 
-% Each time the shares are refreshed, we will need to prove the following predicates:
-% \begin{itemize}
-%     \item the previous encrypted keyshare $\hx_{t,i}$ was valid,
-%     \item the update $\delta_i$ is valid, and
-%     \item the update was done correctly.
-% \end{itemize}
-% \noemi{diagram of shares, updates, and the corresponding proofs (also for notation)}
-%
-% The second condition can be realized similarly to the setup condition by showing that $\delta_i = f(i)$ and $f(0) = 0$ for some consistent polynomial $f$. In fact, all three of these conditions can be realized with KZG commitments and evaluation proofs (see \Cref{sec:kzg}), as we will show in this section. 
-We begin with a strawman example where the hot storage shares are unencrypted and then show how to adapt the construction to encrypted shares.
-% namely with $\com_t, \pi_{t,i}$ for the first predicate, $\com_t', \pi_{t,0}', \pi_{t,i}'$ for the second, and $\com_{\sf ped}, \pi_{\sf ped}, \overline{\pi}_{t,i}, g^{s_{t,i}(\tau)}$ for the third.
-
-% In our construction, we will use the additive homomorphism of the KZG polynomial commitment scheme to prove well-formedness of parties' keyshares.
-
-% \section{Notation}
-
-% We use $\com_t, \pi_{\timeT}$ to denote the commitment and proof for a polynomial $f_{\timeT}$ representing parties' key shares (or $\tilde{f}_{\timeT}$ for encrypted key shares) at time step $\timeT$. We use $\com_{\timeT}', \pi_{\timeT}'$ for the commitment and proof of an update polynomial $z_{\timeT}$ (where the letter ``z'' is chosen since these polynomials encode shares of zero) used to update shares from time step $\timeT$ to $\timeT+1$. When a second index is present (e.g., $\pi_{\timeT,i}$), it is used to indicate a particular evaluation point (usually corresponding to a party). We will use an overline (e.g., $\overline{\pi}_{\timeT,i}$) to indicate that a value is blinded.
+We begin with a strawman example where the hot shares are unencrypted and then show how to adapt the construction to encrypted shares.
 
 \subsection{PoK of (Unencrypted) Key Share}\label{subsec:unenc_pok}
 
 Let $\crs$ be a degree-$(t-1)$ KZG CRS. At time $\timeT=0$, the client $C$ picks a random degree-$(t-1)$ polynomial $f_0(X) \in \ZZ_p[X]$ (its evaluation at 0 will be the signing key $\sk$) and publishes $\com_0 \gets \mathsf{KZG}.\Commit(\crs, f_0(X))$. 
-Each hot storage $P_i^\hot$ receives an opening $f_0(i)$ (i.e., the key share $\sk_i$) and evaluation proof $\pi_{0,i}$. 
+Each hot party $P_i^\hot$ receives an opening $f_0(i)$ (i.e., the key share $\sk_i$) and evaluation proof $\pi_{0,i}$. 
 
-Whenever it wants the servers to refresh their shares and thus transition from epoch $\timeT-1$ to $\timeT$, $C$ will commit to (as $\ucom_{\timeT}$) a new random degree-$t$ polynomial $z_{\timeT}(X)$ such that $z_{\timeT}(0) = 0$, publish an evaluation proof $\zopen_{\timeT,0}$ at $X=0$, and send each $P_i^\hot$ its opening $z_{\timeT}(i)$ and the corresponding evaluation proof $\zopen_{\timeT,i}$. Everyone can check the correctness of the update by verifying $\zopen_{\timeT,0}$ with respect to $\ucom_{\timeT}$. If the check passes, they can compute the commitment to the new polynomial $f_\timeT(X)$ homomorphically from the commitments to $f_{\timeT-1}(X)$ and $z_\timeT(X)$, namely as $\com_\timeT = \com_{\timeT-1} \cdot \ucom_\timeT$.
+Whenever it wants the servers to refresh their shares and thus transition from epoch $\timeT-1$ to $\timeT$, $C$ will commit to (as $\ucom_{\timeT}$) a new random degree-$(t-1)$ polynomial $z_{\timeT}(X)$ such that $z_{\timeT}(0) = 0$, publish an evaluation proof $\zopen_{\timeT,0}$ at $X=0$, and send each $P_i^\hot$ its opening $z_{\timeT}(i)$ and the corresponding evaluation proof $\zopen_{\timeT,i}$. Everyone can check the correctness of the update by verifying $\zopen_{\timeT,0}$ with respect to $\ucom_{\timeT}$. If the check passes, they can compute the commitment to the new polynomial $f_\timeT(X)$ homomorphically from the commitments to $f_{\timeT-1}(X)$ and $z_\timeT(X)$, namely as $\com_\timeT = \com_{\timeT-1} \cdot \ucom_\timeT$.
 Then each party verifies its own update proof $\zopen_{\timeT,i}$ before updating its previous key share $f_{\timeT-1}(i)$ and proof $\pi_{\timeT-1,i}$, respectively, to $f_\timeT(i) := f_{\timeT-1}(i) + z_{\timeT}(i)$ and $\pi_{\timeT,i} := \pi_{\timeT-1,i} \cdot \zopen_{\timeT,i}$. By the homomorphic nature of the KZG commitment scheme, $P_i^\hot$ now has an evaluation of $(f_{\timeT-1} + z_\timeT)(X) = f_\timeT(X)$ at $i$ and a corresponding evaluation proof $\pi_{\timeT,i}$. 
 
-There is a problem with this scheme: $P_i^\hot$ needs to reveal $f_\timeT(i)$ in order for anyone to verify $\pi_{\timeT,i}$...but $f_\timeT(i)$ is its current key share! The solution is for $P_i^\hot$ to prove it knows $f_\timeT(i)$ in \emph{zero-knowledge} via a blinded KZG evaluation proof (a modified version of the protocol in \cite[\S6.1]{CCS:ZBKMNS22}).
+There is a problem with this scheme: $P_i^\hot$ needs to reveal $f_\timeT(i)$ in order for anyone to verify $\pi_{\timeT,i}$ --- but $f_\timeT(i)$ is its current key share! The solution is for $P_i^\hot$ to prove it knows $f_\timeT(i)$ in \emph{zero-knowledge} via a blinded KZG evaluation proof (a modified version of the protocol in \cite[\S6.1]{CCS:ZBKMNS22}).
 % Instead, $P_i^\hot$ will sample a uniform $r \sample \ZZ_p$ and reveal $f_\timeT(i)+r$ as well as a proof that it knows a value $r$ such that the opening verifies under the commitment $\com_{f_\timeT} \cdot g^r$.
 It commits to the key share $f_\timeT(i)$ using a Pedersen commitment $\com_{\sf ped} := g_1^{f_\timeT(i)} h_1^r$
 % where $g,h$ are (public) generators of $\GG_1$ and $r$ is sampled uniformly in $\ZZ_p$, 
@@ -50,7 +33,7 @@ The final ZKPoK is defined as $(\com_{\sf ped}, \pi_{\sf ped}, \overline{\pi}_{\
     \stackrel{?}{=}
     e(\change{\overline{\pi}_{\timeT,i}}, g_2^\tau/g_2^i) \cdot \change{e(h_1, g_2^{s_{\timeT,i}(\tau)})} 
 \]
-(where the $\change{\text{boxed}}$ parts are changes to the original KZG verification check due to the blinding).
+(where the $\change{\text{blue}}$ parts are changes to the original KZG verification check due to the blinding).
 
 \subsection{PoK of Encrypted Key Share}\label{subsec:enc_pok}
 
@@ -58,7 +41,7 @@ Next, we modify the previous construction to accommodate an \emph{encrypted} ini
 % \noemi{We need to make a note that we assume $\hx_i$ is computed correctly since $C$/$\Fs$ is assumed to be honest. That's why we don't prove the correctness of $\hx_i$ itself, only that it equals $\tilde{f}_0(i)$ where $\tilde{f}(X)$ is assumed to be computed correctly.}
 For now, we assume the $\hx_i$ and $\tilde{f}_0(X)$ are computed correctly (we will return to this assumption in \Cref{sec:bls-construction}). Thus, we don't prove the correctness of the $\hx_i$ values themselves, only that they are equal to $\tilde{f}_0(i)$ where $\tilde{f}_0(X)$ is fixed for all parties.
 
-$C$ commits to $\tilde{f}_0(X)$ publicly and, in a similar fashion as before, sends each hot storage $P_i^\hot$ the opening $\tilde{f}_0(i) =: \hx_i$ and the corresponding evaluation proof $\pi_{0,i}$. Now the hot storage can prove rembrance of its current share $\tilde{f}_\timeT(i)$ in zero-knowledge in the same way as before, namely by committing to the share and blinding the evaluation proof $\pi_{\timeT,i}$ as described in the previous section.
+$C$ commits to $\tilde{f}_0(X)$ publicly and, in a similar fashion as before, sends each hot party $P_i^\hot$ the opening $\tilde{f}_0(i) =: \hx_i$ and the corresponding evaluation proof $\pi_{0,i}$. Now the hot party can prove rembrance of its current share $\tilde{f}_\timeT(i)$ in zero-knowledge in the same way as before, namely by committing to the share and blinding the evaluation proof $\pi_{\timeT,i}$ as described in the previous section.
 
 Share refreshes in epoch $\timeT$ also proceed as before with a commitment $\ucom_\timeT$ to a polynomial $z_\timeT(X)$ such that $z_\timeT(0) = 0$ (confirmed via a public evaluation proof $\zopen_{\timeT,0}$ at $X=0$). Parties receive their update value $z_\timeT(i)$ and corresponding evaluation proof $\zopen_{\timeT,i}$, and can update their (now encrypted) share homomorphically just like before. (This still works because our encryption scheme allows additive shifts of the plaintext via addition to the ciphertext.) The only difference is that, because the encrypted shares now lie on a degree-$(n-1)$ polynomial instead of a degree-$(t-1)$ polynomial, the KZG CRS must accomodate polynomials up to degree $n-1$. (In practice, because different clients in the system may chose different values of $n$, the KZG CRS will actually have some degree $d$ which is as large as the maximum allowed value of $n-1$.) As with the original polynomial $\tilde{f}_0(X)$, we assume $z_\timeT(X)$ is chosen honestly by $C$. In \Cref{sec:fs_protocol}, we show how to avoid trusting $C$ in the refresh stage.
 
@@ -72,7 +55,7 @@ Share refreshes in epoch $\timeT$ also proceed as before with a commitment $\uco
     \medskip
     \textbf{Parameters:} Generators $g_1,h_1 \in \GG_1$ and $g_2 \in \GG_2$; a degree-$d$ KZG common reference string $\crs = \{g_1, g_1^\tau, \dots, g_1^{\tau^d}, g_2, g_2^\tau\}$.
     \hfill\medskip\\
-    \underline{$\mathsf{Prove}((\crs, \com_\timeT, i); (\hx_i, \pi_{\timeT,i})) \to \pi_i^\hot$:} Given $\crs$, a KZG commitment $\com_\timeT$ to the current polynomial $\tilde{f}_\timeT(X)$, and its index $i$, a hot storage uses its key share $\hx_i = \tilde{f}_\timeT(i)$ and corresponding opening proof $\pi_{\timeT,i}$
+    \underline{$\mathsf{Prove}((\crs, \com_\timeT, i); (\hx_i, \pi_{\timeT,i})) \to \pi_i^\hot$:} Given $\crs$, a KZG commitment $\com_\timeT$ to the current polynomial $\tilde{f}_\timeT(X)$, and its index $i$, a hot party uses its key share $\hx_i = \tilde{f}_\timeT(i)$ and corresponding opening proof $\pi_{\timeT,i}$
     % , where $\mathsf{KZG}.\verify(\crs, \com_\timeT, i, \hx_i, \pi_{\timeT,i}) = 1$, 
     to compute a ZKPoK of $\hx_i$ as follows:
     \begin{enumerate}
@@ -80,7 +63,7 @@ Share refreshes in epoch $\timeT$ also proceed as before with a commitment $\uco
         \item Sample $s \sample \ZZ_p$ and let $s_i(X) := -r - s(X -i)$. Compute $\overline{\pi}_{\timeT,i} := \pi_{\timeT,i} h_1^s$ and $S := g_2^{s_i(\tau)}$ using $\crs$.
         \item Output $\pi_i^\hot := (\com_{\sf ped}, \pi_{\sf ped}, \overline{\pi}_{\timeT,i}, S)$.
     \end{enumerate}
-    \underline{$\vrfy((\crs, \com_\timeT, i), \pi_i^\hot) \to \{0,1\}$:} Given $\crs$, a KZG commitment $\com_\timeT$, and a party index $i$, verify the hot storage proof $\pi_i^\hot = (\com_{\sf ped}, \pi_{\sf ped}, \overline{\pi}_{\timeT,i}, S)$ by outputting 1 iff the following hold: 
+    \underline{$\vrfy((\crs, \com_\timeT, i), \pi_i^\hot) \to \{0,1\}$:} Given $\crs$, a KZG commitment $\com_\timeT$, and a party index $i$, verify the hot proof $\pi_i^\hot = (\com_{\sf ped}, \pi_{\sf ped}, \overline{\pi}_{\timeT,i}, S)$ by outputting 1 iff the following hold: 
     \[\begin{array}{c}
         \Pi_{\sf ped}.\vrfy(\com_{\sf ped}, \pi_{\sf ped}) = 1\\
         e(\com_\timeT / \com_{\sf ped}, g_2) = e(\overline{\pi}_{\timeT,i}, g_2^\tau / g_2^i) \cdot e(h_1, S).

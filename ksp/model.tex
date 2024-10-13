@@ -1,13 +1,13 @@
-\section{Model}\label{sec:model}
+\subsection{Model}\label{sec:model}
 
 \input{ksp/model-fig}
 
-Let $I_1, \ldots, I_n$ be parties (each representing an institution) who will store shares of some user's signing key $\sk$. Each institution $I_i$ controls two parties: a hot storage ($P_i^\hot$) and a cold storage ($P_i^\cold$). Thus we represent an institution by the tuple $I_i = (P_i^\hot, P_i^\cold)$. 
-As in the standard threshold wallet setting, the hot parties are connected to each other via authenticated (but not private) channels and we also assume the parties can send broadcast messages (e.g. by posting to a blockchain).  %\noemi{we also assume a broadcast channel between the hot storages?}
-In contrast, each cold storage is connected by an authenticated channel only to its corresponding hot storage. The channel is only active during the signing phase, further reducing the cold party's attack surface. (For example, the cold storage could be a read-only USB device which is plugged into a PC (the hot storage) only briefly to produce a signature.) 
+We will use the superscripts $\hot$ and $\cold$, respectively, to denote the hot and cold components of some value, and a subscript $i$ to mean that the value corresponds to the $i$th party. For example, the $i$th party's cold signature is written as $\sigma_i^\cold$. We use the words ``user'' and ``client'' interchangeably to refer to the wallet owner. 
+
+Let $I_1, \ldots, I_n$ be parties (each representing a custodian institution) who will store shares of some user's signing key $\sk$. Each institution $I_i$ controls two parties: a hot wallet ($P_i^\hot$) and a cold wallet ($P_i^\cold$). Thus we represent an institution by the tuple $I_i = (P_i^\hot, P_i^\cold)$. 
+As in the standard threshold wallet setting, the hot parties are connected to each other via authenticated (but not private) channels. We also assume the parties can send broadcast messages (e.g. by posting to a blockchain).  %\noemi{we also assume a broadcast channel between the hot parties?}
+In contrast, each cold party is connected by an authenticated channel only to its corresponding hot party. This channel is only active during the signing phase, further reducing the cold party's attack surface. (For example, the cold party could be a read-only USB device which is plugged into a PC (the hot party) only briefly to produce a signature.) 
 An illustration of this model is given in \Cref{fig:model} for $n=3$.
 
-We assume $P_i^\hot$ has more storage space and computational power, while $P_i^\cold$ has limited storage (in particular, we want the space complexity to be independent of the number of users in the system). 
-%Each party has some state $\st$. 
-% We assume that $P_i^\hot$ is backed up -- specifically, an adversary cannot erase it. % $P_i^\cold$ is out of scope for corruptions.
-Therefore, our protocol aims to minimize the computation done by the cold storage.
+We assume $P_i^\hot$ has more storage space and computational power, while $P_i^\cold$ has limited storage (in particular, we want the space complexity to be independent of the number of users). 
+Therefore, our protocol aims to minimize the storage and computation on the part of the cold party.

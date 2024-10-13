@@ -23,7 +23,7 @@ A time-locked voting/auction protocol $\Pi_\Sigma = (\Setup, \Seal,\allowbreak \
 
 We note that the $\Setup(\cdot)$ algorithm in our protocols may use private randomness. In particular, our constructions use cryptographic groups (RSA and Paillier groups) that cannot be efficiently instantiated without a trusted setup (an untrusted setup would require gigantic moduli~\cite{ICICS:Sander99}). This trust can be minimized by generating the group via a distributed trusted setup, e.g.,~\cite{JACM:BonFra01,SP:CHIKMRsVW21,TCC:DamMik10}.
 Alternatively, the HTLPs in our protocols could be instantiated in class groups~\cite{CCS:TCLM21}, which do not require a trusted setup; however, HTLPs in class groups are less efficient and verifying them on-chain would be prohibitively costly 
-(see \Cref{sec:feasability}).
+(see \Cref{sec:htlp-choice}).
 
 A time-locked voting/auction protocol $\Pi_\Sigma$ must satisfy the following three security properties:
 

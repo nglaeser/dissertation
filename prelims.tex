@@ -176,7 +176,7 @@ Let $\GG_1, \GG_2$ be elliptic curve groups of order $p$ with generators $g_1,g_
 
 % Notice that this scheme is linearly homomorphic: given commitments $\com_f, \com_{f'}$ to two distinct polynomials $f(X),f'(X)$, the commitment to $(f+f')(X)$ is $\com_{f+f'} := \com_f \cdot \com_{f'}$. The same holds with the corresponding evaluation proofs $\pi_{f,i}, \pi_{f',i}$ at some point $i$: the evaluation proof for the point $(f+f')(i)$ is $\pi_{f+f',i} := \pi_{f,i} \cdot \pi_{f',i}$. Scaling the polynomial $f(X)$ by a constant $c \in \ZZ_p$ is also simple: the new commitment is $\com_{cf} := \com_f^c$ and an adjusted evaluation proof is obtained as $\pi_{cf, i} := \pi_{f,i}^c$.
 
-The security of the scheme relies on the $d$-Strong Diffie Hellman assumption ($d$-SDH), which states that given $\{g_1, g_1^\tau, \dots, g_1^{\tau^d}, g_2, g_2^\tau\}$, it is difficult to compute $(c, g_1^{\frac{1}{\tau-c}})$ for any $c \in \ZZ_p \setminus \{-\tau\}$. This assumption is stronger than $d$-SDH in $\GG_1$, which in turn implies DDH in $\GG_1$.
+The security of the scheme relies on the $d$-Strong Diffie Hellman assumption ($d$-SDH), which states that given $\{g_1, g_1^\tau, \dots, g_1^{\tau^d}, g_2, g_2^\tau\}$, it is difficult to compute $(c, g_1^{\frac{1}{\tau-c}})$ for any $c \in \ZZ_p \setminus \{-\tau\}$. This assumption is stronger than $d$-SDH in the symmetric case when $\GG_1 = \GG_2$, which in turn implies DDH in $\GG_1$.
 
 \section{Pedersen Commitments}\label{sec:pedersen}
 
