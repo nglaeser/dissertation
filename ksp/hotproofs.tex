@@ -29,11 +29,11 @@ and computes $\pi_{\sf ped} \gets \Pi_{\sf ped}.\mathsf{Prove}(\com_{\sf ped}; (
 It also samples $s \sample \ZZ_p$ and computes a blinded version of the evaluation proof as $\overline{\pi}_{\timeT,i} := \pi_{\timeT,i} h_1^s$.
 The final ZKPoK is defined as $(\com_{\sf ped}, \pi_{\sf ped}, \overline{\pi}_{\timeT,i}, g^{s_{\timeT,i}(\tau)})$, where $s_{\timeT,i}(X) := -r - s(X-i)$. The client accepts if and only if 
 \[
-    e(\com_\timeT/\change{\com_{\sf ped}}, g_2)
+    e(\com_\timeT/\chblue{\com_{\sf ped}}, g_2)
     \stackrel{?}{=}
-    e(\change{\overline{\pi}_{\timeT,i}}, g_2^\tau/g_2^i) \cdot \change{e(h_1, g_2^{s_{\timeT,i}(\tau)})} 
+    e(\chblue{\overline{\pi}_{\timeT,i}}, g_2^\tau/g_2^i) \cdot \chblue{e(h_1, g_2^{s_{\timeT,i}(\tau)})} 
 \]
-(where the $\change{\text{blue}}$ parts are changes to the original KZG verification check due to the blinding).
+(where the $\chblue{\text{blue}}$ parts are changes to the original KZG verification check due to the blinding).
 
 \subsection{PoK of Encrypted Key Share}\label{subsec:enc_pok}
 

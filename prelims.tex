@@ -2,21 +2,21 @@
 \minitoc
 
 \section{Notation}
-We use $[n]$ to denote the range $\{1, \dots, n\}$. For other ranges (mostly zero-indexed), we explicitly write the (inclusive) endpoints, e.g., $[0,n]$. 
+I use $[n]$ to denote the range $\{1, \dots, n\}$. For other ranges (mostly zero-indexed), we explicitly write the (inclusive) endpoints, e.g., $[0,n]$. 
 Concatenation of vectors $\vec{x},\vec{y}$ is written as $\vec{x} || \vec{y}$. 
 Let $\secpar$ be the security parameter.
-We use the uppercase variable $X$ for the free variable of a polynomial, e.g., $f(X)$. 
-We use a calligraphic font, e.g., $\mathcal{S}$ or $\mathcal{X}$, to denote sets or domains. When we apply an operation to two sets of equal size $\ell$ we mean pairwise application, e.g., $\mathcal{Z} = \mathcal{X} + \mathcal{Y}$ means $z_i = x_i + y_i~\forall{i \in [\ell]}$. \todo{empty set $\emptyset$ vs. $\perp$}
+I use the uppercase variable $X$ for the free variable of a polynomial, e.g., $f(X)$. 
+I use a calligraphic font, e.g., $\mathcal{S}$ or $\mathcal{X}$, to denote sets or domains. When applying an operation to two sets of equal size $\ell$ I mean pairwise application, e.g., $\mathcal{Z} = \mathcal{X} + \mathcal{Y}$ means $z_i = x_i + y_i~\forall{i \in [\ell]}$.
 Sampling an element $x$ uniformly at random from a set $\X$ is written as $x \sample \X$. 
-We use $:=$ to denote variable assignment, $y \gets \mathsf{Alg}(x)$ to assign to $y$ the output of some algorithm $\mathsf{Alg}$ on input $x$, and $y \sample \mathsf{Alg}(x)$ if the algorithm is randomized (or sometimes $\mathsf{Alg}(x) \randout y$). When we wish to be explicit about the randomness $r$ used, we write $y \gets \mathsf{Alg}(x; r)$. We use $\mathcal{D}_1 \approx_\secpar \mathcal{D}_2$ to denote that two distributions $\mathcal{D}_1, \mathcal{D}_2$ have statistical distance bounded by $\negl$.
+I use $:=$ to denote variable assignment, $y \gets \mathsf{Alg}(x)$ to assign to $y$ the output of some algorithm $\mathsf{Alg}$ on input $x$, and $y \sample \mathsf{Alg}(x)$ if the algorithm is randomized (or sometimes $\mathsf{Alg}(x) \randout y$). When I want to be explicit about the randomness $r$ used, I write $y \gets \mathsf{Alg}(x; r)$. I use $\mathcal{D}_1 \approx_\secpar \mathcal{D}_2$ to denote that two distributions $\mathcal{D}_1, \mathcal{D}_2$ have statistical distance bounded by $\negl$.
 
-For a non-interactive proof system $\Pi$, we write $\pi \gets \Pi.\prove(x; w)$ to show that the proving algorithm takes as input an instance $x$ and witness $w$ and outputs a proof $\pi$. Verification is written as $\Pi.\vrfy(x, \pi)$ and outputs a bit $b$. 
+For a non-interactive proof system $\Pi$, I write $\pi \gets \Pi.\prove(x; w)$ to show that the proving algorithm takes as input an instance $x$ and witness $w$ and outputs a proof $\pi$. Verification is written as $\Pi.\vrfy(x, \pi)$ and outputs a bit $b$. 
 
-We distinguish the key-pairs used in a signature scheme ($\vk, \sk$ for ``verification'' and ``signing'' key, respectively) from those used in an encryption scheme ($\ek, \dk$ for ``encryption'' and ``decryption'' key, respectively). 
+I distinguish the key-pairs used in a signature scheme ($\vk, \sk$ for ``verification'' and ``signing'' key, respectively) from those used in an encryption scheme ($\ek, \dk$ for ``encryption'' and ``decryption'' key, respectively). 
 
 \section{Non-interactive proof systems}\label{sec:nizks}
 
-A \emph{language} $\Lang \subseteq \{0,1\}^*$ is a set of elements. For our purposes, we will only consider the set of NP languages. Every language $\Lang \in \npol$ has a corresponding polynomially-decidable relation $\Rel_\Lang$ (i.e., decidable by a circuit $C(x,w)$ such that $\sizeof{C} \in \poly[\sizeof{x}]$) such that if $x \in \Lang, \exists w \suchthat (x,w) \in \Rel_\Lang$, with $w \in \poly[\sizeof{x}]$.
+A \emph{language} $\Lang \subseteq \{0,1\}^*$ is a set of elements. In this dissertation, I will only consider the set of NP languages. Every language $\Lang \in \npol$ has a corresponding polynomially-decidable relation $\Rel_\Lang$ (i.e., decidable by a circuit $C(x,w)$ such that $\sizeof{C} \in \poly[\sizeof{x}]$) such that if $x \in \Lang, \exists w \suchthat (x,w) \in \Rel_\Lang$, with $w \in \poly[\sizeof{x}]$.
 
 \begin{definition}[Non-interactive proof system] A non-interactive proof system $\Pi$ for some NP language $\Lang$ is a tuple of PPT algorithms $(\Setup, \prove, \vrfy)$:
     \begin{itemize}
@@ -25,7 +25,7 @@ A \emph{language} $\Lang \subseteq \{0,1\}^*$ is a set of elements. For our purp
         \item \underline{$\vrfy(\crs, x,\pi) \rightarrow \{0,1\}$:} Given the $\crs$ and a proof $\pi$ for the instance $x$, output a bit indicating accept or reject.
     \end{itemize}
 
-We require (perfect) \emph{completeness}, meaning that for all $(x,\witness) \in \Rel_\Lang$,
+(Perfect) \emph{completeness} requires that for all $(x,\witness) \in \Rel_\Lang$,
 \begin{equation*}
     \Pr\left[
         \vrfy(\crs, x, \pi)=1 
@@ -51,9 +51,9 @@ We require (perfect) \emph{completeness}, meaning that for all $(x,\witness) \in
 \end{equation*}
 \end{definition}
 
-We refer the reader to \cite{Thaler23,GoldreichFoC} for a formal description of other properties of proof systems (e.g., correctness, zero-knowledge). 
+I refer the reader to \cite{Thaler23,GoldreichFoC} for a formal description of other properties of proof systems (e.g., correctness, zero-knowledge). 
 
-There are numerous definitions of succinctness adopted for proof systems in the literature. In this work, we require succinct proof systems only to have proofs which are sublinear in the size of the witness and ``work-saving'' verification~\cite{snark-misconceptions}:
+There are numerous definitions of succinctness adopted for proof systems in the literature. In this work, I require succinct proof systems only to have proofs which are sublinear in the size of the witness and ``work-saving'' verification~\cite{snark-misconceptions}:
 
 \begin{definition}[succinctness]
     We say a proof system $\Pi$ is \emph{succinct} if $\sizeof{\pi} \in o(\sizeof{x} + \sizeof{\witness})$ and $\Pi.\vrfy(\crs, x, \pi)$ runs in time $\sizeof{x} + o(\sizeof{\witness})$.
@@ -77,7 +77,7 @@ There are numerous definitions of succinctness adopted for proof systems in the 
     \end{description}
 \end{definition}
 
-Pairings are divided into types based on the (in)equality of the utilized groups $\GG_1,\GG_2$ and whether there is an efficiently computable homomorphism between the groups. For our purposes, we will use a type-3 pairing: asymmetric ($\GG_1 \neq \GG_2$) and with no such efficiently computable homomorphism. In this case, the Decisional Diffie-Hellman (DDH) assumption is believed to hold in both $\GG_1$ and $\GG_2$; this is referred to as the \emph{symmetric external Diffie-Hellman (SXDH) assumption}.
+Pairings are divided into types based on the (in)equality of the utilized groups $\GG_1,\GG_2$ and whether there is an efficiently computable homomorphism between the groups. The constructions in this dissertation will use a type-3 pairing: asymmetric ($\GG_1 \neq \GG_2$) and with no such efficiently computable homomorphism. In this case, the Decisional Diffie-Hellman (DDH) assumption is believed to hold in both $\GG_1$ and $\GG_2$; this is referred to as the \emph{symmetric external Diffie-Hellman (SXDH) assumption}.
 
 \section{Shamir Secret Sharing}\label{sec:shamir}
 Shamir~\cite{CACM:Shamir79} introduced a scheme to share a secret among $n$ parties such that any $t$ parties can work together to recover the secret, but with any fewer parties the secret remains information-theoretically hidden.
@@ -104,11 +104,11 @@ For notational convenience, let $\share(s,t,n; r)[i]$ denote the $i$th share of 
     Output $s_k := (k, f(k))$.
 \end{itemize}
 
-\section{Digital Signatures}\label{sec:signatures}
+% \section{Digital Signatures}\label{sec:signatures}
 
-A \emph{digital signature} is a cryptographic primitive which \todo{...}
+% A \emph{digital signature} is a cryptographic primitive which allows a recipient to authenticate a message as coming from some sender.
 
-\subsection{BLS Signatures}\label{sec:bls}
+\section{BLS Signatures}\label{sec:bls}
 
 \begin{construction}[BLS signature scheme \cite{AC:BonLynSha01}]\label{con:bls}
 Let $\GG_1, \GG_2$ be elliptic curve groups of order $p$ generated by $g_1$ and $g_2$, respectively, and $e: \GG_1 \times \GG_2 \rightarrow \GG_T$ be an efficiently computable asymmetric pairing between them. We also require a hash function $\blshash: \{0, 1\}^* \rightarrow \GG_1$. The signature scheme works as follows:
@@ -127,7 +127,7 @@ More specifically, each party $i \in [n]$ receives a $t$-out-of-$n$ Shamir secre
 
 A partial signature is computed in exactly the same way as a regular BLS signature, but under the secret key share: $\sigma_i := \blshash(m)^{\sk_i}$. This value is publicly verifiable by checking that $(g_2, \vk_i, \blshash(m), \sigma_i)$ is a co-Diffie-Hellman tuple (i.e., it is of the form $(g_2, g_2^a, h, h^a)$ where $g_2 \in \GG_2$ and $h \in \GG_1$).
 
- Given $t$ valid partial signatures on a message $m \in \{0,1\}^*$ anyone can recover a regular BLS signature:
+Given $t$ valid partial signatures on a message $m \in \{0,1\}^*$ anyone can recover a regular BLS signature:
 
 \begin{itemize}
     \item \underline{$\sigma \gets \recon(S := \{(i, \sigma_i)\})$}: Let $S' \subseteq S$ be the set of valid partial signatures in $S$. If $\sizeof{S'} < t$, output $\perp$. Otherwise, without loss of generality, assume the first $t$ valid signatures come from users $1, \dots, t$ and recover the complete signature as
@@ -138,28 +138,25 @@ A partial signature is computed in exactly the same way as a regular BLS signatu
 
 Notice that the reconstruction simply performs Shamir reconstruction of the signing key shares $\sk_i$ in the exponent and thus the output will equal $\blshash(m)^{\sk}$. Hence, the complete signature is indistinguishable from a regular BLS signature, and verification proceeds exactly as in the regular scheme.
 
-\subsection{Schnorr Signatures}\label{sec:schnorr}
+% \subsection{Schnorr Signatures}\label{sec:schnorr}
 
-\begin{construction}[Schnorr signature~\cite{C:Schnorr89}]
-    Let $\pparam = (\GG, g, q)$ be description of a cyclic group $\GG$ of prime order $q$ with generator $g$ in which the discrete logarithm problem is hard.
-    \begin{itemize}
-        \item \underline{$\kgen(\pparam) \to (\sk, \vk)$:} Sample a secret key $\sk \sample \ZZ_q$ and set the corresponding verification key $\vk := g^{\sk} \in \GG$. Output $(\sk, \vk)$.
-        \item \underline{$\sign(\sk, m) \to \sigma$:} Given a secret key $\sk \in \ZZ_q$ and message $m$, sample $k \sample \ZZ_q$ and let $R := g^k$. Compute $c := H(m, g^\sk, R)$ and $s := k + c \cdot \sk$. Output $\sigma := (R, s)$.
-        \item \underline{$\vrfy(\vk, m, \sigma) \to \{0,1\}$:} Given a verification key $\vk$, message $m$, and signature $\sigma$, compute $c := H(m, \vk, R)$ and check $R \cdot \vk^c \stackrel{?}{=} s$. If so, output 1, else 0.
-    \end{itemize}
-\end{construction}
+% \begin{construction}[Schnorr signature~\cite{C:Schnorr89}]
+%     Let $\pparam = (\GG, g, q)$ be description of a cyclic group $\GG$ of prime order $q$ with generator $g$ in which the discrete logarithm problem is hard.
+%     \begin{itemize}
+%         \item \underline{$\kgen(\pparam) \to (\sk, \vk)$:} Sample a secret key $\sk \sample \ZZ_q$ and set the corresponding verification key $\vk := g^{\sk} \in \GG$. Output $(\sk, \vk)$.
+%         \item \underline{$\sign(\sk, m) \to \sigma$:} Given a secret key $\sk \in \ZZ_q$ and message $m$, sample $k \sample \ZZ_q$ and let $R := g^k$. Compute $c := H(m, g^\sk, R)$ and $s := k + c \cdot \sk$. Output $\sigma := (R, s)$.
+%         \item \underline{$\vrfy(\vk, m, \sigma) \to \{0,1\}$:} Given a verification key $\vk$, message $m$, and signature $\sigma$, compute $c := H(m, \vk, R)$ and check $R \cdot \vk^c \stackrel{?}{=} s$. If so, output 1, else 0.
+%     \end{itemize}
+% \end{construction}
 
-\noemi{Schnorr (threshold) signatures; \cite{EPRINT:Lindell22} and \cite{SAC:KomGol20} use different definitions of Schnorr, are they equivalent?}
+% % \noemi{Schnorr (threshold) signatures; \cite{EPRINT:Lindell22} and \cite{SAC:KomGol20} use different definitions of Schnorr, are they equivalent?}
 
-\paragraph{Threshold variants}
-Many protocols exist for threshold Schnorr signatures \cite{SAC:KomGol20,C:BCKMTZ22,EPRINT:Lindell22,EPRINT:BatLonMen22}, each offering a different combination of properties. \todo{...}
-
-\todo{Move to \Cref{sec:hcwl}} The BLS threshold signature scheme~\cite{AC:BonLynSha01} is fully non-interactive, meaning that signing occurs in one round.
-FROST is a ``somewhat'' non-interactive threshold signature scheme~\cite{EPRINT:BelTesZhu22} in the sense that the \emph{signing} procedure consists of a single round, but there is another round of message-independent pre-processing.     
+% \paragraph{Threshold variants}
+% Many protocols exist for threshold Schnorr signatures \cite{SAC:KomGol20,C:BCKMTZ22,EPRINT:Lindell22,EPRINT:BatLonMen22}, each offering a different combination of properties. The reader is referred to \cite{EPRINT:AumHamShl20} for a sampling of threshold Schnorr protocols.
 
 \section{KZG polynomial commitments}\label{sec:kzg}
 
-KZG commitments can be instantiated using either a symmetric or asymmetric pairing; we give the asymmetric version of KZG below.
+KZG commitments can be instantiated using either a symmetric or asymmetric pairing; I give the asymmetric version of KZG below.
 
 \begin{construction}[KZG polynomial commitments~\cite{AC:KatZavGol10}]
 Let $\GG_1, \GG_2$ be elliptic curve groups of order $p$ with generators $g_1,g_2$ and $e: \GG_1 \times \GG_2 \mapsto \GG_T$ be an elliptic curve pairing. The following is a commitment scheme for polynomials in $\ZZ_p[X]$ with degree at most $d$.
@@ -180,18 +177,18 @@ The security of the scheme relies on the $d$-Strong Diffie Hellman assumption ($
 
 \section{Pedersen Commitments}\label{sec:pedersen}
 
-Next, we recall Pedersen commitments~\cite{C:Pedersen91}, a commitment scheme which is unconditionally (information-theroetically) hiding and computationally binding (by the discrete logarithm assumption on $\GG$). In our construction we will instantiate the scheme over $\GG_1$, so we let $\GG = \GG_1$ in the description below.
+Next, I recall Pedersen commitments~\cite{C:Pedersen91}, a commitment scheme which is unconditionally (information-theroetically) hiding and computationally binding (by the discrete logarithm assumption on $\GG$). %The constructions in this dissertation will instantiate the scheme over $\GG_1$, so let $\GG = \GG_1$ in the description below.
 
 \begin{construction}[Pedersen commitment scheme~\cite{C:Pedersen91}]
-Let $\GG_1$ be a group of order $p$ and $g_1,h_1$ be generators of $\GG_1$. The following is a commitment scheme for elements $x \in \ZZ_p$.
+Let $\GG$ be a group of order $p$ and $g,h$ be generators of $\GG$. The following is a commitment scheme for elements $x \in \ZZ_p$.
 \begin{itemize}
-    \item \underline{$(\com, \decom) \gets \Commit(x):$} Sample $r \sample \ZZ_p$ and return $\com := g_1^x h_1^r$ and decommitment information $(x, r)$.
+    \item \underline{$(\com, \decom) \gets \Commit(x):$} Sample $r \sample \ZZ_p$ and return $\com := g^x h^r$ and decommitment information $(x, r)$.
     \item \underline{$(x, r) \gets \Open(\com, \decom):$} To open $\com$, directly output $\decom = (x, r)$.
-    \item \underline{$\{0,1\} \gets \vrfy(\com, x, r):$} To confirm the opening of $\com$ to $x$, it suffices to check that $\com = g_1^x h_1^r$.
+    \item \underline{$\{0,1\} \gets \vrfy(\com, x, r):$} To confirm the opening of $\com$ to $x$, it suffices to check that $\com = g^x h^r$.
 \end{itemize}
 \end{construction}
 
-A PoK of the committed value can be computed using a Sigma protocol due to Okamoto~\cite{C:Okamoto92}, which can be made non-interactive using the Fiat-Shamir transform~\cite{C:FiaSha86}. We refer to this protocol as $\Pi_{\sf ped}$ and present it in \Cref{fig:pi_ped}.
+A PoK of the committed value can be computed using a Sigma protocol due to Okamoto~\cite{C:Okamoto92}, which can be made non-interactive using the Fiat-Shamir transform~\cite{C:FiaSha86}. I refer to this protocol as $\Pi_{\sf ped}$ and present it in \Cref{fig:pi_ped}.
 
 \begin{figure*}[tbh]
    \centering

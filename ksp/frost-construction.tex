@@ -1,6 +1,9 @@
 \section{Hot-Cold Threshold Schnorr}\label{sec:frost_construction}
 
-Next, we show how to adapt FROST~\cite{SAC:KomGol20,EPRINT:CriKomMal21,C:BCKMTZ22}, a two-round threshold Schnorr protocol, to the hot/cold setting. (Specifically, we use the optimized version, FROST2, introduced in \cite{EPRINT:CriKomMal21}.) \noemi{Justify why FROST (very popular in practice, non-interactive signing phase, security with aborts/concurrency?)}
+Next, we show how to adapt FROST~\cite{SAC:KomGol20,EPRINT:CriKomMal21,C:BCKMTZ22}, a two-round threshold Schnorr protocol, to the hot/cold setting. (Specifically, we use the optimized version, FROST2, introduced in \cite{EPRINT:CriKomMal21}.) 
+The BLS threshold signature scheme~\cite{AC:BonLynSha01} is fully non-interactive, meaning that signing occurs in one round.
+FROST is a ``somewhat'' non-interactive threshold signature scheme~\cite{EPRINT:BelTesZhu22} in the sense that the \emph{signing} procedure consists of a single round, but there is another round of message-independent pre-processing.
+\noemi{Justify why FROST (very popular in practice, non-interactive signing phase, security with aborts/concurrency?)} \todo{Define $\lagrange{i}$ as the $i$th Lagrange coefficient with signing set $\signset$}
 
 \begin{figure}[htb]
     \centering
@@ -24,9 +27,9 @@ Next, we show how to adapt FROST~\cite{SAC:KomGol20,EPRINT:CriKomMal21,C:BCKMTZ2
     \rho = H_1(m, \vk, \signset, \ppset) \< \< \\
     R := D_i E_i^\rho \cdot R' \< R = D_i E_i^\rho \cdot R' \< \\
     c := H_2(m, \vk, R) \< c = H_2(m, \vk, R) \< \\
-    \sigma_i^\cold := (d_i + e_i \rho) - c \cdot s_i^\cold \lambda_i^\signset \> 
+    \sigma_i^\cold := (d_i + e_i \rho) - c \cdot s_i^\cold \lagrange{i} \> 
     \sendmessageright*{\sigma_i^\cold} \> \< \\
-    \< z_i := \sigma_i^\cold + c \cdot s_i^\hot \lambda_i^\signset \> \sendmessageright*{z_i} \< \\
+    \< z_i := \sigma_i^\cold + c \cdot s_i^\hot \lagrange{i} \> \sendmessageright*{z_i} \< \\
     }}}
     \caption{Our hot/cold threshold signature based on FROST2.}
     \label{fig:hc-frost}
@@ -45,7 +48,7 @@ During the message-dependent phase, the hot parties help with computing the nonc
 
 % \paragraph{Cold round 2.} Given $m$, $P_i^\cold$ uses the values of $\signset, \ppset, R'$ given to it by $P_i^\hot$ and also computes $\rho$. It adds its nonce contribution to $R'$ to get $R$, which it uses to compute $c$. Then it uses $R, c$, and its stored secret $\csecret$ to compute the cold partial signature $\sigma_i^\cold$, which it sends to $P_i^\hot$.
 
-% \paragraph{(Hot) threshold signing round 3.} $P_i^\hot$ also computes $R, c$, which it uses along with its stored secret $\hsecret$ to ``unblind'' the cold partial signature and recover $z_i := \sigma_i^\cold + c \cdot \hsecret \cdot \lambda_i^\signset = (d_i + e_i \rho) + c \cdot \sk_i^+$, where $\sk_i^+$ is the $i$th additive share of $\sk$ over $\signset$. 
+% \paragraph{(Hot) threshold signing round 3.} $P_i^\hot$ also computes $R, c$, which it uses along with its stored secret $\hsecret$ to ``unblind'' the cold partial signature and recover $z_i := \sigma_i^\cold + c \cdot \hsecret \cdot \lagrange_i^\signset = (d_i + e_i \rho) + c \cdot \sk_i^+$, where $\sk_i^+$ is the $i$th additive share of $\sk$ over $\signset$. 
 Finally, like in the classic FROST protocol, the hot parties broadcast their values $z_i$ and reconstruct the full signature as $\sigma := (R, \sum_{i \in \signset} z_i) = (g^k, k + c \cdot \sk)$.
 
 \begin{remark}

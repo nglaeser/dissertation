@@ -18,6 +18,8 @@
 \date{}
 
 \begin{document}
+\dominitoc % minitoc initialization
+\adjustmtc % fix for minitoc OBO indexing
 
 % \maketitle
 \frontmatter %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -34,10 +36,9 @@
 \ifbool{doublespaced}{\doublespacing}{}
 % \include{preface} % or Foreword
 % \include{dedication}
-\include{acks}
+% \include{acks}
 \ifbool{doublespaced}{\singlespacing}{}
 
-\addcontentsline{toc}{chapter}{Basis of this Dissertation}
 \nociteThis{FC:SerGlaBon24,CTB:GSZB24,GGJLM24}
 \bibliographystyleThis{alpha}
 \bibliographyThis{
@@ -45,7 +46,8 @@
     cryptobib/crypto,
     extrarefs
 }
-\addcontentsline{toc}{chapter}{Other Publications by the Author}
+\addcontentsline{toc}{chapter}{Basis of this Dissertation}
+
 \nociteOther{CSF:AGRS24,CCS:GKMR23,CCS:GMMMTT22}
 \bibliographystyleOther{alpha}
 \bibliographyOther{
@@ -53,6 +55,7 @@
     cryptobib/crypto,
     extrarefs
 }
+\addcontentsline{toc}{chapter}{Other Publications by the Author}
 % reactivate backrefs for References at end of doc
 \renewcommand*{\backrefalt}[4]{\scriptsize%
     \ifcase #1%
@@ -61,12 +64,9 @@
     \fi%
 }
 
-\dominitoc % minitoc initialization
 % \cleardoublepage
 \tableofcontents
-\adjustmtc % fix for minitoc OBO indexing x3
-\adjustmtc 
-\adjustmtc 
+\adjustmtc % fix for minitoc OBO indexing
 % List of tables
 % List of figures
 % List of abbreviations
