@@ -1,0 +1,38 @@
+\begin{savenotes}
+    \begin{figure*}
+    \centering
+    \fbox{\parbox{\textwidth}{%
+    \renewcommand{\labelitemi}{\textendash}
+    \setlength{\itemsep}{0pt}
+    \textbf{Signing}
+    \begin{itemize}
+        \item On input $(\texttt{sid},\mathsf{TSign}, P_i^\hot, (C, m))$, retrieve $(C, \mathcal{I}, *, \vk, *) \in \clientlist$ and $(P_i^\hot, P_i^\cold) \in \mathcal{I}$. Then:
+        % if $\exists t,y$ for the largest $t$ such that $(y, \hx_i, \aux_i, t, *) \in \hotlist_i$ and $\pred(y,\hx_i, \aux_i) = 1$ \todo{Define \pred.} 
+        \begin{enumerate}
+            \item Get $(P_i^\cold, *, \dk_i, *, \texttt{tampered}, \texttt{corrupt}_\cold, \texttt{allowc}) \in \coldlist$. If $\texttt{allowc}=1$, set it to 0.
+            \begin{itemize}%[\labelitemi=*]
+                \item If $\texttt{corrupt}_\cold = 1$, send $(\texttt{sid}, \mathsf{CSignRequest}, \adv,\allowbreak (P_i^\cold, C, m))$ to $\adv$, wait for response $b^*$, and set $b_\cold := (b^* \land \neg \texttt{tampered})$. Otherwise ($\texttt{corrupt}_\cold = 0$), set $b_\cold := \neg \texttt{tampered}$.
+                % \item Otherwise, compute $\sigma_i^\cold := \blshash(m)^{\lhlhash(\vk^{\dk_i})}$.
+            \end{itemize}
+            \item Retrieve $(P_i^\hot, C, \hx_i, *, \texttt{time}, *, \texttt{tampered}, \texttt{corrupt}_\hot, *) \in \hotlist$ for the maximum $\texttt{time}$. 
+            \begin{itemize}
+                \item If $\texttt{corrupt}_\hot = 1$, send $(\texttt{sid}, \mathsf{HSignRequest}, \adv, (P_i^\hot, C, m))$ to $\adv$, wait for response $b^*$, and set $b_\hot := (b^* \land \neg \texttt{tampered})$. Otherwise, set $b_\hot := \neg \texttt{tampered}$.
+                % \item Otherwise, compute $\sigma_i^\hot := \blshash(m)^{\hx_i}$. 
+            \end{itemize}
+            \item If $b_\cold \land b_\hot$, compute $\sigma_i^\cold := \blshash(m)^{\lhlhash(\vk^{\dk_i})}$ and $\sigma_i^\hot := \blshash(m)^{\hx_i}$. Let $\sigma_i := \sigma_i^\hot/\sigma_i^\cold$. Output $(\texttt{sid}, \mathsf{TSignResult}, P_i^\hot, (C, m, \sigma_i))$.
+            \begin{itemize}
+                \item If $(\texttt{corrupt}_\cold \land \neg \texttt{corrupt}_\hot)$, also send $\sigma_i^\hot$ to $\adv$. If $(\neg \texttt{corrupt}_\cold \land \texttt{corrupt}_\hot)$, send $\sigma_i^\cold$ to $\adv$.
+                \item Additionally, for every party $P_j^\hot$ such that $(P_j^\hot, *) \in \mathcal{I}$, retrieve $(P_j^\hot, *, \texttt{allowc}) \in \hotstates$ and set $\texttt{allowc}$ to 0.
+            \end{itemize}
+            \item If instead $\neg (b_\cold \land b_\hot)$, output $(\texttt{sid}, \mathsf{TSignResult}, P_i^\hot, (C, m, \perp))$.
+            \begin{itemize}
+                \item If $(\texttt{corrupt}_\cold \land \neg \texttt{corrupt}_\hot)$ or $(\neg \texttt{corrupt}_\cold \land \texttt{corrupt}_\hot)$, also sample $r \sample \ZZ_p$ and send $\blshash(m)^r$ to $\adv$.
+            \end{itemize}
+        \end{enumerate}
+    \end{itemize} 
+    }}
+        \caption{The BLS \hcwl functionality $\FSign$ (signing).}
+        \label{fig:FSign3}
+    \end{figure*}
+    \end{savenotes}
+    \footnotetext{We assume share refreshes are sequential and delivery to all $P_i$ precedes any new refreshes.}

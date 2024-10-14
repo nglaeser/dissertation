@@ -1,46 +1,45 @@
 \begin{figure*}
-% \begin{figure}[tbh]
-    \centering
-    \begin{mdframed}
-    \textbf{Parameters:} Groups $\GG_1, \GG_2$ of prime order $p$ with generators $g_1, g_2$, respectively; a degree-$d$ KZG common reference string $\crs$; hash functions $\blshash: \{0,1\}^* \to \GG_1$ and $\lhlhash: \GG_2^2 \to \ZZ_p$ as defined in \ref{sec:bls} and \ref{sec:mex}, resp.
-    % \hfill\medskip\\
-    \begin{center}
-        \textsc{Setup}
-    \end{center}
-    \underline{Registering a cold storage $P_i^\cold$:} On input $(\sid, \mathsf{ColdRegister}, P_i^\cold)$, $P_i^\cold$ calls $\Fpk$ on input $(\sid, \mathsf{PKSetup}, P_i^\cold)$ and receives response $(\sid, \mathsf{PKSetupResult}, P_i^\cold, (\ek_i, \dk_i))$. It stores $\ek_i, \dk_i$ and outputs $(\sid, \mathsf{ColdRegistered}, P_i^\cold, \ek_i)$.
-    \hfill\medskip\\
-    \underline{Registering a client $C$:} On input $(\sid, \mathsf{ClientRegister}, C, (t, \mathcal{I}))$, where $\mathcal{I} = \{(P_i^\hot, P_i^\cold)\}_{i \in [n]}$ is a set of institutional entities
-    % , $\mathcal{V}$ a set of volunteers, 
-    and $t \leq n$ a signing threshold:
-    \begin{enumerate}
-        \item $C$ calls $\Fpk$ on input $(\sid, \mathsf{PKRecover}, C, (P_i^\cold))$ for all $i \in [n]$. It waits until it receives a response $(\sid, \mathsf{PKRecoverResult}, C, (P_i^\cold, \ek_i))$ for all $i \in [n]$.
-        \item $C$ calls $\Fs$ on input $(\sid, \mathsf{SSSetup}, C, (t, \{P_i^\hot\}_{i \in [n]}, \{\ek_i\}_{i \in [n]}))$. The latter outputs $(\sid,\allowbreak \mathsf{SecretShare},\allowbreak P_i^\hot, (C, i, \hx_i, \pi_i))$ to $P_i^\hot ~\forall i \in [n]$. It also outputs $(\sid, \mathsf{SSSetupDone}, C,\allowbreak (\vk, \{\vk_i\}_{i \in [n]}))$ to $C$.
-        \item Each $P_i^\hot$ 
-        % calls $\Fs$ on input $(\sid, \mathsf{AuxRecover}, P_i^\hot, (C))$ to get $\com$ and computes $b_i \gets \mathsf{KZG}.\verify(\crs, \com, i, \hx_i, \pi_i)$. If $b_i=1$, % for corrupt C only
-        stores the tuple $(C, \hx_i, \pi_i)$ in a list $\keylist_i$. Then it outputs $(\sid, \mathsf{ClientRegistered}, P_i^\hot,\allowbreak (C, b_i = 1))$.
-        \item Meanwhile, $C$ stores the parameters and the values it received from $\Fs$ in the tuple $\clientlist = (\vk, \{\vk_i\}_{i \in [n]}, t, \mathcal{I})$. Finally, it outputs $(\sid, \mathsf{ClientRegistered}, C, \vk, \{\vk_i\}_{i \in [n]})$.
-    \end{enumerate}
-    \begin{center}
-        \textsc{Signing}
-    \end{center}
-    \underline{Threshold signing:} On input a signature request $(\sid, \mathsf{TSign}, P_i^\hot, (C, m))$ from a client $C$,
-    \begin{enumerate}
-        % \item If $I_i$ decides to honor the request, 
-        \item If $P_i^\hot$ decides to honor the request, 
-        it calls $\Fs$ on $(\sid, \mathsf{AuxRecover}, P_i^\hot, (C))$ to get $\vk$ and sends 
-        % $(C, m)$ to $P_i^\hot$ and 
-        $(\vk, m)$ to $P_i^\cold$. Otherwise, it aborts.
-        % \item Upon receiving a signature request, $P_i^\hot$ retrieves $(C, \hx_i, *)$ and returns $\sigma_i^\hot := \blshash(m)^{\hx_i}$.
-        \item If $P_i^\cold$ decides to honor the request, it 
-        sends $\sigma_i^\cold := \blshash(m)^r$ 
-        to $P_i^\hot$,
-        where $r := \lhlhash(\vk^{\dk_{i,1}}, \vk^{\dk_{i,2}})$.
-        \item Meanwhile, $P_i^\hot$ retrieves $(C, \hx_i, *) \in \keylist_i$ and computes $\sigma_i^\hot := \blshash(m)^{\hx_i}$.
-        \item Once it receives 
-        % $\sigma_i^\hot$ and 
-        $\sigma_i^\cold$, $P_i^\hot$ outputs $(\sid, \mathsf{TSignResult}, P_i^\hot, (C, m, \sigma_i := \sigma_i^\hot/\sigma_i^\cold))$.
-    \end{enumerate}
-    \end{mdframed}
-    \caption{Our BLS \hcwl protocol (setup and threshold signing).}
-    \label{fig:hc_bls1}
-\end{figure*}
+    % \begin{figure}[tbh]
+        \centering
+        \begin{mdframed}
+        \textbf{Parameters:} Groups $\GG_1, \GG_2$ of prime order $p$ with generators $g_1, g_2$, respectively; a degree-$d$ KZG common reference string $\crs$; hash functions $\blshash: \{0,1\}^* \to \GG_1$ and $\lhlhash: \GG_2^2 \to \ZZ_p$ as defined in \ref{sec:bls} and \ref{sec:keyshares}, resp.
+        % \hfill\medskip\\
+        \begin{center}
+            \textsc{Setup}
+        \end{center}
+        \underline{Registering a cold party $P_i^\cold$:} On input $(\sid, \mathsf{ColdRegister}, P_i^\cold)$, $P_i^\cold$ calls $\Fpk$ on input $(\sid, \mathsf{PKSetup}, P_i^\cold)$ and receives response $(\sid,\allowbreak \mathsf{PKSetupResult}, P_i^\cold, (\ek_i, \dk_i))$. It stores $\ek_i, \dk_i$ and outputs $(\sid,\allowbreak \mathsf{ColdRegistered}, P_i^\cold, \ek_i)$.
+        \hfill\medskip\\
+        \underline{Registering a client $C$:} On input $(\sid, \mathsf{ClientRegister}, C, (t, \mathcal{I}))$, where $\mathcal{I} = \{(P_i^\hot, P_i^\cold)\}_{i \in [n]}$ is a set of institutional entities
+        % , $\mathcal{V}$ a set of volunteers, 
+        and $t \leq n$ a signing threshold:
+        \begin{enumerate}
+            \item Call $\Fpk$ on input $(\sid, \mathsf{PKRecover}, C, (P_i^\cold))$ for all $i \in [n]$. Waits for a response $(\sid, \mathsf{PKRecoverResult}, C, (P_i^\cold, \ek_i))$ for all $i \in [n]$.
+            \item Call $\Fs$ on input $(\sid, \mathsf{SSSetup}, C, (t, \{P_i^\hot\}_{i \in [n]}, \{\ek_i\}_{i \in [n]}))$. The latter outputs $(\sid,\allowbreak \mathsf{SecretShare},\allowbreak P_i^\hot, (C, i, \hx_i, \pi_i))$ to $P_i^\hot ~\forall i \in [n]$. It also outputs $(\sid, \mathsf{SSSetupDone}, C,\allowbreak (\vk, \{\vk_i\}_{i \in [n]}))$ to $C$.
+            \item Each $P_i^\hot$ 
+            % calls $\Fs$ on input $(\sid, \mathsf{AuxRecover}, P_i^\hot, (C))$ to get $\com$ and computes $b_i \gets \mathsf{KZG}.\verify(\crs, \com, i, \hx_i, \pi_i)$. If $b_i=1$, % for corrupt C only
+            stores the tuple $(C, \hx_i, \pi_i)$ in a list $\keylist_i$. Then it outputs $(\sid, \mathsf{ClientRegistered}, P_i^\hot,\allowbreak (C, b_i = 1))$.
+            \item Meanwhile, $C$ stores the parameters and the values it received from $\Fs$ in the tuple $\clientlist = (\vk, \{\vk_i\}_{i \in [n]}, t, \mathcal{I})$. Finally, it outputs $(\sid, \mathsf{ClientRegistered}, C, \vk, \{\vk_i\}_{i \in [n]})$.
+        \end{enumerate}
+        \begin{center}
+            \textsc{Signing}
+        \end{center}
+        \underline{Threshold signing:} To sign a message, a client $C$ sends a a signature request $(\sid, \mathsf{TSign}, P_i, (C, \vk, m))$ to all $P_i \in \{P_1^\hot,P_1^\cold,\dots,P_n^\hot,P_n^\cold\}$.
+        \begin{enumerate}
+            % it calls $\Fs$ on $(\sid, \mathsf{AuxRecover}, P_i^\hot, (C))$ to get $\vk$ and sends 
+            % $(C, m)$ to $P_i^\hot$ and 
+            % $(\vk, m)$ to $P_i^\cold$. Otherwise, it aborts.
+            % \item Upon receiving a signature request, $P_i^\hot$ retrieves $(C, \hx_i, *)$ and returns $\sigma_i^\hot := \blshash(m)^{\hx_i}$.
+            \item If $P_i^\cold$ decides to honor the request, it 
+            sends $\sigma_i^\cold := \blshash(m)^r$ 
+            to $P_i^\hot$,
+            where $r := \lhlhash(\vk^{\dk_{i,1}}, \vk^{\dk_{i,2}})$.
+            \item If $P_i^\hot$ decides to honor the request, 
+            it retrieves $(C, \hx_i, *) \in \keylist_i$ and computes $\sigma_i^\hot := \blshash(m)^{\hx_i}$.
+            Once it receives 
+            % $\sigma_i^\hot$ and 
+            $\sigma_i^\cold$, $P_i^\hot$ outputs $(\sid, \mathsf{TSignResult}, P_i^\hot, (C, m, \sigma_i := \sigma_i^\hot/\sigma_i^\cold))$.
+        \end{enumerate}
+        \end{mdframed}
+        \caption{The \sysname protocol (setup and threshold signing).}
+        \label{fig:hc_bls1}
+    \end{figure*}

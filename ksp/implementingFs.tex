@@ -15,43 +15,18 @@ Additionally, the hot parties should also be sure that the client is using the \
 
 % \noemi{Alternatively can include commitments to the encrypted shares in $C$'s public key and each $P_i^\hot$ proves knowledge of the contents}
 
-\Cref{fig:pi_ref} gives the proof system $\Pi_{\sf Ref}$ used to prove correctness of share refreshes, with verification split between verifying the well-formedness of the update polynomial $z_\timeT(X)$ committed to by ${\sf u}\com_\timeT$ (via ${\sf UC}\vrfy$) and of each hot party's refresh information $\delta_i$ (via ${\sf H}\vrfy$).
+\input{ksp/protocols/pi-ref}
 
-% The proof $\Pi_{\sf HUpd}$ used by the client $C$ to show correctness of an update $\delta_i$ (except for the degree) is:
-\begin{figure*}[tb]
-    \centering
-    \begin{mdframed}
-    \begin{center}
-        \textsc{Share Refresh Proofs ($\Pi_{\sf Ref}$)}
-    \end{center}
-    \medskip
-    \textbf{Parameters:} Degree-$d$ KZG common reference string $\crs = \{g_1, g_1^\tau, \dots, g_1^{\tau^d}, g_2, g_2^\tau\}$.
-    \hfill\medskip\\
-    \underline{$\mathsf{Prove}((\crs, {\sf u}\com_\timeT, t-1, \{\delta_i\}_{i \in [n]}); z_\timeT(X)) \to (\{\zopen_{\timeT,i}\}_{i \in [n]}, \pi_z)$:} Given $\crs$, a KZG commitment ${\sf u}\com_\timeT$ to update polynomial $z_{\timeT}(X)$, the latter's degree $t-1$, and each party's share refresh information $\delta_i$, use $z_\timeT(X)$ to compute the following:
-    \begin{enumerate}
-        \item For each $i \in [n]$, prove that $\delta_i = z_\timeT(i)$ by computing $(\delta_i, \zopen_{\timeT,i}) \gets \mathsf{KZG}.\mathsf{Open}(\crs, z_\timeT(X), i)$. 
-        \item Prove that $z_\timeT(0) = 0$ and $z_\timeT(X)$ has degree $t-1 \leq d$ by computing $(0, \zopen_{\timeT,0}) \gets \mathsf{KZG}.\mathsf{Open}(\crs, z_\timeT(X), 0)$ and $\dcom_\timeT := g_1^{\tau^{d-t+1} \cdot z_t(\tau)}$ using $\crs$. Let $\pi_\ucom := (\zopen_{\timeT,0}, \dcom_\timeT)$. 
-        \item Output $(\{\zopen_{\timeT,i}\}_{i \in [n]}, \pi_\ucom)$.
-    \end{enumerate}
-    \underline{$\mathsf{H}\vrfy((\crs, \ucom_\timeT, i, \delta_i), \zopen_{\timeT,i}) \to \{0,1\}$:} Given $\crs$, a KZG commitment $\ucom_\timeT$, party index $i$, and share refresh information $\delta_i$, output $\mathsf{KZG}.\vrfy(\crs, \ucom_\timeT, i, \delta_i, \zopen_{\timeT,i})$.\medskip\\
-    \underline{${\sf UC}\vrfy((\crs, \ucom_\timeT, t-1), \pi_\ucom) \to \{0,1\}$:} Given $\crs$, a KZG commitment $\ucom_\timeT$, and its supposed degree $t-1$, verify the proof $\pi_\ucom = (\zopen_{\timeT,0}, \dcom_\timeT)$ by outputting 1 iff the following hold:
-    \[\begin{array}{c}
-        \mathsf{KZG}.\vrfy(\crs, \ucom_\timeT, 0, 0, \zopen_{\timeT,0}) = 1\\
-        e(\dcom_\timeT, g_2) = e(\ucom_\timeT, g_2^{d-t+1})
-    \end{array}\]
-    \end{mdframed}
-    \caption{The proof system $\Pi_{\sf Ref}$ used to prove correctness of the every hot party's share refresh information $\delta_i$ and the commitment update ${\sf u}\com_t$. Each hot party verifies its own update information using ${\sf H}\vrfy$, and the correctness of ${\sf u}\com$ is verified separately via ${\sf UC}\vrfy$.}
-    \label{fig:pi_ref}
-\end{figure*}
+\Cref{fig:pi_ref} gives the proof system $\Pi_{\sf Ref}$ used to prove correctness of share refreshes, with verification split between verifying the well-formedness of the update polynomial $z_\timeT(X)$ committed to by ${\sf u}\com_\timeT$ (via ${\sf UC}\vrfy$) and of each hot party's refresh information $\delta_i$ (via ${\sf H}\vrfy$).
 
 Given $\Pi_{\sf Ref}$, it is fairly simple to realize $\Fs$ in a manner that avoids trusting $C$ except for the setup phase.
 To do this, we assume a public bulletin board functionality $\Fbb$ with limited programmability (\Cref{fig:Fbb}). This functionality will store the most up-to-date commitment $\com$ to the hot shares $\hx_1, \dots, \hx_n$. Whenever the shares are refreshed, it will also check the correctness of the update to $\com$ (namely $\ucom$) before making the new commitment available.
 
 Specifically, instead of only running the steps of $\Fs$ locally, $C$ will compute some additional values using $\Pi_{\sf Ref}$ to let $\Fbb$ and each $P_i^\hot$ check the correctness of the share and update commitments. 
-The proof for the update commitment $\ucom$ will be checked by $\Fbb$ before changing the stored commitment. 
+The proof for the update commitment $\ucom$ will be checked by $\Fbb$ before updating the stored commitment. 
 Additionally, $C$ will let $\Fbb$ store and distribute $\ucom$ instead. 
 \renewcommand{\chblue}[1]{\textcolor{blue}{#1}}
-We describe the full protocol in \Cref{fig:fs_protocol}, where changes with respect to locally running the ideal functionality $\Fs$ are shown in \chblue{blue}.
+We describe the full protocol in \Cref{fig:fs_protocol}. %where changes with respect to locally running the ideal functionality $\Fs$ are shown in \chblue{blue}.
 
 \input{ksp/functionalities/BB}
 \input{ksp/protocols/Fs-usingBB}
@@ -63,5 +38,13 @@ The encrypted secret sharing protocol in \Cref{fig:fs_protocol} UC-realizes $\Fs
 \end{theorem}
 
 \begin{proof}
-    \todo{}
+    Let $\adv$ be the adversary interacting with the parties $P_1, \dots, P_n, C$ running the protocol in \Cref{fig:fs_protocol}. We will construct a simulator $\Sim$ running in the ideal world so that no environment $\env$ can distinguish an execution of the ideal-world interaction from the real protocol. $\Sim$ will interact with $\Fs$, $\env$, and invoke a copy of $\adv$ to run a simulated interaction of the protocol (which we again refer to as the internal interaction). The dummy parties, communication tapes, and message delivery are handled in the same way as in the proof of \Cref{thm:sec}.
+    
+    \paragraph{Corruptions} Whenever $\adv$ corrupts a party $P_i$ in the internal execution, $\Sim$ corrupts the corresponding dummy party.
+
+    \paragraph{Setup and auxiliary information} Since all the computation in setup is done by $C$ and we do not allow it to be corrupted in this phase, $\Sim$ only passes messages to and from $\Fs$. It also keeps track of client-threshold pairs in a list $D'$. Similarly, retrieving auxiliary information involves no computation, so $\Sim$ again only passes along messages.
+
+    \paragraph{Generating share refreshes} If $C$ is corrupt, $\Sim$ retrieves $(C, t) \in D'$ and observes what values $\ucom, \pi_\ucom$ the adversary $\adv$ sends to $\Fbb$ in the internal interaction. It computes $b^* \gets \Pi_{\sf Ref}.\mathsf{UC}\vrfy((\crs, \ucom, t), \pi_\ucom)$. When $\Fs$ sends $\Sim$ a $\mathsf{ZeroSetupRequest}$ message, it responds with $b^*$.
+
+    $\Sim$ also keeps track of the values $(x_i, \zopen_i)$ sent by $\adv$ to each $P_i$ in the internal interaction and computes $b_i^* \gets \Pi_{\sf Ref}.\mathsf{H}\vrfy((\crs, \ucom, i, x_i), \zopen_i)$. When $\Fs$ sends $\Sim$ a $\mathsf{ZeroShareRequest}$ message, it responds with $b_i^*$.
 \end{proof}

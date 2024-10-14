@@ -1,61 +1,39 @@
 \begin{figure*}
     % \begin{figure}[tbhp]
     \centering
-    \fbox{\parbox{.9\textwidth}{%
+    \fbox{\parbox{\textwidth}{%
     \renewcommand{\labelitemi}{\textendash}
     \setlength{\itemsep}{0pt}
     \textbf{Leak}
     \begin{itemize}
-    \item On input $(\texttt{sid},\mathsf{Leak}, \adv, (P_i^\hot))$, for every entry $(P_i^\hot, C_j, \hx_i, \pi_i,\allowbreak \texttt{time}, \texttt{leaked}, *) \in \hotlist$, set $\texttt{leaked}$ to $1$ and send $(\texttt{sid}, \mathsf{LeakResult}, \adv, ((P_i^\hot, C_j, \hx_i, \pi_i, \texttt{time}))$ to $\adv$.
+    \item On input $(\sid,\mathsf{Leak}, \adv, (P_i^\hot))$, for every entry $(P_i^\hot, C_j, \hx_i, \pi_i,\allowbreak \texttt{time}, \texttt{leaked}, *) \in \hotlist$, set $\texttt{leaked}$ to $1$ and send $(\texttt{sid}, \mathsf{LeakResult}, \adv,\allowbreak (P_i^\hot, C_j, \hx_i, \pi_i, \texttt{time}))$ to $\adv$.
     
-    \item On input $(\texttt{sid},\mathsf{Leak}, \adv, (P_i^\cold))$, retrieve the entry $(P_i^\cold, \ek_i, \dk_i, \texttt{leaked}, *, *, *) \in \coldlist$. Set $\texttt{leaked}$ to $1$ and send $(\texttt{sid}, \mathsf{LeakResult}, \adv, ((P_i^\cold, \dk_i))$ to $\adv$.
+    \item On input $(\sid,\mathsf{Leak}, \adv, (P_i^\cold))$, retrieve the entry $(P_i^\cold, \ek_i, \dk_i, \texttt{leaked},\allowbreak *, *, *) \in \coldlist$. Set $\texttt{leaked}$ to $1$ and send $(\texttt{sid}, \mathsf{LeakResult}, \adv, (P_i^\cold, \dk_i))$ to $\adv$.
     \end{itemize}
     
     \textbf{Tamper}
     \begin{itemize}
-    \item On input $(\texttt{sid},\mathsf{Tamper}, \adv, (P_i^\hot, C, f, g))$, where $f, g$ are functions: %\protect\footnotemark, 
+    \item On input $(\sid,\mathsf{Tamper}, \adv, (P_i^\hot, C, f, g))$, where $f, g$ are functions: %\protect\footnotemark, 
     \begin{enumerate}
         \item Retrieve $(P_i^\hot, C, \hx_i, \pi_i, \texttt{time}, \texttt{leaked}, \texttt{tampered}) \in \hotlist$ for the maximum value of $\texttt{time}$. Let $\hx_i' := f(\hx_i)$ and $\pi_i' := g(\pi_i)$. 
         \item If $\hx_i', \pi_i' \neq \perp$, let $b:=1$ and update the entry to $(C, P_i^\hot, \hx_i', \pi_i', \texttt{time}, \texttt{leaked}, \texttt{tampered}=1)$. Otherwise let $b:=0$. 
-        \item Send $(\texttt{sid}, \mathsf{TamperDone}, \adv, (C, P_i^\hot, b))$ to $\adv$.
+        \item Send $(\sid, \mathsf{TamperDone}, \adv, (C, P_i^\hot, b))$ to $\adv$.
     \end{enumerate}
     
-    \item On input $(\texttt{sid},\mathsf{Tamper}, \adv, (P_i^\cold, f))$, where $f$ is a function:  
+    \item On input $(\sid,\mathsf{Tamper}, \adv, (P_i^\cold, f))$, where $f$ is a function:  
     \begin{enumerate}
         \item Retrieve $(P_i^\cold, \ek_i, \dk_i, \texttt{leaked}, \texttt{tampered}, \texttt{corrupt}, \texttt{allowc}) \in \coldlist$. Let $\dk_i' := f(\dk_i)$.
-        \item If $\dk_i' \neq \perp$, let $b:=1$ and update the entry to $(P_i^\cold, \ek_i, \dk_i', \texttt{leaked}, \texttt{tampered}=1, \texttt{corrupt}, \texttt{allowc})$. Otherwise let $b:=0$. 
-        \item Send $(\texttt{sid}, \mathsf{TamperDone}, \adv, (P_i^\cold, b))$ to $\adv$.
+        \item If $\dk_i' \neq \perp$, let $b:=1$ and update the entry to $(P_i^\cold, \ek_i, \dk_i', \texttt{leaked},\allowbreak \texttt{tampered}=1, \texttt{corrupt}, \texttt{allowc})$. Otherwise let $b:=0$. 
+        \item Send $(\sid, \mathsf{TamperDone}, \adv, (P_i^\cold, b))$ to $\adv$.
     \end{enumerate}
-    % \noemi{Where are we using the \texttt{unleaked} bit? I guess it should be in an extra interface where we output a valid (full or partial, depending on how we want to define it) signature iff the (threshold of) party/ies has been met (adding up leaked + requested) --- or something like that}
-    
-    % \textbf{Partial Signatures}
-    % \noemi{$\adv$ can request only $\cSign$ or only $\hSign$ output for the corresponding party of a corrupt hot/cold}
-    
-    % \begin{itemize}
-    % \item On input $(\texttt{sid},\mathsf{CSign}, \adv, (y, m))$,
-    % % proceed as follows: 
-    % % if $\exists t, \ek_i, \dk_i $ for the largest $t$ such that $(P_i^\cold, \ek_i, \dk_i, t,  *) \in \coldlist$ and $\ek_i = g_2^{\dk_i}$ 
-    % retrieve $(C, \mathcal{I}, *, y, *) \in \clientlist$ and $(*, P_i^\hot, P_i^\cold) \in \mathcal{I}$. Then retrieve $(P_i^\hot, C, *, *, \texttt{time}, \texttt{leaked}, *, \texttt{corrupted}) \in \hotlist$ for the maximum value of $\texttt{time}$. If $(\texttt{leaked} \lor \texttt{corrupted}) \neq 1$, set $\sigma_i^\cold := \perp$.
-    % Otherwise, retrieve $(P_i^\cold, *, *, \dk_i, *) \in \coldlist$ and compute $\sigma_i^\cold := \blshash(m)^{\lhlhash({y^{\dk_i}})}$. Output $(\texttt{sid}, \mathsf{CSignResult}, \adv, (y, m, \sigma_i^\cold))$.
-    % %to $\adv$, else output $\bot$.
-    
-    % \item On input $(\texttt{sid},\mathsf{HSign}, \adv, (C, m))$,
-    % % if $\exists t,y$ for the largest $t$ such that $(y, \hx_i, \aux_i, t, *) \in \hotlist_i$ and $\pred(y,\hx_i, \aux_i) = 1$ \todo{Define \pred.} 
-    % retrieve $(C, \mathcal{I}, *, *, *) \in \clientlist$ and $(*, P_i^\hot, P_i^\cold) \in \mathcal{I}$. Then retrieve $(P_i^\cold, *, *, \texttt{leaked}, *, \texttt{corrupted}) \in \coldlist$. If $(\texttt{leaked} \lor \texttt{corrupted}) \neq 1$, set $\sigma_i^\hot := \perp$.
-    % Otherwise, retrieve $(C, P_i^\hot, \hx_i, *, \texttt{time}, *) \in \hotlist$ for the maximum value of $\texttt{time}$
-    % and compute $\sigma_i^\hot := \blshash(m)^{\hx_i}$. Output $(\texttt{sid}, \mathsf{HSignResult}, \adv, (C, m, \sigma_i^\hot))$.
-    % % send $(\texttt{sid}, \mathsf{HSignDone}, P_i^\hot, C, m, \sigma_i^\hot)$ to $\adv$.
-    % % ; if no such entry exists instead output $\bot$.
-    % % \item On input $(\texttt{sid}, \mathsf{HSignDeliver}, P_i^\hot, C, m)$ from $\adv$, output the corresponding \noemi{not formally specified} $(\texttt{sid}, \mathsf{HSignResult}, P_i^\hot, C, m, \sigma_i^\hot)$.
     \end{itemize} 
     
     \textbf{Corrupt}
     \begin{itemize}
         \item On input $(\sid,\mathsf{Corrupt}, \adv, (P_i^\hot))$, retrieve $(P_i^\hot, \texttt{corrupted}, \texttt{allowc}) \in \hotstates$ and check that $\texttt{allowc}=1$. If so, set $\texttt{corrupted}$ to 1. ($\adv$ receives $P_i^\hot$'s tapes and $\env$ is notified.)
-        \item On input $(\sid,\mathsf{Corrupt}, \adv, (P_i^\cold))$, retrieve $(P_i^\cold, *, *, *, *, \texttt{corrupted}, \texttt{allowc}) \in \coldlist$ and check if $\texttt{allowc}=1$. If so, set $\texttt{corrupted}$ to 1. ($\adv$ receives $P_i^\cold$'s tapes and $\env$ is notified.)
+        \item On input $(\sid,\mathsf{Corrupt}, \adv, (P_i^\cold))$, retrieve $(P_i^\cold, *, *, *, *, \texttt{corrupted},\allowbreak \texttt{allowc}) \in \coldlist$ and check if $\texttt{allowc}=1$. If so, set $\texttt{corrupted}$ to 1. ($\adv$ receives $P_i^\cold$'s tapes and $\env$ is notified.)
     \end{itemize}
     }}
         \caption{The BLS \hcwl functionality $\FSign$ (adversarial interfaces).}
-        \label{fig:FSign3}
+        \label{fig:FSign4}
     \end{figure*}
-    % \footnotetext{If the result of applying $f$ or $f'$ is not in the correct domain, we assume that the ideal functionality rejects the tampering and continues with the previous values. \noemi{can also say we define the output as $\perp$ in that case.}}

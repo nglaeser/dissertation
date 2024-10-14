@@ -1,35 +1,42 @@
 \subsection{Security Analysis}\label{sec:security}
 
-We prove our scheme secure in the universal composability framework\footnote{Specifically, we use the version presented in \cite{EPRINT:CLOS02}.}, which we summarize in \Cref{sec:uc}.
-
-Messages to and from the ideal functionalities consist of two pieces: a \emph{header} and the \emph{contents}. The header normally consists of a session identifier $\sid$, a description of the action the functionality should take/has taken, and the sender/recipient. In this paper, we will use the convention of putting the message contents in parentheses so it is clear where the (public) header ends and the (private) contents begin, e.g., $(\texttt{sid}, \mathsf{Action}, P_{\sf sender}, (\mathsf{contents}))$ or $(\texttt{sid}, \mathsf{ActionDone}, P_{\sf recipient}, \mathsf{publicvars}, (\mathsf{contents}))$.
+We prove our scheme secure in the universal composability framework\footnote{Specifically, we use the version presented in \cite{EPRINT:CLOS02}.}, which we summarized in \Cref{sec:uc}.
+Messages to and from the ideal functionalities consist of two pieces: a \emph{header} and the \emph{contents}. The header normally consists of a session identifier $\sid$, a description of the action the functionality should take/has taken, and the sender/recipient. In this dissertation, we will use the convention of putting the message contents in parentheses so it is clear where the (public) header ends and the (private) contents begin, e.g., $(\sid, \mathsf{Action}, P_{\sf sender}, (\mathsf{contents}))$ or $(\sid, \mathsf{ActionDone}, P_{\sf recipient}, \mathsf{publicvars},\allowbreak (\mathsf{contents}))$.
 
 \paragraph{Ideal Functionality}
 
 \input{ksp/functionalities/HC-reg}
-\input{ksp/functionalities/HC}
+\input{ksp/functionalities/HC-ref}
+\input{ksp/functionalities/HC-sign}
 
-We now present our hot-cold threshold BLS functionality $\FSign$, whose interfaces can only be called by \emph{either} an institutional hot or cold storage (specified by the superscripts $\hot$ and $\cold$) or a client. For readability, we split $\FSign$ into three figures. The first, \Cref{fig:FSign1}, describes how parties register in the system.
-The signing, share refresh, and proof of remembrance interfaces of $\FSign$ are described in \Cref{fig:FSign2}.
+We now present our BLS \hcwl functionality $\FSign$, whose interfaces can only be called by \emph{either} an institutional hot or cold party (specified by the superscripts $\hot$ and $\cold$) or a client. For readability, we split $\FSign$ into four figures. The first, \Cref{fig:FSign1}, describes how parties register in the system.
+The share refresh and proof of remembrance interfaces of $\FSign$ are described in \Cref{fig:FSign2}. Signing is given in \Cref{fig:FSign3}
+The adversarial interfaces (\Cref{fig:FSign4}) are described below. $\FSign$ uses the following internal variables to track the state of the system: 
+$\coldlist = \{(P^\cold, \ek, \dk, \texttt{leaked}, \texttt{tampered}, \texttt{corrupted}, \texttt{allowc})\}$, a table with the state of each cold storage's key material;
+$\clientlist = \{(C, \mathcal{I}, t, y, \com)\}$, a table of registered clients and their metadata;
+$\hotlist = \{(P^\hot, C_j, \hx, \pi, \texttt{time},\allowbreak \texttt{leaked}, \texttt{tampered})\}$, which keeps track of the hot key material and whether it has been leaked or tampered with;
+and $\hotstates = \{P^\hot, \texttt{corrupted}, \texttt{allowc}\}$, which keeps track of hot corruptions.
+
+% \input{src/functionalities/SS-recover}
 
 The most complicated part of the functionality is the signing interface, which provides partial BLS signatures $\sigma_i$ on requested messages. For uncorrupted institutions $I_i$ (that is, neither $P_i^\cold$ and $P_i^\hot$ are corrupt), $\sigma_i$ is computed honestly.
-If the hot party has been corrupted but the cold remains honest, the functionality asks the adversary whether to use the correct value for the hot signature; if so, it computes $\sigma_i$ correctly and also sends the cold signature to the adversary. Otherwise, it outputs $\sigma_i = \bot$ and sends $\blshash(m)^r$ for a uniform $r$ to $\adv$ (as the ``corresponding'' cold signature). (The idea is that in this case, the hot signature is incorrect so $\sigma_i$ will not verify, and the cold signature should be ``useless'' without it: it should look random to the adversary.) 
+If the hot party has been corrupted but the cold remains honest, the functionality asks the adversary whether to use the correct value for the hot signature; if so, it computes $\sigma_i$ correctly and also sends the cold signature to the adversary. Otherwise, it outputs $\sigma_i = \bot$ and sends $\blshash(m)^r$ for a uniform $r$ to $\adv$ (as the ``corresponding'' cold signature). (The idea is that in this case, the hot signature is incorrect so $\sigma_i$ will not verify, and the cold signature should be ``useless'' without it, i.e., it should look random to the adversary.) 
 If the hot party is honest and the cold is corrupt, the functionality behaves in the same way but with the hot and cold roles reversed. 
 Finally, if both parties in a pair are corrupt, the adversary will get no information about the hot or cold partial signatures from the functionality, which only outputs either the correct $\sigma_i$ or $\bot$, depending on whether the adversary says to compute the hot and cold partial signatures correctly.
 
 We will argue that this implements threshold BLS signatures, so the security of a protocol implementing $\FSign$ follows from security of threshold BLS.
 
-\paragraph{Adversarial interference} \Cref{fig:FSign3} gives the leak and tamper interfaces of $\FSign$, which an adversary can use to interfere with the information stored by the hot and cold storages in the system.
+\paragraph{Adversarial interference} \Cref{fig:FSign4} gives the leak and tamper interfaces of $\FSign$, which an adversary can use to interfere with the information stored by the hot and cold parties in the system.
 %\emph{only by the hot storages} in the system.
-We also give an explicit corruption interface, which only allows non-adaptive corruptions of the cold and hot parties (in the latter case, on a per-epoch basis). The interfaces also capture the fact that the client $C$ is out of scope for corruption. 
+We also give an explicit corruption interface, which only allows non-adaptive corruptions of the cold and hot parties (in the latter case, on a per-epoch basis). The interfaces also capture the fact that the client $C$ is out of scope for corruption (we weaken this assumption in \Cref{sec:fs_protocol}). 
 % \noemi{maybe we can get away without that} 
 
 \input{ksp/functionalities/HC-adv}
 
 % We do not define interfaces for verification since it is an algorithm with public inputs and can therefore be run at any time by any party.
 
-\begin{theorem}[security]\label{thm:sec}
-Our \hcwl construction (\Cref{sec:bls-construction}) UC-realizes $\FSign$ in the $\Fs,\Fpk$-hybrid model.
+\begin{theorem}[security of \sysname]\label{thm:sec}
+\sysname (\Cref{fig:hc_bls1,fig:hc_bls2}) UC-realizes $\FSign$ in the $\Fs,\Fpk$-hybrid model.
 \end{theorem}
 
 \begin{proof}
@@ -45,7 +52,7 @@ Each protocol/algorithm begins with a party receiving some input. In the ideal w
 \paragraph{Leak and Tamper}
 Whenever $\adv$ leaks or tampers with the inputs of a party in the internal execution, $\Sim$ uses the corresponding interface of $\FSign$ to learn/change the same information (it can use any functions $f,g$ for tampering). %It keeps track of any tampering/leaks in the lists $\coldlist', \hotlist'$.
 
-\paragraph{Cold Registration} $\Sim$ will deliver the message $(\texttt{sid}, \mathsf{ColdRegister}, P_i^\cold)$ from $\tilde{P}_i^\cold$ to $\FSign$ once $\adv$ delivers $(\texttt{sid}, \mathsf{PKSetup}, P_i^\cold)$ to $\Fpk$ in the internal interaction.
+\paragraph{Cold Registration} $\Sim$ will deliver the message $(\sid, \mathsf{ColdRegister}, P_i^\cold)$ from $\tilde{P}_i^\cold$ to $\FSign$ once $\adv$ delivers $(\sid, \mathsf{PKSetup}, P_i^\cold)$ to $\Fpk$ in the internal interaction.
 \begin{itemize}
     \item If $\tilde{P_i}^\cold$ is corrupt, $\Sim$ records $(P_i^\cold, \ek_i^*, \texttt{corrupt} = 1)$ in a local database $\coldlist'$, where $\ek_i^*$ is the value sent by $\adv$ on (the corrupted) $\tilde{P_i}^\cold$'s behalf.
     \item Otherwise, if $\tilde{P_i}^\cold$ is honest, it stores $(P_i^\cold, \ek_i, \texttt{corrupt} = 0) \in \coldlist'$, where $\ek_i$ is the value from $\FSign$'s response.
@@ -53,13 +60,13 @@ Whenever $\adv$ leaks or tampers with the inputs of a party in the internal exec
 It delivers the response to $\tilde{P}_i^\cold$ once $\adv$ delivers the result of $\Fpk$ in the internal interaction. 
 
 \paragraph{Client Registration and Share Refreshes}
-Recall that $C$ is out of scope for corruptions. Thus, in any case $\Sim$ will deliver the message $(\sid, \mathsf{ClientRegister}, C,\allowbreak (t, \mathcal{I}))$ on $\tilde{C}$'s outgoing communication tape to $\FSign$ once $\adv$ delivers $(\sid,\allowbreak \mathsf{SSSetup},\allowbreak C, (t, \{P_i^\hot\}_{i \in [n]}, *))$ from $C$ to $\Fs$ in the internal interaction. $\FSign$ will send $(\texttt{sid}, \mathsf{ClientRegistered}, C, (\vk))$ to $\tilde{C}$ and $(\texttt{sid},\allowbreak \mathsf{ClientRegistered}, P_i^\hot, (C, b_i))$ to $\tilde{P_i}^\hot$. $\Sim$ delivers these messages to $\tilde{C}$ and each \emph{honest} party $\tilde{P_i}^\hot$, respectively, once the corresponding response by $\Fs$ is delivered to them in the internal interaction.
+Recall that $C$ is out of scope for corruptions. Thus, in any case $\Sim$ will deliver the message $(\sid, \mathsf{ClientRegister}, C,\allowbreak (t, \mathcal{I}))$ on $\tilde{C}$'s outgoing communication tape to $\FSign$ once $\adv$ delivers $(\sid,\break \mathsf{SSSetup}, C, (t, \{P_i^\hot\}_{i \in [n]}, *))$ from $C$ to $\Fs$ in the internal interaction. $\FSign$ will send $(\sid, \mathsf{ClientRegistered}, C, (\vk))$ to $\tilde{C}$ and $(\sid,\allowbreak \mathsf{ClientRegistered}, P_i^\hot, (C, b_i))$ to $\tilde{P_i}^\hot$. $\Sim$ delivers these messages to $\tilde{C}$ and each \emph{honest} party $\tilde{P_i}^\hot$, respectively, once the corresponding response by $\Fs$ is delivered to them in the internal interaction.
 For any corrupt $\tilde{P_i}^\hot$, $\Sim$ instead outputs on its behalf the same bit $b_i$ as $\adv$ does in the internal interaction. The simulation for share refreshes works the same way.
 
 % in main body for both short and full version
 \paragraph{Signing} 
 We will use the fact that partial BLS signatures $\sigma_i$ can be verified with respect to the partial verification key $\vk_i$. Let $\mathsf{P}\vrfy(\vk_i, m, \sigma_i)$ be the partial verification algorithm, which in the case of BLS consists of checking that $(g_2, \vk_i, \blshash(m), \sigma_i)$ is a co-Diffie-Hellman tuple (see \Cref{sec:bls}).
-On input $(\texttt{sid}, \mathsf{TSign}, P_i^\hot, (C, m))$, the simulator first delivers the message to $\FSign$ once $\adv$ delivers the corresponding request from $C$ to $P_i^\hot$ in the internal interaction. Then it retrieves the identity of the corresponding $P_i^\cold$ and behaves as follows:
+On input $(\sid, \mathsf{TSign}, P_i^\hot, (C, m))$, the simulator first delivers the message to $\FSign$ once $\adv$ delivers the corresponding request from $C$ to $P_i^\hot$ in the internal interaction. Then it retrieves the identity of the corresponding $P_i^\cold$ and behaves as follows:
 \begin{itemize}
     \item If $P_i^\hot, P_i^\cold$ are both honest, $\Sim$ immediately delivers $\FSign$'s output $(\sid,\allowbreak \mathsf{TSignResult}, P_i^\hot, (C, m, \sigma_i))$.
     \item If $P_i^\hot$ is honest and $P_i^\cold$ is corrupt, $\Sim$ will receive a $\mathsf{CSignRequest}$ from $\FSign$ to which it must respond with a bit $b$. It looks at the values $\sigma_i^\hot$ and ${\sigma_i^\cold}^*$ in the internal interaction (the latter is output by $\adv$ on behalf of the corrupt $P_i^\cold$) and responds with $b := \mathsf{P}\vrfy(\vk_i, m, \sigma_i^\hot/{\sigma_i^\cold}^*)$, where $\vk_i, m$ are the $i$th partial verification key and message requested in the \emph{internal} execution (all known to $\Sim$). As before, it delivers $\FSign$'s output to $\tilde{C}$ immediately.
@@ -74,13 +81,11 @@ On input $(\sid, \mathsf{CProof}, C, (P_i^\cold))$, the simulator delivers the m
     \item On the other hand, if $\tilde{P}_i^\cold$ is corrupted, $\Sim$ will receive a message from $\FSign$ requesting a bit $b^*$. It retrieves the party's $\ek_i$ from $\coldlist'$ and the proof $\pi_i^\cold$ computed by $\adv$ in the internal execution and sends back $b^* := \Pi_{\sf DL}.\vrfy((\ek_i,\allowbreak g_2), {\pi_i^\cold})$. Finally it delivers $\FSign$'s output $(\sid,\allowbreak \mathsf{CProofResult},\allowbreak C, (P_i^\cold, b))$ to $\tilde{C}$ once $\adv$ delivers the message from $\Fpk$ to $C$ in the internal execution.
 \end{itemize}
 On input $(\texttt{sid}, \mathsf{HProof}, P_i^\hot, (C))$, $\Sim$ acts in the same way as $\mathsf{CProof}$, except in the corrupted case it sets $b^* := \Pi_{\sf EKS}.\vrfy(\com, {\pi_i^\hot})$, where both $\com, \pi_i^\cold$ are the party's values in the internal execution.
-% If $\tilde{P}_i^\hot$ is not corrupted, $\Sim$ delivers the output $(\texttt{sid}, \mathsf{HProofResult}, C, (P_i^\hot, b))$ to $\tilde{C}$ once $\adv$ delivers the output of $\Fpk$ to $C$ in the internal execution.
-% On the other hand, if $\tilde{P}_i^\hot$ is corrupted, $\Sim$ will receive a message from $\FSign$ requesting a bit $b^*$. It retrieves the value of $\com$ from the internal execution and sends back $b^* := \Pi_{\sf EKS}.\verify(\com, {\pi_i^\hot})$. 
-% Finally it delivers $\FSign$'s output $(\texttt{sid}, \mathsf{CProofResult}, C, (P_i^\cold, b))$ to $\tilde{C}$ once $\adv$ delivers the message from $\Fpk$ to $C$ in the internal execution.
 
 It is straightforward to see that the simulated registration and share refreshes are identical to a real-world execution.
 The simulation of the signing protocol is computationally indistinguishable from the real-world execution by the correctness and security of threshold BLS signatures, which guarantees that $\Sim$ sends $b=1$ iff ${\sigma_i^\cold}^* = \blshash(m)^{\lhlhash(\vk^{\dk_i})}$, resp. ${\sigma_i^\hot}^* = \blshash(m)^{\hx_i}$. 
 Similarly, the indistinguishability of simulating proofs of remembrance follows from the correctness and soundness of $\Pi_{\sf DL}$ and $\Pi_{\sf EKS}$.
 \end{proof}
 
+\paragraph{From $\FSign$ to threshold BLS} 
 Finally, notice that the signing interface of $\FSign$ is identical to the functionality offered by threshold BLS, except that $\adv$ additionally learns either $\sigma_i^\hot$ or $\sigma_i^\cold$ (in step 3) or a uniform value $\blshash(m)^r$ (in step 4). Clearly the uniform value is independent of any private information can be simulated perfectly as a uniform $\GG_2$ element. As for step 3, the simulator can again send a uniform $\GG_2$ element, now in place of $\sigma_i^\hot$ (alternatively, $\sigma_i^\cold$), and the simulation is statistically indistinguishable by \Cref{lemma:LHL}.

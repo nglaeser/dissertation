@@ -1,51 +1,40 @@
 \begin{figure*}
-% \begin{figure}[tbhp]
-\centering
-\fbox{\parbox{.9\textwidth}{%
-\renewcommand{\labelitemi}{\textendash}
-\setlength{\itemsep}{0pt}
-\textbf{Public parameters:} Groups $\GG_1, \GG_2$ of prime order $p$ with generators $g_1, g_2$, respectively; a degree-$d$ KZG common reference string $\crs$; a hash function $\blshash: \{0,1\}^* \to \GG_1$; an extractor $\lhlhash: \GG_2^2 \to \ZZ_p$.
-\hfill\\
-\textbf{Internal variables:}\hfill\\
-$\coldlist = \{(P^\cold, \ek, \dk, \texttt{leaked}, \texttt{tampered}, \texttt{corrupted}, \texttt{allowc})\}$, a table with the state of each cold storage's key material.\\
-$\clientlist = \{(C, \mathcal{I}, t, y, \com)\}$, a table of registered clients and their metadata.\\
-$\hotlist = \{(P^\hot, C_j, \hx, \pi, \texttt{time}, \texttt{leaked}, \texttt{tampered})\}$, which keeps track of the key material of every hot storage for each of its clients, and whether it has been leaked or tampered with.\\
-$\hotstates = \{P^\hot, \texttt{corrupted}, \texttt{allowc}\}$, which keeps track of whether each hot party has been corrupted.
-\medskip\\
-\textbf{Registration}
-\begin{itemize}
-\item On input $(\texttt{sid},\mathsf{ColdRegister},P_i^\cold)$, it proceeds as follows:
-    \begin{enumerate}
-    \item Sample $\dk_i \sample \ZZ_p$ and set $\ek_i := g_2^{\dk_i}$. 
-    \item Delete any existing entries for $P_i^\cold$ in $\coldlist$ and add $(P_i^\cold, \ek_i, \dk_i, \texttt{leaked}:=0,\texttt{tampered}:=0,\texttt{corrupted}:=0,\texttt{allowc}:=1)$ to $\coldlist$.
-    \item Output $(\texttt{sid},\mathsf{ColdRegistered}, P_i^\cold, \ek_i)$.
-    % \item Send $(\texttt{sid},\mathsf{ColdRegisterDone}, I_i, \ek_i)$ to the adversary $\adv$. 
-    \end{enumerate}
-% \item On input $(\texttt{sid},\mathsf{ColdRegisterDeliver}, I_i)$ from $\adv$, retrieve the corresponding $(I_i = (P_i^\hot, P_i^\cold), \ek_i, \dk_i, *, *)$ from $\coldlist$ and send $(\texttt{sid},\mathsf{ColdRegistered}, I_i, \ek_i, \dk_i)$ to $P_i^\cold$; also update $\texttt{time}$ to $1$. If no such entry exists in $\coldlist$, do nothing.
-
-\item On input $(\texttt{sid},\mathsf{ClientRegister}, C, (t, \mathcal{I}))$, where $\mathcal{I} = \{(P_i^\hot, P_i^\cold)\}_{i \in [n]}$ is a set of institutional entities
-%where $C$ is the client, 
-%$\mathcal{V}$ is a set of volunteer helpers, 
-and $t \leq n$ a signing threshold,
-it proceeds as follows:
-    \begin{enumerate}
-    \item For each $i \in [n]$, retrieve $(P_i^\cold, \ek_i, *, *, *, *, *)$ from $\coldlist$. If a public key for some party is unavailable then output $y := \bot$.
-    \item Otherwise, sample $x \sample \ZZ_p \setminus \{0\}$. Let $y := g_2^x$.
-    \item Generate $t$-out-of-$n$ Shamir Shares of $x$ as $x_1, \ldots x_n \in \ZZ_p$. Let $y_i := g_2^{x_i} ~\forall i \in [n]$.
-    \item Interpolate the degree-$n$ polynomial $\tilde{f}$ such that $\tilde{f}(i) = \lhlhash(\ek_i^x) + x_i~\forall i \in [n]$. Compute $\com \gets \mathsf{KZG}.\Commit(\crs, \tilde{f})$. % and ${\sf d}\com := g_1^{\tau^{d-n} \cdot \tilde{f}(\tau)}$.
-    \item Delete any existing entries $(C, *, *, *, *) \in \clientlist$ and add $(C, \mathcal{I}, t, y, \com)$ to $\clientlist$. Send $(\texttt{sid},\allowbreak \mathsf{ClientRegistered}, C, y, \{y_i\}_{i \in [n]})$ to $C$.
-    \item For each $i \in [n]$:
-    \begin{enumerate}
-        \item Compute $(\hx_i, \pi_i) \gets \mathsf{KZG}.\Open(\crs, \tilde{f}, i)$. %and let $\aux_i := (\com, \pi_i)$, 
-        % \item Output $(\texttt{sid},\mathsf{ClientRegistered}, P_i^\hot, (C, t, \hx_i, \pi_i))$. \noemi{We probably don't even need $t$ in the output}
-        \item Output $(\texttt{sid},\mathsf{ClientRegistered}, P_i^\hot, (C, b_i=1))$.
-        \item Once $\adv$ has delivered/allowed delivery of the message, delete any existing entries $(P_i^\hot, C, *, *, *, *, *) \in \hotlist$ and add $(P_i^\hot, C, \hx_i, \pi_i, \texttt{time} := 0, \texttt{leaked} := 0,\allowbreak \texttt{tampered} := 0)$ to $\hotlist$. Delete any existing entries $(P_i^\hot, \texttt{corrupted}, \texttt{allowc}) \in \hotstates$ and add $(P_i^\hot, \texttt{corrupted} := 0, \texttt{allowc} := 1)$.
-        % (ii)  send $(\texttt{sid},\mathsf{ClientRegisterDone}, t, n, C, \mathcal{V}, \mathcal{I}, I_i, y)$ to the adversary $\adv$. 
-    \end{enumerate}
-    \end{enumerate}
-% \item On input $(\texttt{sid},\mathsf{ClientRegisterDeliver}, C, t, n, \mathcal{V}, \mathcal{I}, I_i)$ from $\adv$, retrieve $(C, \mathcal{V}, \mathcal{I}, t, n, *) \in \clientlist$. If $I_i \in \mathcal{I}$, retrieve $(C, \hx_i, \aux_i, \texttt{time}, *) \in \hotlist_i$, then send $(\texttt{sid},\mathsf{ClientRegistered}, C, t, n, y, \hx_i, \aux_i)$ to $P_i^\hot$ and update $\texttt{time} := 1$.
-\end{itemize}
-}}
-\caption{The BLS \hcwl functionality $\FSign$ (registration).}
-    \label{fig:FSign1}
-\end{figure*}
+    \centering
+    \fbox{\parbox{\textwidth}{%
+    \renewcommand{\labelitemi}{\textendash}
+    \setlength{\itemsep}{0pt}
+    % \textbf{Public parameters:} Groups $\gp_1, \gp_2$ of prime order $p$ with generators $g_1, g_2$, respectively; a degree-$d$ KZG common reference string $\crs$; a hash function $\blshash: \{0,1\}^* \to \gp_1$; an extractor $\lhlhash: \gp_2^2 \to \ZZ_p$.
+    % \textbf{Internal variables:}\hfill\\
+    % $\coldlist = \{(P^\cold, \ek, \dk, \texttt{leaked}, \texttt{tampered}, \texttt{corrupted}, \texttt{allowc})\}$, a table with the state of each cold storage's key material.\\
+    % $\clientlist = \{(C, \mathcal{I}, t, y, \com)\}$, a table of registered clients and their metadata.\\
+    % $\hotlist = \{(P^\hot, C_j, \hx, \pi, \texttt{time}, \texttt{leaked}, \texttt{tampered})\}$, which keeps track of the hot key material and whether it has been leaked or tampered with.\\
+    % $\hotstates = \{P^\hot, \texttt{corrupted}, \texttt{allowc}\}$, which keeps track of hot corruptions.
+    % \medskip\\
+    \textbf{Registration}
+    \begin{itemize}
+    \item On input $(\texttt{sid},\mathsf{ColdRegister},P_i^\cold)$, it proceeds as follows:
+        \begin{enumerate}
+        \item Sample $\dk_i \sample \ZZ_p$ and set $\ek_i := g_2^{\dk_i}$. 
+        \item Delete any existing entries for $P_i^\cold$ in $\coldlist$ and add $(P_i^\cold, \ek_i, \dk_i, \texttt{leaked}:=0,\texttt{tampered}:=0,\texttt{corrupted}:=0,\texttt{allowc}:=1)$ to $\coldlist$.
+        \item Output $(\texttt{sid},\mathsf{ColdRegistered}, P_i^\cold, \ek_i)$.
+        \end{enumerate}
+    
+    \item On input $(\texttt{sid},\mathsf{ClientRegister}, C, (t, \mathcal{I}))$, where $\mathcal{I} = \{(P_i^\hot, P_i^\cold)\}_{i \in [n]}$ is a set of institutional entities and $t \leq n$ a signing threshold, it proceeds as follows:
+        \begin{enumerate}
+        \item For each $i \in [n]$, retrieve $(P_i^\cold, \ek_i, *, *, *, *, *)$ from $\coldlist$. If a public key for some party is unavailable then output $y := \bot$.
+        \item Otherwise, sample $x \sample \ZZ_p \setminus \{0\}$. Let $y := g_2^x$.
+        \item Generate $t$-of-$n$ Shamir shares of $x$ as $x_1, \ldots x_n$. Let $y_i := g_2^{x_i} ~\forall i \in [n]$.
+        \item Interpolate the degree-$n$ polynomial $\tilde{f}$ such that $\tilde{f}(i) = \lhlhash(\ek_i^x) + x_i~\forall i \in [n]$. Compute $\com \gets \mathsf{KZG}.\Commit(\crs, \tilde{f})$. % and ${\sf d}\com := g_1^{\tau^{d-n} \cdot \tilde{f}(\tau)}$.
+        \item Delete any existing entries $(C, *, *, *, *) \in \clientlist$ and add $(C, \mathcal{I}, t, y, \com)$ to $\clientlist$. Send $(\texttt{sid},\allowbreak \mathsf{ClientRegistered}, C, y, \{y_i\}_{i \in [n]})$ to $C$.
+        \item For each $i \in [n]$:
+        \begin{enumerate}
+            \item Compute $(\hx_i, \pi_i) \gets \mathsf{KZG}.\Open(\crs, \tilde{f}, i)$. %and let $\aux_i := (\com, \pi_i)$, 
+            \item Output $(\texttt{sid},\mathsf{ClientRegistered}, P_i^\hot, (C, b_i=1))$.
+            \item Once $\adv$ has allowed delivery of the message, delete any existing entries $(P_i^\hot, C, *, *, *, *, *) \in \hotlist$ and add $(P_i^\hot, C, \hx_i, \pi_i, \texttt{time} := 0, \texttt{leaked} := 0,\allowbreak \texttt{tampered} := 0)$ to $\hotlist$. Delete any existing entries $(P_i^\hot, \texttt{corrupted}, \texttt{allowc}) \in \hotstates$ and add $(P_i^\hot, \texttt{corrupted} := 0, \texttt{allowc} := 1)$.
+        \end{enumerate}
+        \end{enumerate}
+    \end{itemize}
+    }}
+    \caption{The BLS \hcwl functionality $\FSign$ (registration).}
+        \label{fig:FSign1}
+    \end{figure*}

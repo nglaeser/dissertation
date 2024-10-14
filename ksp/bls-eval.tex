@@ -1,7 +1,55 @@
 \subsection{Implementation and Evaluation}\label{sec:eval}
 
+\begin{table}[tb]
+    \centering
+    \setlength{\belowbottomsep}{0.5em}
+    \begin{subtable}[t]{.5\linewidth}
+        \centering
+        \begin{tabular}{lr}
+            \toprule
+            &
+            \textbf{Time} \\\midrule
+            $\mathsf{ColdRegister}$ & 360$\mu$s \\
+            $\mathsf{TSign}$ & 890$\mu$s \\ 
+            $\shref$ ($P_i^\hot$) & 5ms \\
+            Cold Prove ($\Pi_{\sf DL}.\mathsf{Prove}$) & 370$\mu$s \\
+            Cold Verify ($\Pi_{\sf DL}.\vrfy$) & 560$\mu$s \\\bottomrule
+        \end{tabular}
+    \caption{Runtimes. The $\shref$ time for $P_i^\hot$ includes running $\Pi_{\sf Ref}.{\sf H}\vrfy$ for the refresh proofs.}\label{tab:bench-times}
+    \end{subtable}%
+    \begin{subtable}[t]{.5\linewidth}
+        \centering
+        \begin{tabular}{lr}
+        \toprule
+            & \textbf{Proof size} (B) \\\midrule
+            Cold proof ($\Pi_{\sf DL}$) & 256 \\
+            Hot proof ($\Pi_{\sf EKS}$) & 304 \\
+            Refresh proof ($\zopen_i$) & 48 \\
+            \bottomrule
+        \end{tabular}%
+        \caption{Proof sizes}\label{tab:bench-sizes}
+    \end{subtable}
+    \caption{\sysname benchmarks independent of threshold}
+    \label{tab:bench}
+\end{table}
+
+\begin{table}[tb]
+    \centering
+    \begin{tabular}{l rrr}
+        \toprule
+        & \multicolumn{3}{c}{\textbf{Time} (ms)} \\
+        $(t,n)=$                  & $(3,5)$ & $(5,20)$ & $(67,100)$ \\\midrule
+        $\mathsf{ClientRegister}$ & 10      & 40       & 170 \\
+        $\shref$ ($C$)            & 11      & 41       & 172 \\
+        Hot Prove ($\Pi_{\sf EKS}.\mathsf{Prove}$) & 10 & 40 & 170 \\
+        Hot Verify ($\Pi_{\sf EKS}.\vrfy$) & 14 & 43 & 4     \\\bottomrule
+    \end{tabular}
+    \caption{\sysname benchmarks for each setting of $(t,n)$. Times for $\cProof$ and $\hProof$ are not included since they are identical to the corresponding rows of \Cref{tab:bench-times}. The $\shref$ times for $C$ includes running $\Pi_{\sf Ref}.{\sf UC}\vrfy$. \todo{Hot verify for $t=67$ looks wrong.}}
+    \label{tab:thresh_bench}
+\end{table}
+
 We implemented our construction in Rust using the BLS12-381 elliptic curve.\footnote{\url{https://github.com/hyperledger-labs/agora-key-share-proofs/}}
-Each element in $\GG_1$ is 48 bytes in compressed form, $\GG_2$ is 96 bytes, and $\ZZ_p$ is 32 bytes. Thus the sizes of $\vk$ and $\ek_i$ are both 96 bytes. The cold and hot shares $\dk_i$ and $\hx_i$, as well as the share refresh information $\delta_i$, are all 32 bytes. The (partial) signatures $\sigma_i^\hot, \sigma_i^\cold$, and $\sigma_i$, as well as the commitment $\com_\timeT$, are 48 bytes. %Exponentiations in $\GG_1$ and $\GG_2$ on our machine take \todo{} milliseconds, respectively.
+Each element in $\GG_1$ is 48 bytes in compressed form, $\GG_2$ is 96 bytes, and $\ZZ_p$ is 32 bytes. Thus the size of $\vk$ is 96 bytes. Each $\ek_i$ is 192 bytes (2 $\GG_2$ elements). The hot shares $\hx_i$ and share refresh information $\delta_i$ are 32 bytes, and the cold shares $\dk_i$ are 64 bytes. The (partial) signatures $\sigma_i^\hot, \sigma_i^\cold$, and $\sigma_i$, as well as the commitment $\com_\timeT$, are 48 bytes. %Exponentiations in $\GG_1$ and $\GG_2$ on our machine take \todo{} milliseconds, respectively.
 
 We report the runtimes of each of our algorithms for small $(t,n)=(3,5)$, % Gnosis safe
 medium $(5,20)$, % DFINITY
@@ -9,52 +57,5 @@ and large $(67,100)$ parameter settings. % Lit
 % \ifieee
 % The $\shref$ times for $C$ and $P_i^\hot$ include the ${\sf UC}\verify$ resp. ${\sf H}\verify$ times of the refresh proofs in \Cref{tab:proofs}.
 % \fi
-The times for cold registration and proofs, threshold signing, and processing hot share refreshes (which includes running $\Pi_{\sf Ref}.{\sf H}\vrfy$ to check $\zopen_i$) are all independent of $(t,n)$ and are shown in \Cref{tab:bench}. Hot share generation ($\mathsf{ClientRegister}$), producing hot share refreshes (in our implementation, by $C$ running the code of $\Fs$),\noemi{does this include $\Pi_{\sf Ref}.{\sf UC}\vrfy$? i.e., checking that the update is a sharing of zero (verify KZG opening at zero) and that it's degree-t (check $\dcom$). So, it's the bullet of $\mathsf{ClientUpdate}$ in spec.tex that starts with ``The system should check that...''} and hot proofs depend on the specific values of $(t,n)$ and are shown in \Cref{tab:thresh_bench}.
-The benchmarks are an average over 1000 runs using a machine with 8-core AMD Ryzen 9 5900HX with 64GB RAM and cache: L1 512KB, L2 4MB, L3 16 MB at 5GHz.
-The proof sizes are given in \Cref{tab:proofs}. 
-
-\begin{table}[tbh]
-    \centering
-    \begin{tabular}{lc}
-        \toprule
-        &
-        Time \\\midrule
-        $\mathsf{ColdRegister}$ & 360$\mu$s \\
-        $\mathsf{TSign}$ & 890$\mu$s \\ 
-        $\shref$ ($P_i^\hot$) & 5ms \\
-        Cold Prove ($\Pi_{\sf DL}.\mathsf{Prove}$) & 370$\mu$s \\
-        Cold Verify ($\Pi_{\sf DL}.\vrfy$) & 560$\mu$s \\\bottomrule
-    \end{tabular}
-    \caption{Benchmarks of our algorithms regardless of threshold}
-    \label{tab:bench}
-\end{table}
-
-\begin{table}[tbh]
-    \centering
-    \begin{tabular}{l cccc}
-        \toprule
-        & \multicolumn{3}{c}{Time (ms)} \\
-        $(t,n)=$                  & $(3,5)$ & $(5,20)$ & $(67,100)$ \\\midrule
-        $\mathsf{ClientRegister}$ & 10      & 40       & 170 \\
-        $\shref$ ($C$)            & 11      & 41       & 172 \\
-        Hot Prove ($\Pi_{\sf EKS}.\mathsf{Prove}$) & 10 & 40 & 170 \\
-        Hot Verify ($\Pi_{\sf EKS}.\vrfy$) & 14 & 43 & 4     \\\bottomrule
-    \end{tabular}
-    \caption{Benchmarks of our algorithms for each setting of $(t,n)$. Times for $\cProof$ and $\hProof$ are not included since they are identical to the corresponding rows of \Cref{tab:proofs}. The $\shref$ times for $C$ and $P_i^\hot$ include the ${\sf UC}\vrfy$ resp. ${\sf H}\vrfy$ times of the refresh proofs in \Cref{tab:proofs}.}
-    \label{tab:thresh_bench}
-\end{table}
-
-\begin{table}[tbh]
-    \centering
-    \begin{tabular}{l c}
-    \toprule
-        & $\sizeof{\pi}$ (B) \\\midrule
-        Cold proof ($\Pi_{\sf DL}$) & 256 \\
-        Hot proof ($\Pi_{\sf EKS}$) & 304 \\
-        Refresh proof ($\zopen_i$) & 48 \\
-        \bottomrule
-    \end{tabular}
-    \caption{Sizes for our various proof systems regardless of threshold}
-    % \caption{Benchmarks for our various proof systems. The cold proofs using proof system $\Pi_{\sf DL}$ are produced by each $P_i^\cold$ and verified by $C$; similarly, the hot proofs using $\Pi_{\sf EKS}$ are produced by each $P_i^\hot$ and verified by $C$. The share refresh proofs are produced by $\Fs$ (in our case, implemented by $C$), with the element $\pi_z$ checked by the party maintaining the public parameters (in our case $C$, but it could also be e.g., a blockchain smart contract), while the $i$th party's share refresh proof (i.e., $\pi_i$) is checked by $P_i^\hot$.}
-    \label{tab:proofs}
-\end{table}
+The times for cold registration and proofs, threshold signing, and processing hot share refreshes (which includes running $\Pi_{\sf Ref}.{\sf H}\vrfy$ to check $\zopen_i$) are all independent of $(t,n)$ and are shown in \Cref{tab:bench-times}. Similarly, proof sizes are independent of $(t,n)$ and are given in \Cref{tab:bench-sizes}. Runtimes for generating hot shares ($\mathsf{ClientRegister}$), hot share refreshes (using the realization of $\Fs$ shown in \Cref{fig:fs_protocol}), and hot proofs depend on the specific values of $(t,n)$ and are shown in \Cref{tab:thresh_bench}.
+The benchmarks are an average over 1000 iterations using a machine with an 8-core AMD Ryzen 9 5900HX processor at 5GHz with 64GB RAM and 512KB L1, 4MB L2, and 16 MB L3 cache.

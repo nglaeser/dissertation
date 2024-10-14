@@ -1,46 +1,46 @@
 \begin{figure*}
-% \begin{figure}[tbh]
-    \centering
-    \begin{mdframed}
-\renewcommand{\labelitemi}{\textendash}
-% \setlength{\itemsep}{0pt}
-\begin{center}
-    \textsc{Encrypted secret sharing protocol}
-\end{center}
-\textbf{Public parameters:} Groups $\GG_1, \GG_2$ of prime order $p$ with generators $g_1, g_2$, respectively; a degree-$d$ KZG common reference string $\crs$.\hfill\\
-
-\underline{Setup:}
-On input $(\sid,\mathsf{SSSetup}, C, (t, \mathcal{P}, \{\ek_i\}_{i \in [n]}))$, where $t,n \in \mathbb{N}$ s.t. $n = \sizeof{\mathcal{P}}$ and $t \leq n \leq d$, $\mathcal{P} = \{P_1 \ldots P_n\}$ a set of parties, and $\{\ek_i\}_{i \in [n]}$ a set of public (encryption) keys ($\forall i \in [n], \ek_i \in \GG_2$), $C$ proceeds as follows:
-    \begin{enumerate}
-    \item Sample $x \sample \ZZ_p \setminus \{0\}$. 
-    Let $y := g_2^x$.
-    \item Generate $t$-out-of-$n$ Shamir Shares of $x$ as $x_1, \ldots x_n \in \ZZ_p$. Let $y_i := g_2^{x_i}~\forall i \in [n]$.
-    \item Interpolate the degree-$n$ polynomial $\tilde{f}$ such that $\tilde{f}(i) = \lhlhash(\ek_i^x) + x_i~\forall i\in [n]$. Compute $\com \gets \mathsf{KZG}.\Commit(\crs, \tilde{f})$ %and ${\sf d}\com := g_1^{\tau^{d-n} \cdot \tilde{f}(\tau)}$. 
-    \chblue{and send $(\sid, \mathsf{Setup}, C, (y, t, n, \com))$ to $\Fbb$.}
-    \item Delete any existing entries $(C, *, *) \in \clientlist$ and add $(C, \mathcal{P}, t)$ to $\clientlist$.
-    \item For each $i \in [n]$, compute $(\hx_i, \pi_i) \gets \mathsf{KZG}.\Open(\crs, \tilde{f}, i)$ and output $(\texttt{sid},\mathsf{SecretShare}, P_i,\allowbreak (C, i, \hx_i, \pi_i))$.
-    \item Finally, output $(\texttt{sid}, \mathsf{SSSetupDone}, C, (y, \{y_i\}_{i \in [n]}))$.
-    \end{enumerate}
-\underline{Generating share refreshes:}
-On input $(\texttt{sid},\mathsf{ZeroSetup}, C, (t, \mathcal{P}))$, where $t,n \in \mathbb{N}$ s.t. $n = \sizeof{\mathcal{P}}$ and $t \leq n \leq d$, and $\mathcal{P} = \{P_1 \ldots P_n\}$ a set of parties, $C$ will proceed as follows:
-    \begin{enumerate}
-        \item Generate $t$-out-of-$n$ Shamir Shares of $0$ as $x_1, \ldots x_n \in \ZZ_p$; let $f$ be the polynomial used.
-        \item Compute $\com_0 \gets \mathsf{KZG}.\Commit(\crs, f)$
-        \chblue{and $(\{\zopen_i\}_{i \in [n]}, \pi_z) \gets \Pi_{\sf Ref}.\mathsf{Prove}((\crs, \com_0, t-1, \{x_i\}_{i \in [n]});\allowbreak f(X))$.}
-        % ${\sf d}\com_0 := g_1^{\tau^{d-t} \cdot f(\tau)}$, and $(0, \pi_0) \gets \mathsf{KZG}.\Open(\crs, f, 0)$. 
-        \chblue{Send $(\sid, \mathsf{ComUpdate}, C, (\com_0, \pi_z))$ to $\Fbb$, which returns $(\sid, \mathsf{ComUpdateResult}, C,\allowbreak (b))$.}
-        \item \chblue{Send $(x_i, \zopen_i)$ to $P_i$ for all $i \in [n]$,} then output $(\texttt{sid}, \mathsf{ZeroSetupDone}, C, (b))$. 
-        \item \chblue{Each party $P_i$ for $i \in [n]$ 
-        % compute $(\delta_i, \pi_i) \gets \mathsf{KZG}.\Open(\crs, f, i)$ and % redundant, already done by $\Pi_{\sf Ref}$
-        will send $(\sid, \mathsf{UComRecover}, P_i, (C))$ to $\Fbb$ and receive $(\sid, \mathsf{UCom}, P_i, (C, \ucom))$ in return. Check that $\Pi_{\sf Ref}.\mathsf{H}\vrfy((\crs, \ucom, i, x_i), \zopen_i) = 1$. If not, set $x_i, \zopen_i = \perp$.}
-        Output $(\texttt{sid},\mathsf{ZeroShare}, P_i,\allowbreak (C, x_i, \zopen_i))$. % (C, \delta_i, \pi_i))$.
-    \end{enumerate}
-\underline{Providing auxiliary information:}
-On input $(\sid, \mathsf{AuxRecover}, P, (C))$ for some client $C$, \chblue{$P$ sends $(\sid, \mathsf{ClientInfoRecover}, C)$ to $\Fbb$ to get $(\vk, \com)$}.
-It outputs $(\sid, \mathsf{AuxInfo}, P, (C, \vk, \com))$.%\smallskip\hfill\\
-% \underline{Providing latest zero commitment:}
-% On input $(\sid, \mathsf{ZeroComRecover}, P, (C))$ for some client $C$, \chblue{$P$ sends $(\sid, \mathsf{UComRecover}, P, (C))$ to $\Fbb$ to get $\ucom$}. It outputs $(\sid, \mathsf{ZeroCom}, P, (C, \ucom))$.
-    \end{mdframed}
-    \caption{Protocol realizing $\Fs$ in the $\Fbb$-hybrid model}
-    \label{fig:fs_protocol}
-\end{figure*}
+    % \begin{figure}[tbh]
+        \centering
+        \begin{mdframed}
+    \renewcommand{\labelitemi}{\textendash}
+    % \setlength{\itemsep}{0pt}
+    \begin{center}
+        \textsc{Encrypted secret sharing protocol}
+    \end{center}
+    \textbf{Public parameters:} Groups $\GG_1, \GG_2$ of prime order $p$ with generators $g_1,\allowbreak g_2$, respectively; a degree-$d$ KZG common reference string $\crs$.\hfill
+    
+    \underline{Setup:}
+    On input $(\sid,\mathsf{SSSetup}, C, (t, \mathcal{P}, \{\ek_i\}_{i \in [n]}))$, where $t,n \in \mathbb{N}$ s.t. $n = \sizeof{\mathcal{P}}$ and $t \leq n \leq d$, $\mathcal{P} = \{P_1 \ldots P_n\}$ a set of parties, and $\{\ek_i\}_{i \in [n]}$ a set of public (encryption) keys ($\forall i \in [n], \ek_i \in \GG_2$), $C$ proceeds as follows:
+        \begin{enumerate}
+        \item Sample $x \sample \ZZ_p \setminus \{0\}$. 
+        Let $y := g_2^x$.
+        \item Generate $t$-out-of-$n$ Shamir Shares of $x$ as $x_1, \ldots x_n \in \ZZ_p$. Let $y_i := g_2^{x_i}~\forall i \in [n]$.
+        \item Interpolate the degree-$n$ polynomial $\tilde{f}$ such that $\tilde{f}(i) = \lhlhash(\ek_i^x) + x_i~\forall i\in [n]$. Compute $\com \gets \mathsf{KZG}.\Commit(\crs, \tilde{f})$ %and ${\sf d}\com := g_1^{\tau^{d-n} \cdot \tilde{f}(\tau)}$. 
+        \chblue{and send $(\sid,\allowbreak \mathsf{Setup}, C, (y, t, n, \com))$ to $\Fbb$.}
+        \item Delete any existing entries $(C, *, *) \in \clientlist$ and add $(C, \mathcal{P}, t)$ to $\clientlist$.
+        \item For each $i \in [n]$, compute $(\hx_i, \pi_i) \gets \mathsf{KZG}.\Open(\crs, \tilde{f}, i)$ and output $(\texttt{sid},\mathsf{SecretShare}, P_i,\allowbreak (C, i, \hx_i, \pi_i))$.
+        \item Finally, output $(\texttt{sid}, \mathsf{SSSetupDone}, C, (y, \{y_i\}_{i \in [n]}))$.
+        \end{enumerate}
+    \underline{Generating share refreshes:}
+    On input $(\texttt{sid},\mathsf{ZeroSetup}, C, (t, \mathcal{P}))$, where $t,\allowbreak n \in \mathbb{N}$ s.t. $n = \sizeof{\mathcal{P}}$ and $t \leq n \leq d$, and $\mathcal{P} = \{P_1 \ldots P_n\}$ a set of parties, $C$ will proceed as follows:
+        \begin{enumerate}
+            \item Generate $t$-out-of-$n$ Shamir Shares of $0$ as $x_1, \ldots x_n \in \ZZ_p$; let $f$ be the polynomial used.
+            \item Compute $\com_0 \gets \mathsf{KZG}.\Commit(\crs, f)$
+            \chblue{and $(\{\zopen_i\}_{i \in [n]}, \pi_z) \gets \Pi_{\sf Ref}.\mathsf{Prove}((\crs,\allowbreak \com_0, t-1, \{x_i\}_{i \in [n]});\allowbreak f(X))$.}
+            % ${\sf d}\com_0 := g_1^{\tau^{d-t} \cdot f(\tau)}$, and $(0, \pi_0) \gets \mathsf{KZG}.\Open(\crs, f, 0)$. 
+            \chblue{Send $(\sid, \mathsf{ComUpdate},\allowbreak C, (\com_0, \pi_z))$ to $\Fbb$, which returns $(\sid, \mathsf{ComUpdateResult},\allowbreak C, (b))$.}
+            \item \chblue{Send $(x_i, \zopen_i)$ to $P_i$ for all $i \in [n]$,} then output $(\sid, \mathsf{ZeroSetupDone},\allowbreak C, (b))$. 
+            \item \chblue{Each party $P_i$ for $i \in [n]$ 
+            % compute $(\delta_i, \pi_i) \gets \mathsf{KZG}.\Open(\crs, f, i)$ and % redundant, already done by $\Pi_{\sf Ref}$
+            will send $(\sid, \mathsf{UComRecover}, P_i, (C))$ to $\Fbb$ and receive $(\sid, \mathsf{UCom}, P_i, (C, \ucom))$ in return. It checks that $\Pi_{\sf Ref}.\mathsf{H}\vrfy((\crs, \ucom, i, x_i), \zopen_i) = 1$. If not, set $x_i, \zopen_i = \perp$.}
+            Output $(\texttt{sid},\mathsf{ZeroShare}, P_i,\allowbreak (C, x_i, \zopen_i))$. % (C, \delta_i, \pi_i))$.
+        \end{enumerate}
+    \underline{Providing auxiliary information:}
+    On input $(\sid, \mathsf{AuxRecover}, P, (C))$ for some client $C$, \chblue{$P$ sends $(\sid, \mathsf{ClientInfoRecover}, P, (C))$ to $\Fbb$}. %to get $(\vk, \com)$}.
+    % It outputs $(\sid, \mathsf{AuxInfo}, P, (C, \vk, \com))$.%\smallskip\hfill\\
+    % \underline{Providing latest zero commitment:}
+    % On input $(\sid, \mathsf{ZeroComRecover}, P, (C))$ for some client $C$, \chblue{$P$ sends $(\sid, \mathsf{UComRecover}, P, (C))$ to $\Fbb$ to get $\ucom$}. It outputs $(\sid, \mathsf{ZeroCom}, P, (C, \ucom))$.
+        \end{mdframed}
+        \caption{Protocol realizing $\Fs$ in the $\Fbb$-hybrid model. Changes with respect to locally running the ideal functionality $\Fs$ are shown in \chblue{blue}.}
+        \label{fig:fs_protocol}
+    \end{figure*}

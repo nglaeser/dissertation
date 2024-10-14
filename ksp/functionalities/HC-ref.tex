@@ -1,0 +1,42 @@
+\begin{figure*}
+    \centering
+    \fbox{\parbox{\textwidth}{%
+    \renewcommand{\labelitemi}{\textendash}
+    \setlength{\itemsep}{0pt}
+    \textbf{Proactive Refresh}
+    \begin{itemize}
+    \item On input $(\texttt{sid},\shref,C)$, it proceeds as follows:
+        \begin{enumerate}
+        \item Output $\bot$ if a prior share refresh from $C$ is still pending.\footnotemark
+        \item Retrieve $(C, \mathcal{I}, t, y, \com, \texttt{time}) \in \clientlist$ for the maximum value of $\texttt{time}$. 
+        \item Generate $t$-out-of-$n$ Shamir shares of $0$ as $x_1, \ldots, x_n \in \ZZ_p$ using polynomial $f$. 
+        \item Compute $\ucom \gets \mathsf{KZG}.\Commit(\crs, f)$ and $\com' := \com \cdot \ucom$.
+        %, $\dcom' := g_1^{\tau^{d-t+1} \cdot f(\tau)}$, and $(0, \pi_0') \gets \mathsf{KZG}.\Open(\crs, f, 0)$.
+        \item Add $(C, \mathcal{I}, t, y, \com', \texttt{time++})$ to $\clientlist$ and send $(\sid, \shref\mathsf{Result},\allowbreak C, (1))$ to $C$.
+        \item For each $i \in [n]$: 
+        \begin{enumerate}
+            \item Compute $(\delta_i, \pi_i') \gets \mathsf{KZG}.\Open(\crs, f, i)$. % and let $\aux_i' := (\com', \pi_i')$.
+            \item Send $(\sid, \shref\mathsf{Result}, P_i^\hot, (C, b_i=1))$ to $P_i^\hot$. %(If $C$ is corrupt, $\adv$ decides the value of $b_i$.)
+            \item Once $\adv$ has allowed delivery of the message, retrieve $(P_i^\hot, C, \hx_i, \pi_i,\allowbreak \timeT,  *, \texttt{tampered}) \in \hotlist$ and add $(P_i^\hot, C, \hx_i+\delta_i, \pi_i \cdot \pi_i', \timeT\texttt{++}, \texttt{leaked} = 0, \texttt{tampered})$ to $\hotlist$. Also retrieve $(P_i^\hot, *, \texttt{allowc}) \in \hotstates$ and update $\texttt{allowc}$ to 1.
+        \end{enumerate}
+        \end{enumerate}
+    \end{itemize}
+    
+    \textbf{Proofs of Remembrance}
+    \begin{itemize}
+        \item On input $(\texttt{sid},\mathsf{CProof}, P_i^\cold, (C))$, retrieve $(P_i^\cold, \ek_i, \dk_i, *, *,\allowbreak \texttt{corrupted}, *) \in \coldlist$.
+        % check if $\exists t, \ek_i, \dk_i $ such that $(P_i^\cold, \ek_i, \dk_i, t,  *) \in \coldlist$ 
+        If $\texttt{corrupted} = 1$, send $(\sid, \mathsf{CProofRequest},\allowbreak \adv, (P_i^\cold))$ to the adversary, who will send back a bit $b^*$ to represent whether the query should be responded to honestly. Set $b := b^* \land (\ek_i = g_2^{\dk_i})$ and
+        % $\ek_i = g_2^{\dk_i}$, set $\pi \gets \Pi_{\sf DL}.\prove((\ek_i, g_2); \dk_i)$, else $\pi := \perp$; then 
+        output $(\sid, \mathsf{CProofResult}, C, (P_i^\cold, b))$.
+    
+        \item On input $(\sid,\mathsf{HProof}, C, (P_i^\hot))$, retrieve $(P_i^\hot, C, \hx_i, \pi_i, *, *, *,\allowbreak \texttt{corrupted}, *) \in \hotlist$ and $(C, *, *, *, \com) \in \clientlist$. %Parse $\aux_i := (\com, *)$ and check if 
+        % $\exists t$ such that $(y, \hx_i, \aux_i, t, *) \in \hotlist_i$ and 
+        If $\texttt{corrupted} = 1$, send $(\sid, \mathsf{HProofRequest}, \adv, (P_i^\hot))$ to the adversary, who will send back a bit $b^*$. Set $b := b^* \land \mathsf{KZG}.\vrfy(\crs, \com, i, \hx_i, \pi_i)$ and
+        % compute $\pi \gets \Pi_{\sf EKS}.\prove(\crs, \com, (\hx_i, \pi_i))$, else set $\pi := \perp$; then 
+        output $(\sid, \mathsf{HProofResult}, C, (P_i^\hot, b))$.
+    \end{itemize}
+    }}
+    \caption{The BLS \hcwl functionality $\FSign$ (proactive refresh and proofs of remembrance).}
+        \label{fig:FSign2}
+    \end{figure*}

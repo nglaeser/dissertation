@@ -1,0 +1,25 @@
+\begin{figure*}[tbhp]
+    \centering
+    \begin{mdframed}
+    \begin{center}
+        \textsc{Share Refresh Proofs ($\Pi_{\sf Ref}$)}
+    \end{center}
+    \medskip
+    \textbf{Parameters:} Degree-$d$ KZG common reference string $\crs = \{g_1, g_1^\tau, \dots,\allowbreak g_1^{\tau^d}, g_2, g_2^\tau\}$.
+    \hfill\medskip\\
+    \underline{$\mathsf{Prove}((\crs, {\sf u}\com_\timeT, t-1, \{\delta_i\}_{i \in [n]}); z_\timeT(X)) \to (\{\zopen_{\timeT,i}\}_{i \in [n]}, \pi_z)$:} Given $\crs$, a KZG commitment ${\sf u}\com_\timeT$ to update polynomial $z_{\timeT}(X)$, the latter's degree $t-1$, and each party's share refresh information $\delta_i$, use $z_\timeT(X)$ to compute the following:
+    \begin{enumerate}
+        \item For each $i \in [n]$, prove that $\delta_i = z_\timeT(i)$ by computing $(\delta_i, \zopen_{\timeT,i}) \gets \mathsf{KZG}.\mathsf{Open}(\crs, z_\timeT(X), i)$. 
+        \item Prove that $z_\timeT(0) = 0$ and $z_\timeT(X)$ has degree $t-1 \leq d$ by computing $(0, \zopen_{\timeT,0}) \gets \mathsf{KZG}.\mathsf{Open}(\crs, z_\timeT(X), 0)$ and $\dcom_\timeT := g_1^{\tau^{d-t+1} \cdot z_t(\tau)}$ using $\crs$. Let $\pi_\ucom := (\zopen_{\timeT,0}, \dcom_\timeT)$. 
+        \item Output $(\{\zopen_{\timeT,i}\}_{i \in [n]}, \pi_\ucom)$.
+    \end{enumerate}
+    \underline{$\mathsf{H}\vrfy((\crs, \ucom_\timeT, i, \delta_i), \zopen_{\timeT,i}) \to \{0,1\}$:} Given $\crs$, a KZG commitment $\ucom_\timeT$, party index $i$, and share refresh information $\delta_i$, output $\mathsf{KZG}.\vrfy(\crs, \ucom_\timeT, i, \delta_i, \zopen_{\timeT,i})$.\medskip\\
+    \underline{${\sf UC}\vrfy((\crs, \ucom_\timeT, t-1), \pi_\ucom) \to \{0,1\}$:} Given $\crs$, a KZG commitment $\ucom_\timeT$, and its supposed degree $t-1$, verify the proof $\pi_\ucom = (\zopen_{\timeT,0}, \dcom_\timeT)$ by outputting 1 iff the following hold:
+    \[\begin{array}{c}
+        \mathsf{KZG}.\vrfy(\crs, \ucom_\timeT, 0, 0, \zopen_{\timeT,0}) = 1\\
+        e(\dcom_\timeT, g_2) = e(\ucom_\timeT, g_2^{d-t+1})
+    \end{array}\]
+    \end{mdframed}
+    \caption{The proof system $\Pi_{\sf Ref}$ used to prove correctness of the every hot party's share refresh information $\delta_i$ and the commitment update ${\sf u}\com_t$. Each hot party verifies its own update information using ${\sf H}\vrfy$, and the correctness of ${\sf u}\com$ is verified separately via ${\sf UC}\vrfy$.}
+    \label{fig:pi_ref}
+\end{figure*}

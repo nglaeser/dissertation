@@ -1,14 +1,14 @@
 \begin{figure*}
     % \begin{figure}[tbh]
     \centering
-    \fbox{\parbox{.9\textwidth}{%
+    \fbox{\parbox{\textwidth}{%
     \renewcommand{\labelitemi}{\textendash}
     \setlength{\itemsep}{0pt}
-    \textbf{Public parameters:} Groups $\GG_1, \GG_2$ of order $p$ with generators $g_1,g_2$, respectively.
+    \textbf{Public parameters:} Groups $\GG_1, \GG_2$ of order $p$ with generators $g_1,g_2$, respectively; a degree-$d$ KZG common reference string $\crs$.
     \begin{itemize}
         \item On input $(\sid,\mathsf{Setup}, C, (\vk, t, \com))$, delete any existing entries $(C, *, *, *, *) \in \clientlist$ and $(C, *, *) \in U$.
         % \item Check $e(\dcom, g_2) = e(\com, g_2^{d-n})$. If so, set $b:=1$ 
-        Add $(C, \vk, t, \com,\allowbreak \texttt{time} := 0)$ to $\clientlist$
+        Add $(C, \vk, t, \com,\allowbreak \texttt{time} := 1)$ to $\clientlist$
         % Otherwise set $b := 0$.
         and output $(\sid,\mathsf{SetupResult}, C, (1))$.
         %
@@ -21,12 +21,14 @@
         \end{enumerate}
         %
         \item On input $(\sid,\mathsf{ClientInfoRecover}, P, (C))$, 
-        retrieve $(C, \vk, *, \com, \texttt{time}) \in \clientlist$ for the maximum value of $\texttt{time}$ and output $(\sid,\mathsf{ClientInfo}, P, (C,\vk,\com))$.
+        retrieve $(C, \vk, *, \com, \texttt{time}) \in \clientlist$ for the maximum value of $\texttt{time}$ and output $(\sid, \mathsf{AuxInfo},\allowbreak P, (C, \vk, \com))$.
+        % $(\sid,\mathsf{ClientInfo}, P, (C,\vk,\com))$.
         %
         \item On input $(\sid, \mathsf{UComRecover}, P, (C))$,
-        retrieve $(C, \ucom, \texttt{time}) \in U$ for the maximum value of $\texttt{time}$ and output $(\sid, \mathsf{UCom}, P, (C, \ucom))$.
+        retrieve $(C, \ucom, \texttt{time}) \in U$ for the maximum value of $\texttt{time}$ and output 
+        $(\sid, \mathsf{UCom}, P, (C, \ucom))$.
     \end{itemize}
     }}
-        \caption{\textbf{The Programmable Bulletin-Board Functionality $\Fbb$}}
+        \caption{The programmable bulletin-board functionality $\Fbb$}
         \label{fig:Fbb}
     \end{figure*}
