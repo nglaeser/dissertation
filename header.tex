@@ -49,11 +49,16 @@
   \renewcommand{\contentsname}%
     {Table of Contents}%
 }
-\usepackage{minitoc}
+\usepackage[nohints]{minitoc} % nohints to silence harmless warnings
 % adjust spacing above minitoc
 % \renewcommand{\mtcgapbeforeheads}{20pt}
 \mtcsetfeature{minitoc}{before}{\vspace{-1cm}}
 \mtcsetfeature{minitoc}{after}{\vspace{1cm}}
+% silence minitoc / hyperref interaction warnings (harmless)
+\usepackage{silence}
+\WarningFilter{minitoc(hints)}{W0023}
+\WarningFilter{minitoc(hints)}{W0028}
+\WarningFilter{minitoc(hints)}{W0030}
 
 \usepackage[resetlabels]{multibib}
 \newcites{This}{Basis of this Dissertation}
@@ -70,6 +75,8 @@
 \usepackage{hyphenat}
 \hyphenation{inter-active}
 \hyphenation{block-chain}
+\hyphenation{nay-say-er}
+\hyphenation{ap-proach-es}
 
 % Line spacing
 \usepackage{setspace}

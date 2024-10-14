@@ -1,7 +1,4 @@
-% checkmarks / x's
 \usepackage{pifont}
-\newcommand{\cmark}{\ding{51}}%
-\newcommand{\xmark}{\ding{55}}%
 \newcommand{\no}{\Circle}
 \newcommand{\yes}{\CIRCLE}
 \newcommand{\halfcirc}{\LEFTcircle}
@@ -13,20 +10,16 @@
 \newcommand{\td}{\ensuremath{\mathsf{td}}}
 
 % asymptotics
-\newcommand{\negln}[1]{\ensuremath{\negl[]_{#1}}}
-\newcommand{\neglnf}[1]{\ensuremath{\negl_{#1}}}
 \newcommand{\bigO}[1]{\ensuremath{\mathcal{O}\left(#1\right)}}
 \newcommand{\polylog}[1]{\ensuremath{\mathsf{polylog}\left(#1\right)}}
 
 % math
 \newcommand{\JJ}{\ensuremath{\mathbb{J}}}
-\newcommand{\prob}[1]{\ensuremath{\Pr\left[#1\right]}}
 \newcommand{\suchthat}{\ensuremath{\mathrm{~s.t.~}}}
 \newcommand{\F}{\ensuremath{\mathcal{F}}}
 \newcommand{\X}{\ensuremath{\mathcal{X}}}
 \newcommand{\Y}{\ensuremath{\mathcal{Y}}}
 \newcommand{\Z}{\ensuremath{\mathcal{Z}}}
-% \DeclareMathOperator*{\argmax}{arg\,max}
 \newcommand{\sizeof}[1]{\lvert #1 \rvert}
 % \newcommand{\ceil}[1]{\lceil #1 \rceil}
 \renewcommand{\vec}[1]{\ensuremath{\mathbf{#1}}}
@@ -45,14 +38,9 @@
 
 % primitives
 \newcommand{\ENC}{\ensuremath{\mathsf{E}}}
-\newcommand{\ADP}{\ensuremath{\mathsf{ADP}}}
-\newcommand{\DS}{\ensuremath{\mathsf{ADP}}}
 \newcommand{\NIZK}{\ensuremath{\mathsf{NIZK}}}
-\newcommand{\BCS}{\ensuremath{\mathsf{BCS}}}
 
 %%% cryptography
-% \renewcommand{\sample}{\ensuremath{\stackrel{\$}{\gets}}}
-% \newcommand{\randout}{\ensuremath{\stackrel{\$}{\to}}}
 %% randout consistent with \sample from cryptocode:
 \newcommand{\randout}{\ensuremath{\,{\mbox{\scriptsize${\$}$\normalsize}\!\!\to}\hskip2.3pt}}
 \newcommand{\Rel}{\ensuremath{\mathcal{R}}}
@@ -60,15 +48,12 @@
 \newcommand{\witness}{\ensuremath{w}}
 % proofs
 \newcommand{\Sim}{\ensuremath{\mathcal{S}}}
-% \def\Sim{\ensuremath{\mathsf{Sim}}}
-% \def\bdv{\ensuremath{\mathcal{B}}}
-\def\hybrid{\ensuremath{\mathcal{H}}}
+\newcommand{\hybrid}{\ensuremath{\mathcal{H}}}
 % oracles
 \newcommand{\oracle}{\ensuremath{\mathcal{O}}}
-\newcommand{\oaal}{\ensuremath{\oracle^{\sf A^2L}}}
 %%% Cryptographic primitives
 % common algorithms
-\newcommand{\setup}{\ensuremath{\mathsf{Setup}}}
+\newcommand{\Setup}{\ensuremath{\mathsf{Setup}}}
 \newcommand{\kgen}{\ensuremath{\mathsf{KGen}}}
 \newcommand{\vrfy}{\ensuremath{\mathsf{Verify}}}
 % encryption
@@ -82,7 +67,6 @@
 \newcommand{\share}{\ensuremath{\mathsf{Share}}}
 \newcommand{\recon}{\ensuremath{\mathsf{Reconstruct}}}
 % commitments
-\newcommand{\COM}{\ensuremath{\mathsf{COM}}}
 \newcommand{\Commit}{\ensuremath{\mathsf{Com}}}
 \newcommand{\Open}{\ensuremath{\mathsf{Open}}}
 \newcommand{\decom}{\ensuremath{\mathsf{decom}}}
@@ -94,31 +78,11 @@
 \newcommand{\pparam}{\ensuremath{\mathsf{pp}}}
 \newcommand{\com}{\ensuremath{\mathsf{com}}}
 \newcommand{\ct}{\ensuremath{\mathsf{ct}}}
+\newcommand{\timeT}{\ensuremath{T}}
 % UC framework
 \newcommand{\env}{\ensuremath{\mathcal{E}}}
-\newcommand{\real}{\ensuremath{\textsc{real}}}
-\newcommand{\ideal}{\ensuremath{\textsc{ideal}}}
-
-%%%%% UC-SE specific stuff %%%%%
-\newcommand{\fnizk}{\mathcal{F}_{\mathsf{NIZK}}}
-\newcommand{\fupcrs}{\mathcal{F}_{\mathsf{up\text{-}CRS}}}
-
-%%%%% BCS specific stuff %%%%%
-\newcommand{\alice}{\ensuremath{\mathit{A}}}
-\newcommand{\bob}{\ensuremath{\mathit{B}}}
-% adaptor sigs
-\newcommand{\presign}{\ensuremath{\mathsf{PreSig}}}
-\newcommand{\prevrfy}{\ensuremath{\mathsf{PreVrfy}}}
-\newcommand{\adapt}{\ensuremath{\mathsf{Adapt}}}
-\newcommand{\presig}{\ensuremath{\tilde{\sigma}}}
-% BCS algos
-\newcommand{\Promise}{\ensuremath{\mathsf{PPromise}}}
-\newcommand{\Pay}{\ensuremath{\mathsf{PSolver}}}
-% BCS games
-\newcommand{\expUnlink}{\ensuremath\mathsf{ExpBlnd}}
-\newcommand{\expUnlock}{\ensuremath\mathsf{ExpUnlock}}
-\newcommand{\expSec}{\ensuremath\mathsf{ExpUnforg}}
-\newcommand{\Fbcs}{\ensuremath{\mathcal{F}_{\sf BCS}}}
+\newcommand{\real}{\ensuremath{\textnormal{\textsc{real}}}}
+\newcommand{\ideal}{\ensuremath{\textnormal{\textsc{ideal}}}}
 
 %%%%% Naysayer %%%%%
 \newcommand{\nay}{\ensuremath{\mathsf{nay}}}
@@ -131,9 +95,7 @@
 % HTLPs
 \newcommand{\htlp}{\ensuremath{\mathsf{HTLP}}\xspace}
 \newcommand{\tlp}{\ensuremath{\mathsf{TLP}}\xspace}
-\newcommand{\Ttime}{\ensuremath{T}}
 % Cicada syntax
-\newcommand{\Setup}{\ensuremath{\mathsf{Setup}}}
 \newcommand{\Seal}{\ensuremath{\mathsf{Seal}}}
 \newcommand{\Aggr}{\ensuremath{\mathsf{Aggr}}}
 \newcommand{\Finalize}{\ensuremath{\mathsf{Finalize}}}
@@ -143,7 +105,7 @@
 \newcommand{\tally}{\ensuremath{t}}
 \newcommand{\final}{\ensuremath{f}}
 %%pack and unpack functions
-\newcommand{\PSetup}{\mathsf{PSetup}}
+\newcommand{\PSetup}{\mathsf{P}\Setup}
 \newcommand{\pack}{\mathsf{Pack}}
 \newcommand{\unpack}{\mathsf{Unpack}}
 % sigma protocols
@@ -160,11 +122,9 @@
 \newcommand{\cold}{\ensuremath{\mathsf{cold}}}
 \newcommand{\signset}{{\ensuremath{SS}}}
 \newcommand{\ppset}{{\ensuremath{NC}}}
-\newcommand{\timeT}{\ensuremath{T}}
 \newcommand{\blshash}{\ensuremath{H}}
 \newcommand{\lhlhash}{\ensuremath{\mathcal{H}}}
 % algos
-\newcommand{\skref}{\ensuremath{\mathsf{SKRefresh}}}
 \newcommand{\shref}{\ensuremath{\mathsf{ShareRefresh}}}
 \newcommand{\cSign}{\mathsf{CSign}\xspace}
 \newcommand{\hSign}{\mathsf{HSign}\xspace}

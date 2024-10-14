@@ -7,7 +7,7 @@ Concatenation of vectors $\vec{x},\vec{y}$ is written as $\vec{x} || \vec{y}$.
 Let $\secpar$ be the security parameter.
 We use the uppercase variable $X$ for the free variable of a polynomial, e.g., $f(X)$. 
 We use a calligraphic font, e.g., $\mathcal{S}$ or $\mathcal{X}$, to denote sets or domains. When we apply an operation to two sets of equal size $\ell$ we mean pairwise application, e.g., $\mathcal{Z} = \mathcal{X} + \mathcal{Y}$ means $z_i = x_i + y_i~\forall{i \in [\ell]}$. \todo{empty set $\emptyset$ vs. $\perp$}
-Sampling an element $x$ uniformly at random from a set $\mathcal{X}$ is written as $x \sample \mathcal{X}$. 
+Sampling an element $x$ uniformly at random from a set $\X$ is written as $x \sample \X$. 
 We use $:=$ to denote variable assignment, $y \gets \mathsf{Alg}(x)$ to assign to $y$ the output of some algorithm $\mathsf{Alg}$ on input $x$, and $y \sample \mathsf{Alg}(x)$ if the algorithm is randomized (or sometimes $\mathsf{Alg}(x) \randout y$). When we wish to be explicit about the randomness $r$ used, we write $y \gets \mathsf{Alg}(x; r)$. We use $\mathcal{D}_1 \approx_\secpar \mathcal{D}_2$ to denote that two distributions $\mathcal{D}_1, \mathcal{D}_2$ have statistical distance bounded by $\negl$.
 
 For a non-interactive proof system $\Pi$, we write $\pi \gets \Pi.\prove(x; w)$ to show that the proving algorithm takes as input an instance $x$ and witness $w$ and outputs a proof $\pi$. Verification is written as $\Pi.\vrfy(x, \pi)$ and outputs a bit $b$. 
@@ -18,9 +18,9 @@ We distinguish the key-pairs used in a signature scheme ($\vk, \sk$ for ``verifi
 
 A \emph{language} $\Lang \subseteq \{0,1\}^*$ is a set of elements. For our purposes, we will only consider the set of NP languages. Every language $\Lang \in \npol$ has a corresponding polynomially-decidable relation $\Rel_\Lang$ (i.e., decidable by a circuit $C(x,w)$ such that $\sizeof{C} \in \poly[\sizeof{x}]$) such that if $x \in \Lang, \exists w \suchthat (x,w) \in \Rel_\Lang$, with $w \in \poly[\sizeof{x}]$.
 
-\begin{definition}[Non-interactive proof system] A non-interactive proof system $\Pi$ for some NP language $\Lang$ is a tuple of PPT algorithms $(\setup, \prove, \vrfy)$:
+\begin{definition}[Non-interactive proof system] A non-interactive proof system $\Pi$ for some NP language $\Lang$ is a tuple of PPT algorithms $(\Setup, \prove, \vrfy)$:
     \begin{itemize}
-        \item \underline{$\setup(\secparam) \rightarrow \crs$:} Given a security parameter, output a common reference string $\crs$. This algorithm might use private randomness (a trusted setup).
+        \item \underline{$\Setup(\secparam) \rightarrow \crs$:} Given a security parameter, output a common reference string $\crs$. This algorithm might use private randomness (a trusted setup).
         \item \underline{$\prove(\crs, x, \witness) \rightarrow \pi$:} Given the $\crs$, an instance $x$, and witness $\witness$ such that $(x, \witness) \in \Rel_\Lang$, output a proof $\pi$.
         \item \underline{$\vrfy(\crs, x,\pi) \rightarrow \{0,1\}$:} Given the $\crs$ and a proof $\pi$ for the instance $x$, output a bit indicating accept or reject.
     \end{itemize}
@@ -31,7 +31,7 @@ We require (perfect) \emph{completeness}, meaning that for all $(x,\witness) \in
         \vrfy(\crs, x, \pi)=1 
         \middle| 
         \begin{array}{c}
-            \crs \gets \setup(\secparam)~\land\\
+            \crs \gets \Setup(\secparam)~\land\\
             \pi \gets \prove(\crs, x, \witness)
         \end{array}
     \right] = 1.
@@ -44,7 +44,7 @@ We require (perfect) \emph{completeness}, meaning that for all $(x,\witness) \in
         \vrfy(\crs, x, \pi)=1 
         \middle| 
         \begin{array}{c}
-            \crs \gets \setup(\secparam)~\land\\
+            \crs \gets \Setup(\secparam)~\land\\
             \pi \gets \adv(\crs, x)
         \end{array}
     \right] \leq \negl.
@@ -154,7 +154,7 @@ Notice that the reconstruction simply performs Shamir reconstruction of the sign
 \paragraph{Threshold variants}
 Many protocols exist for threshold Schnorr signatures \cite{SAC:KomGol20,C:BCKMTZ22,EPRINT:Lindell22,EPRINT:BatLonMen22}, each offering a different combination of properties. \todo{...}
 
-\todo{Move this paragraph to \Cref{sec:hcwl}} The BLS threshold signature scheme~\cite{AC:BonLynSha01} is fully non-interactive, meaning that signing occurs in one round.
+\todo{Move to \Cref{sec:hcwl}} The BLS threshold signature scheme~\cite{AC:BonLynSha01} is fully non-interactive, meaning that signing occurs in one round.
 FROST is a ``somewhat'' non-interactive threshold signature scheme~\cite{EPRINT:BelTesZhu22} in the sense that the \emph{signing} procedure consists of a single round, but there is another round of message-independent pre-processing.     
 
 \section{KZG polynomial commitments}\label{sec:kzg}
@@ -164,7 +164,7 @@ KZG commitments can be instantiated using either a symmetric or asymmetric pairi
 \begin{construction}[KZG polynomial commitments~\cite{AC:KatZavGol10}]
 Let $\GG_1, \GG_2$ be elliptic curve groups of order $p$ with generators $g_1,g_2$ and $e: \GG_1 \times \GG_2 \mapsto \GG_T$ be an elliptic curve pairing. The following is a commitment scheme for polynomials in $\ZZ_p[X]$ with degree at most $d$.
 \begin{itemize}
-    \item \underline{$\crs \gets \setup(d):$} Sample $\tau \sample \ZZ_p$ and output $\crs := \{g_1, g_1^\tau, g_1^{\tau^2}, \dots, g_1^{\tau^d},\allowbreak g_2, g_2^\tau\}$.
+    \item \underline{$\crs \gets \Setup(d):$} Sample $\tau \sample \ZZ_p$ and output $\crs := \{g_1, g_1^\tau, g_1^{\tau^2}, \dots, g_1^{\tau^d},\allowbreak g_2, g_2^\tau\}$.
     \item \underline{$\com_f \gets \Commit(\crs, f(X)):$} Let $f(X) = a_0 + a_1 X + \dots + a_d X^d \in \ZZ_p[X]$. Use $\crs$ to compute and output $g_1^{f(\tau)} = g_1^{a_0} \cdot (g_1^\tau)^{a_1} \dots (g_1^{\tau^d})^{a_d} = g_1^{a_0 + a_1 \tau + \dots + a_d \tau^d}\allowbreak \in \GG_1$.
     \item \underline{$(f(i), \pi_i) \gets \Open(\crs, f(X), i):$} To open $f(X)$ at $i$, let $q_i(X) := \frac{f(X) - f(i)}{X - i}\allowbreak \in \ZZ_p[X]$\footnote{This is a polynomial by Little Bézout's Theorem.}. Then compute $\com_{q_i} \gets \Commit(\crs, q_i(X))$ and output $(f(i),\allowbreak \com_{q_i}) \in \ZZ_p \times \GG_1$.
     \item \underline{$\{0,1\} \gets \vrfy(\crs, \com_f, i, y, \pi_i):$} To confirm $y = f(i)$, it suffices to check that $q_i(X) = \frac{f(X) - y}{X - i}$ at $X=\tau$. This can be done with a single pairing check:

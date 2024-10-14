@@ -25,11 +25,11 @@ estimate the performance of each naysayer proof system compared to that of the o
      & \textbf{Proof size}
      & \textbf{Verification}
      \\ \midrule
-     Original proof
+     Original
      & $\log{n}\ \mathbb{H}$
      & $\log{n}\ \mathbb{H}$
      \\\midrule
-     Naysayer proof
+     Naysayer
      & $\log\log{n}\ \mathbb{B}$
      & $1\mathbb{H}$
     \\ \bottomrule
@@ -56,11 +56,11 @@ In the context of a naysayer proof system, the prover provides $\pi$ along with 
      & \textbf{Proof size}
      & \textbf{Verification}
      \\ \midrule
-     Original proof
+     Original
      & $\bigO{\secpar\log^2{d}}\mathbb{H}+\bigO{\secpar\log{d}}\FF$\ 
      & $\bigO{\secpar\log^2{d}}\mathbb{H}+\bigO{\secpar\log{d}}\FF$\ 
      \\\midrule
-     \multirow{2}*{Naysayer proof}
+     \multirow{2}*{Naysayer}
      & \multirow{2}*{$2\log(q\log{d})+1\ \mathbb{B}$} 
      & best: $\bigO{1}\FF$ \\
      && worst: $\bigO{\log{d}}\mathbb{H}$
@@ -94,11 +94,11 @@ $\rho = 2^{-3}$, $q=91$, $\delta=9$, the size of a vanilla FRI opening proof (i.
      & \textbf{Proof size}
      & \textbf{Verification}
      \\ \midrule
-     Original proof
+     Original
      & $\bigO{\secpar}\FF$\  
      & $\bigO{\secpar}\FF+1\mathbb{H}$\  
      \\\midrule
-     \multirow{2}*{Naysayer proof}
+     \multirow{2}*{Naysayer}
      & \multirow{2}*{$2+\log{k}+\log{d}\ \mathbb{B}$}
      & best: $\mathcal{O}(1)\FF$ \\
      && worst: $\bigO{\secpar}\FF+1\mathbb{H}$
@@ -142,11 +142,11 @@ Overall, $\pi_\nay$ is a tuple $(a, b, i, j)$ indicating a clause $a \in [2]$ of
      & \textbf{Proof size}
      & \textbf{Verification}
      \\ \midrule
-     Original proof
+     Original
      & $\bigO{\sqrt{n}}\GG$
      & $\bigO{n}\GG$ 
      \\\midrule
-     Naysayer proof
+     Naysayer
      & $\log{n}\ \mathbb{B}+3\GG+1\FF$ 
      & $\bigO{1}\GG + 1\mathbb{H}$
     \\ \bottomrule

@@ -148,12 +148,14 @@ We now show how to modify the above proof to show that the protocol in \Cref{fig
         \pcreturn \sigma_i^\hot
     }
     \end{pchstack}
-    \caption{Oracles for $\ufgame$ experiment (see \Cref{fig:hc-suf-2}) tailored to the HC-FROST2 protocol (\Cref{fig:hc-frost}).}
+    \caption{Oracles for $\ufgame$ experiment
+    %(see \Cref{fig:hc-suf-2}) 
+    tailored to the HC-FROST2 protocol (\Cref{fig:hc-frost}).}
     \label{fig:oracles-hc-frost}
 \end{figure}
 
 \begin{theorem}
-    The hot/cold variant of FROST2 described in \Cref{sec:frost} is unforgeable assuming OMDL.
+    The hot/cold variant of FROST2 described in \Cref{sec:frost_construction} is unforgeable assuming OMDL.
 \end{theorem}
 \begin{proof}[Proof (sketch)]
 The idea is for the reduction to program the OMDL challenges into the inputs to $\adv$ like before. So, the $\vk, \vk_1, \dots, \vk_n$ will encode the challenges $A_0, \dots, A_{t-1}$. For $\adv$'s inputs, for $i \in \corrset_\hot \cap \corrset_\cold$, the reduction samples $\Delta_i \sample \ZZ_q$, computes $\sk_i \gets \DLogO(\vk_i)$, and sets $\csecret = \Delta_i$, $\hsecret = \sk_i + \Delta_i$; for $i \in \corrset_\hot \setminus \corrset_\cold$, it lets $\hsecret \sample \ZZ_q$, and similarly for $i \in \corrset_\cold \setminus \corrset_\hot$, it lets $\csecret \sample \ZZ_q$.

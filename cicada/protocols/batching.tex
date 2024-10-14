@@ -4,14 +4,14 @@
     \begin{center}
         \textbf{Off-chain batching}
     \end{center}
-    \hfill\\
-    \textbf{Public parameters:} A semiprime $N$ and $h, y \in \ZZ_N^*$, a voting scheme $\Sigma : \X^n \rightarrow \Y$. \hfill\\
-    \newline
+    \smallskip
+    \textbf{Public parameters:} A semiprime $N$ and $h, y \in \ZZ_N^*$, a voting scheme $\Sigma : \X^n \rightarrow \Y$.\hfill\\\medskip
+
     Let $P_1, \dots, P_{k}$ be a group of $k < n$ parties with addresses ${\sf addr}_1, \dots, {\sf addr}_{k}$ wishing to batch their ballots $(u_i, v_i) := (g^{r_i}, h^{r_i} X_i)$.
     \begin{enumerate}
         \item Each party broadcasts $v_i$. Now, every party can compute $v := \prod_i v_i = h^R X$, which encodes the sum of their submissions.
-        \item The parties use an $k-1$ malicious-secure MPC protocol~\cite{ESORICS:DKLPSS13,CCS:Keller20} on inputs $u_i$ to compute $u := \prod_i u_i = g^R$.
-        \item They also compute two distributed-prover zero-knowledge proofs~\cite{PoPETS:DPPSV22} in the MPC: (i) a discrete logarithm equality proof $\pi_R$ that $\mathsf{dlog}_g(u) = \mathsf{dlog}_h(v)$ with distributed witness $R$, and (ii) a submission correctness proof $\pi_s$ that the aggregated solution $s$ encoded in $X$ is consistent with the sum of $k$ valid submissions, i.e., $s\in k \cdot \mathcal{X}$. Let $\pi_{\sf batch} = (\pi_R, \pi_s)$.
+        \item The parties use a $k-1$ malicious-secure MPC protocol~\cite{ESORICS:DKLPSS13,CCS:Keller20} on inputs $u_i$ to compute $u := \prod_i u_i = g^R$.
+        \item They also compute two distributed-prover zero-knowledge proofs \cite{PoPETS:DPPSV22} in the MPC: (i) a discrete logarithm equality proof $\pi_R$ that $\mathsf{dlog}_g(u) = \mathsf{dlog}_h(v)$ with distributed witness $R$, and (ii) a submission correctness proof $\pi_s$ that the aggregated solution $s$ encoded in $X$ is consistent with the sum of $k$ valid submissions, i.e., $s\in k \cdot \mathcal{X}$. Let $\pi_{\sf batch} = (\pi_R, \pi_s)$.
         \item Finally, each party signs the final aggregated submission $Z_{\sf batch} = (u,v)$.
     \end{enumerate}
     \textbf{Output}:~$(Z_{\sf batch},\pi_{\sf batch}, \{{\sf addr}_1, \dots, {\sf addr}_{k}\}, \{\sigma_1, \dots, \sigma_{k}\})$.
@@ -21,7 +21,6 @@
     \begin{center}
         \textbf{On-chain batched ballot submission}
     \end{center}
-    \hfill\\
     % batching only the first component
     % \textbf{Public parameters:} Cicada public parameters $\pparam$. \hfill\\
     % \begin{enumerate}
@@ -30,7 +29,8 @@
     %     \item $P_1$ submits $(g^R, h^{r_1} X_1)$ and proofs $\pi_1, \pi_{batch}$ by time $T-\tau$.
     %     \item If $P_1$ fails to submit by time $\tau$ or submits an inconsistent/invalid HTLP, the remaining parties re-run the off-chain batching protocol to compute $g^{R'} = \prod_{i \in [n], i \neq 1} g^{r_i}$ and a new proof $\pi_{batch}'$. Any (single) party $i^* \in [n]\setminus \{1\}$ can now override its submission with a new HTLP $(g^{R'}, h^{r_{i^*}} X_{i^*})$ and $\pi_{batch}'$. The second component should be the same as in the previous submission, and cheating can be punished by slashing.
     % \end{enumerate}
-    \textbf{Public parameters:} Cicada public parameters $\pparam$. \hfill\\
+    \smallskip
+    \textbf{Public parameters:} Cicada public parameters $\pparam$.
     \begin{enumerate}
         \item The designated party $P_1$ submits $Z_{\sf batch}, \pi_{\sf batch}, \{{\sf addr}_1, \dots, {\sf addr}_{k}\},\allowbreak \{\sigma_1, \dots, \sigma_{k}\}$ to the tallying contract, which verifies the proofs and signatures, and adds $(u,v)$ to the tally HTLP $Z$ as in the basic protocol.
         \item If $P_1$ doesn't submit by time $T-\tau$, any other party in the batch group can submit instead.

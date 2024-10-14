@@ -1,6 +1,6 @@
 \section{Extensions and Future Work}\label{sec:naysayer_extensions}
 
-In the months since the publication of the original paper~\cite{FC:SerGlaBon24}, naysayer proofs have already received attention from various groups of practitioners hoping to deploy them in production. We see many interesting directions for investigation, both for immediate deployments and to improve our understanding of this new paradigm and its implications.
+In the months since the publication of the original paper~\citeThis{FC:SerGlaBon24}, naysayer proofs have already received attention from various groups of practitioners hoping to deploy them in production. We see many interesting directions for investigation, both for immediate deployments and to improve our understanding of this new paradigm and its implications.
 
 \begin{description}
     \item[\textbf{Rollup design space.}] Naysayer proofs can be viewed as a way (one of several) of combining two established solutions---verifiable computation and fraud proofs---to offer different tradeoffs. There may be other ways to combine these two paradigms to achieve different tradeoffs which can be more suited to certain application scenarios. For example, one can imagine a different fraud/naysayer proof hybrid in which the prover sends only the instance $x$, but a challenger can provide a corrected instance $x'$ and proof for the new statement (i.e., ``nesting'' a zk-rollup inside an optimistic rollup). This can reduce both prover and verifier costs, but makes issuing a challenge less accessible than in either VC or fraud proofs.

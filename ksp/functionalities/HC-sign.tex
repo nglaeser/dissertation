@@ -6,7 +6,7 @@
     \setlength{\itemsep}{0pt}
     \textbf{Signing}
     \begin{itemize}
-        \item On input $(\texttt{sid},\mathsf{TSign}, P_i^\hot, (C, m))$, retrieve $(C, \mathcal{I}, *, \vk, *) \in \clientlist$ and $(P_i^\hot, P_i^\cold) \in \mathcal{I}$. Then:
+        \item On input $(\texttt{sid},\mathsf{TSign}, P_i^\hot, (C, m))$, retrieve $(C, \mathcal{I}, *, \vk, *) \in \clientlist$ and $(P_i^\hot,\allowbreak P_i^\cold) \in \mathcal{I}$. Then:
         % if $\exists t,y$ for the largest $t$ such that $(y, \hx_i, \aux_i, t, *) \in \hotlist_i$ and $\pred(y,\hx_i, \aux_i) = 1$ \todo{Define \pred.} 
         \begin{enumerate}
             \item Get $(P_i^\cold, *, \dk_i, *, \texttt{tampered}, \texttt{corrupt}_\cold, \texttt{allowc}) \in \coldlist$. If $\texttt{allowc}=1$, set it to 0.

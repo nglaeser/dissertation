@@ -5,7 +5,7 @@ We present Cicada, our framework for non-interactive private auctions/elections,
 \input{cicada/model}
 
 Cicada implements a time-locked auction/voting scheme (\Cref{def:syntax}) as follows:
-(0) System participants agree on a delay parameter $\Ttime$ and packing parameter $\ell$. The latter introduces a crucial design choice, defining a storage-computation trade-off we detail in~\Cref{sec:cicada_eval}. The coordinator (or a set of trusted parties, depending on the HTLP construction used) runs the $\Setup$ algorithm to output HTLP public parameters $\pparam$ and initialize a (set of) aggregate HTLP(s) $\Z$ containing zeros. 
+(0) System participants agree on a delay parameter $\timeT$ and packing parameter $\ell$. The latter introduces a crucial design choice, defining a storage-computation trade-off we detail in~\Cref{sec:cicada_eval}. The coordinator (or a set of trusted parties, depending on the HTLP construction used) runs the $\Setup$ algorithm to output HTLP public parameters $\pparam$ and initialize a (set of) aggregate HTLP(s) $\Z$ containing zeros. 
 (1) A user $i$ runs the $\Seal$ algorithm to encode their submission (a bid or ballot) $\vec{v}_i$ into (a set of) HTLP(s) $\Z_i$. $\Seal$ also outputs a NIZK $\pi_i$ proving that $\Z_i$ is well-formed, i.e., its contents are in the domain $\X$ of the scoring function $\Score$. Users send their submissions and proofs to the on-chain coordinator. 
 (2) Upon receiving a user submission $\Z_i, \pi_i$, the coordinator (Cicada smart contract) runs $\Aggr$ to verify $\pi_i$, and if it is valid, aggregates $\Z_i$ into the tally HTLPs $\Z$, resulting in updated tally $\Z'$. 
 (3) After the voting/bidding period has ended, any party can open the tally HTLPs $\Z$ off-chain by running $\Open$, which outputs the opening(s) $\vec{s}$ of the tally HTLP(s) $\Z$ along with a proof of correct opening $\pi_{\textsf{open}}$ (using a proof of solution $\pos$, see \Cref{sec:sigmas}). The off-chain solver will send $\vec{s}, \pi_{\mathsf{open}}$ to the contract. 
@@ -26,24 +26,24 @@ Each user $i$ submits $Z_i \gets \htlp.{\sf Gen}({bid}_i)$ and $\pi_i$, where $\
 Locking up collateral is necessary for every (private) auction scheme. We treat the problem of collateral lock-up as an important but orthogonal problem and refer to~\cite{CCS:TAFWBM23} for an extensive discussion.
 
 \subsection{Security Proof of Cicada}
-Intuitively, submission privacy follows from the security of the HTLP (assuming the delay $\Ttime$ is longer than the submission phase) and the zero-knowledge property of the NIZKs: the submission can't be opened before time $\Ttime$ and none of the proofs leak any information about it. Non-malleability is enforced by requiring the NIZK to be a proof of knowledge and including the user's identity $i$ in the instance to prove, e.g., including it in the hash input of the Fiat-Shamir transform. This prevents a malicious actor from replaying a different user's ballot correctness proof.
+Intuitively, submission privacy follows from the security of the HTLP (assuming the delay $\timeT$ is longer than the submission phase) and the zero-knowledge property of the NIZKs: the submission can't be opened before time $\timeT$ and none of the proofs leak any information about it. Non-malleability is enforced by requiring the NIZK to be a proof of knowledge and including the user's identity $i$ in the instance to prove, e.g., including it in the hash input of the Fiat-Shamir transform. This prevents a malicious actor from replaying a different user's ballot correctness proof.
 
 \begin{theorem}\label{thm:cicada}
-    Given a linear scoring function $\Sigma$, a secure NIZKPoK $\NIZK$ and proof of solution $\pos$, a secure $\htlp$, and a packing scheme $({\sf PSetup},\allowbreak \pack,\allowbreak \unpack)$, the Cicada protocol $\Pi_\Sigma$ (\Cref{fig:cicada}) is a secure time-locked voting/auction protocol. % i.e., it satisfies correctness, bid/ballot privacy, and non-malleability.
+    Given a linear scoring function $\Sigma$, a secure NIZKPoK $\NIZK$ and proof of solution $\pos$, a secure $\htlp$, and a packing scheme $(\PSetup,\allowbreak \pack,\allowbreak \unpack)$, the Cicada protocol $\Pi_\Sigma$ (\Cref{fig:cicada}) is a secure time-locked voting/auction protocol. % i.e., it satisfies correctness, bid/ballot privacy, and non-malleability.
 \end{theorem}
 
 \begin{proof}
-\def\Exp{\ensuremath{\mathsf{ExpSPriv}_{\Pi_\Sigma}^\adv(\secpar,\Ttime,i)}}
+\def\Exp{\ensuremath{\mathsf{ExpSPriv}_{\Pi_\Sigma}^\adv(\secpar,\timeT,i)}}
     For simplicity, we give a proof for the simple case of $\X=[0,1]$, i.e., submissions consist of a single bit, but our argument generalizes to larger domains $\X$. Let $n \in \mathbb{N}$ be the number of users.
 
     The correctness of the Cicada framework (cf.~\Cref{def:correctness_cicada}) follows by construction and from the correctness of the underlying building blocks (i.e., soundness in the case of the proof systems).
     
     Next, we prove submission privacy.
-    Let $\Exp$ be the original submission privacy game for the Cicada scheme $\Pi_\Sigma$ with $\Ttime$-bounded adversary $\adv$, cf.~\Cref{def:submission_privacy}. We define a series of hybrids to show that 
+    Let $\Exp$ be the original submission privacy game for the Cicada scheme $\Pi_\Sigma$ with $\timeT$-bounded adversary $\adv$, cf.~\Cref{def:submission_privacy}. We define a series of hybrids to show that 
     \[ 
         \Pr[\Exp = 1] \leq \negl 
     \]
-    for all $\secpar,\Ttime \in \mathbb{N}$ and $i\in[n]$.
+    for all $\secpar,\timeT \in \mathbb{N}$ and $i\in[n]$.
     
     \underline{$\hybrid_0$:} This is the original game $\Exp$, where $Z_i \gets \htlp.{\sf Gen}(b)$ and $\pi_i \gets \NIZK.\prove(i, Z_i, b)$.
     
@@ -59,5 +59,5 @@ Intuitively, submission privacy follows from the security of the HTLP (assuming 
     
     Since by our assumption Cicada is malleable, there exists $\adv$ which outputs $(i, \cdot, \Z_i, \pi_i) \notin \mathcal{Q}$ such that $\NIZK.\vrfy((i,\allowbreak \Z_i), \pi)=1$ with non-negligible probability. 
     % Also, $\sf NIZK$ is a PoK, so it has an efficient knowledge extractor $\Ext$. 
-    Given a puzzle $Z_b$ containing some unknown bit $b$, $\bdv$ works as follows. First, it computes $(\pparam, Z) \sample \Setup(\secparam, \Ttime, 1)$ and sends them to the non-malleability adversary $\adv$. $\bdv$ responds to $\adv$'s oracle queries $(j, b_j)$ with honestly computed $(Z_j, \pi_j)$, keeping track of queries and responses in the set $\mathcal{Q}$. When $\adv$ outputs $(i, Z_i, \pi_i)$, $\bdv$ looks for $(i, b_i, Z_i, \pi_i) \in \mathcal{Q}$ and outputs $b_i$. Since $\adv$ has non-negligible advantage, it follows that $\NIZK.\vrfy((i, Z_i), \pi_i) = 1$. This implies that either $\Pr[b_i=b] = \frac{1}{2} + \negl[\secpar]$ or $\NIZK$ is not knowledge sound. Both possibilities contradict our assumptions, namely that the $\htlp$ is secure and the $\NIZK$ is knowledge sound. Thus, Cicada must be non-malleable.
+    Given a puzzle $Z_b$ containing some unknown bit $b$, $\bdv$ works as follows. First, it computes $(\pparam, Z) \sample \Setup(\secparam, \timeT, 1)$ and sends them to the non-malleability adversary $\adv$. $\bdv$ responds to $\adv$'s oracle queries $(j, b_j)$ with honestly computed $(Z_j, \pi_j)$, keeping track of queries and responses in the set $\mathcal{Q}$. When $\adv$ outputs $(i, Z_i, \pi_i)$, $\bdv$ looks for $(i, b_i, Z_i, \pi_i) \in \mathcal{Q}$ and outputs $b_i$. Since $\adv$ has non-negligible advantage, it follows that $\NIZK.\vrfy((i, Z_i), \pi_i) = 1$. This implies that either $\Pr[b_i=b] = \frac{1}{2} + \negl[\secpar]$ or $\NIZK$ is not knowledge sound. Both possibilities contradict our assumptions, namely that the $\htlp$ is secure and the $\NIZK$ is knowledge sound. Thus, Cicada must be non-malleable.
 \end{proof}

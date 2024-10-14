@@ -5,18 +5,18 @@
     \renewcommand{\labelitemi}{\textendash}
     \setlength{\itemsep}{0pt}
     \begin{itemize}
-        \item On input $(\texttt{sid},\mathsf{PKSetup}, P)$, it proceeds as follows:
+        \item On input $(\sid,\mathsf{PKSetup}, P)$, it proceeds as follows:
         \begin{enumerate}
         \item Sample $\dk \sample \ZZ_p$ and set $\ek := g_2^{\dk}$. 
-        \item Delete any existing entries $(P, *, *, *, *) \in \keylist$ and add $(P, \ek, \dk, \texttt{time} := 1, \texttt{unleaked} := 1)$ to $\keylist$.
-        % \item Send $(\texttt{sid},\mathsf{PKSetupDone}, P, \ek)$ to the adversary $\adv$. 
-        \item Output $(\texttt{sid},\mathsf{PKSetupResult}, P, (\ek, \dk))$.
+        \item Delete any existing entries $(P, *, *, *, *) \in \keylist$ and add $(P, \ek,\allowbreak \dk, \texttt{time} := 1, \texttt{unleaked} := 1)$ to $\keylist$.
+        % \item Send $(\sid,\mathsf{PKSetupDone}, P, \ek)$ to the adversary $\adv$. 
+        \item Output $(\sid,\mathsf{PKSetupResult}, P, (\ek, \dk))$.
         \end{enumerate}
-        % \item On input $(\texttt{sid},\mathsf{PKSetupDeliver}, P)$ from $\adv$, where $P$ is a party identifier, recover $(P,\ek, \dk, *, *)$ from $\keylist$ and send $(\texttt{sid},\mathsf{PKSetupResult}, \ek, \dk)$ to $P$.
-        \item On input $(\texttt{sid},\mathsf{PKRecover}, P, (Q))$, 
-        %send $(\texttt{sid},\mathsf{PKRecoverDone},P,Q)$ to $\adv$.
-        retrieve $(Q,\ek, *, *, *) \in \keylist$ and output $(\texttt{sid},\allowbreak \mathsf{PKRecoverResult},\allowbreak P, (Q,\ek))$.
-        % \item On input $(\texttt{sid},\mathsf{PKRecoverDeliver},P,Q)$ from $\adv$, where $P,Q$ are party identifiers and the latter is the recipient, recover $(P,\ek, \dk, *, *)$ from $\keylist$ and then send $(\texttt{sid},\mathsf{PKRecoverResult}, P,\ek)$ to $Q$.
+        % \item On input $(\sid,\mathsf{PKSetupDeliver}, P)$ from $\adv$, where $P$ is a party identifier, recover $(P,\ek, \dk, *, *)$ from $\keylist$ and send $(\sid,\mathsf{PKSetupResult}, \ek, \dk)$ to $P$.
+        \item On input $(\sid,\mathsf{PKRecover}, P, (Q))$, 
+        %send $(\sid,\mathsf{PKRecoverDone},P,Q)$ to $\adv$.
+        retrieve $(Q,\ek, *, *, *) \in \keylist$ and output $(\sid,\allowbreak \mathsf{PKRecoverResult},\allowbreak P, (Q,\ek))$.
+        % \item On input $(\sid,\mathsf{PKRecoverDeliver},P,Q)$ from $\adv$, where $P,Q$ are party identifiers and the latter is the recipient, recover $(P,\ek, \dk, *, *)$ from $\keylist$ and then send $(\sid,\mathsf{PKRecoverResult}, P,\ek)$ to $Q$.
         
     \end{itemize}
     }}

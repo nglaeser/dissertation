@@ -1,7 +1,7 @@
 \subsection{Ballot/Bid Correctness Proofs}\label{sec:sigmas}
 
 For our NIZKs, we assume HTLPs are of the form $(u,v) = (g^r, h^r y^s) \in \GG_1 \times \GG_2$, where $\GG_1, \GG_2$ are groups of unknown order. 
-This captures all known constructions of HTLPs: in the case of the Paillier HTLP (\Cref{con:paillierHTLP}), $\GG_1 = \mathbb{J}_N$, $\GG_2 = \ZZ_{N^2}^*$, $h = (g^{2^\Ttime})^N$, and $y = 1+N$. For the exponential ElGamal HTLP (\Cref{con:exp_elgamalHTLP}), $\GG_1 = \GG_2 = \ZZ_N^*$, $h = g^{2^\Ttime}$, and $y \in \GG_1$. And for the class group HTLP~\cite{CCS:TCLM21}, $\GG_1,\GG_2$ are cyclic subgroups of the respective class groups $Cl(\Delta_K), Cl(q^2\Delta_K)$, respectively, $h = \psi_q(G^{2^\Ttime})$ where $G$ is a generator of $\GG_1$ and $\psi_q : Cl(\Delta_K) \to Cl(q^2 \Delta_K)$ is an injective map, and $y \in \GG_2$ is the generator of a subgroup in which the discrete logarithm problem is easy (see \cite{CCS:TCLM21} for details).
+This captures all known constructions of HTLPs: in the case of the Paillier HTLP (\Cref{con:paillierHTLP}), $\GG_1 = \mathbb{J}_N$, $\GG_2 = \ZZ_{N^2}^*$, $h = (g^{2^\timeT})^N$, and $y = 1+N$. For the exponential ElGamal HTLP (\Cref{con:exp_elgamalHTLP}), $\GG_1 = \GG_2 = \ZZ_N^*$, $h = g^{2^\timeT}$, and $y \in \GG_1$. And for the class group HTLP~\cite{CCS:TCLM21}, $\GG_1,\GG_2$ are cyclic subgroups of the respective class groups $Cl(\Delta_K), Cl(q^2\Delta_K)$, respectively, $h = \psi_q(G^{2^\timeT})$ where $G$ is a generator of $\GG_1$ and $\psi_q : Cl(\Delta_K) \to Cl(q^2 \Delta_K)$ is an injective map, and $y \in \GG_2$ is the generator of a subgroup in which the discrete logarithm problem is easy (see \cite{CCS:TCLM21} for details).
 % \noemi{what about HTLP from class groups?} % see this paper https://inria.hal.science/hal-03466495/document % diff link https://eprint.iacr.org/2021/1272
 
 \paragraph{Proof of solution}
@@ -12,7 +12,7 @@ This captures all known constructions of HTLPs: in the case of the Paillier HTLP
 
 During the finalization phase of our protocol, any party can solve the final HTLP off-chain and submit a solution to the contract. To enforce the correctness of this solution we require the solver to include a proof of the following relation:
 \begin{equation}
-    \mathcal{R}_{\pos}=\{((y,u,v,w\in\mathbb{G},s\in\mathbb{Z});\bot): w = u^{2^\Ttime} \land\ v = w y^s \in \GG\}
+    \mathcal{R}_{\pos}=\{((y,u,v,w\in\mathbb{G},s\in\mathbb{Z});\bot): w = u^{2^\timeT} \land\ v = w y^s \in \GG\}
 \end{equation}
 
 We call such a proof system $\pos = (\mathsf{Prove}, \mathsf{Verify})$. It can be realized as the conjunction of two proofs of exponentiation ($\poe$)~\cite{ITCS:Pietrzak19b,EC:Wesolowski19} for $w = u^{2^T}$ and $y^s = v/w$.

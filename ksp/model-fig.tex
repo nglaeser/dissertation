@@ -7,7 +7,7 @@
     \tikzstyle{hharrow} = [-Stealth]
         %%% P1 %%%
         \node[box] (p1cold) {$\sk_1^\cold$};
-        \node[box,right=10em] (p1hot) at (p1cold) {$\sk_1^\hot$};
+        \node[box,right=8em] (p1hot) at (p1cold) {$\sk_1^\hot$};
         % \draw[->,thick] (p1cold) -- node[par]{||} (p1hot);
         \draw[charrow] (p1cold) -- node[yshift=1em]{$\sigma_1^\cold$} (p1hot);
         % \node[par] at (p1) {||};
@@ -16,7 +16,7 @@
         \node[below of=p1hot,yshift=1em] {$P_1^\hot$};
         %%% P2 %%%
         \node[box,right=10em] (p2hot) at (p1hot) {$\sk_2^\hot$};
-        \node[box,right=10em] (p2cold) at (p2hot) {$\sk_2^\cold$};
+        \node[box,right=8em] (p2cold) at (p2hot) {$\sk_2^\cold$};
         \draw[charrow] (p2cold) -- node[yshift=1em]{$\sigma_2^\cold$} (p2hot);
         %%% labels
         \node[below of=p2cold,yshift=1em] {$P_2^\cold$};
@@ -24,7 +24,7 @@
         %%% P3
         \node[right=5em] (midpoint) at (p1hot) {};
         \node[box,above=7.5em] (p3hot) at (midpoint) {$\sk_3^\hot$};
-        \node[box,left=10em] (p3cold) at (p3hot) {$\sk_3^\cold$};
+        \node[box,left=8em] (p3cold) at (p3hot) {$\sk_3^\cold$};
         \draw[charrow] (p3cold) -- node[yshift=1em]{$\sigma_3^\cold$} (p3hot);
         %%% labels
         \node[above of=p3cold,yshift=-1em] {$P_3^\cold$};

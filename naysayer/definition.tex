@@ -3,9 +3,9 @@
 Next, we introduce a formal definition and syntax for naysayer proofs. A naysayer proof system $\Pi_{\nay}$ can be seen as a ``wrapper'' around an underlying proof system $\Pi$. For example, $\Pi_{\sf nay}$ defines a proving algorithm $\Pi_{\nay}.\prove$ which uses the original prover $\Pi.\prove$ as a subroutine.
 
 \begin{definition}[Naysayer proof]\label{def:naysayer_proof}
-Given a non-interactive proof system $\Pi = (\setup, \prove, \vrfy)$ for a NP language $\Lang$, the naysayer proof system corresponding to $\Pi$ is a tuple of PPT algorithms $\Pi_{\nay} = (\setup, \prove,\allowbreak \naysay, \vrfynay)$ defined as follows:
+Given a non-interactive proof system $\Pi = (\Setup, \prove, \vrfy)$ for a NP language $\Lang$, the naysayer proof system corresponding to $\Pi$ is a tuple of PPT algorithms $\Pi_{\nay} = (\Setup, \prove,\allowbreak \naysay,\allowbreak \vrfynay)$ defined as follows:
     \begin{description}
-        \item[$\setup(\secparam, \naysecparam) \randout (\crs,\crs_{\nay})$:] Given (potentially different) security parameters $\secparam$ and $\naysecparam$, output two common reference strings $\crs$ and $\crs_{\nay}$. This algorithm may use private randomness.
+        \item[$\Setup(\secparam, \naysecparam) \randout (\crs,\crs_{\nay})$:] Given (potentially different) security parameters $\secparam$ and $\naysecparam$, output two common reference strings $\crs$ and $\crs_{\nay}$. This algorithm may use private randomness.
         \item[$\prove(\crs, x, \witness) \to \pi'$:] Given a statement $x$ and witness $\witness$ such that $(x,\allowbreak \witness) \in \Rel_\Lang$, 
         % compute $\pi \gets \Pi.\prove(\crs, x,w)$ and a commitment $\com$ to the evaluation trace of $\Pi.\vrfy(\crs, x, \pi)$. 
         output $\pi' = (\pi, \aux)$, where $\pi \gets \Pi.\prove(\crs, x, \witness)$.
@@ -20,39 +20,39 @@ We say a proof system $\Pi$ is \emph{efficiently naysayable} if there exists a c
 Moreover, if $\td_\nay = \perp$, we say $\Pi_\nay$ is a \emph{public} naysayer proof (see \Cref{sec:vshuffle_naysayer} for an example of a non-public naysayer proof). 
 
 \begin{definition}[Naysayer completeness]
-    Given a proof system $\Pi$, a naysayer proof system $\Pi_{\nay} = (\setup, \prove, \naysay, \vrfynay)$ is \emph{complete} if, for all honestly generated $\crs, \crs_{\nay}$ and all values of $\aux$,\footnotemark
+    Given a proof system $\Pi$, a naysayer proof system $\Pi_{\nay} = (\Setup, \prove, \naysay, \vrfynay)$ is \emph{complete} if, for all honestly generated $\crs, \crs_{\nay}$ and all values of $\aux$,\footnotemark
     % all statements $x$, all invalid proofs $\pi$, and all corresponding auxiliary information $\witness_{\nay}$, 
-    given an invalid statement-proof pair $(x,\pi)$, $\naysay$ outputs a valid naysayer proof $\pi_{\nay}$. That is, for all $\secpar, \naysecpar \in \NN$ and all $\aux,x,\pi$,
+    given an invalid statement-proof pair $(x,\pi)$, $\naysay$ outputs a valid naysayer proof $\pi_{\nay}$. That is, for all $\secpar, \naysecpar \in \NN$ and all $\aux,x,\pi$, the following expression equals 1:
 \footnotetext{We do not place any requirement on $\aux$.}
 \begin{equation*}
     \Pr\left[
         \vrfynay(\crs_{\nay}, (x,(\pi, \aux)), \pi_{\nay})=0 
         \middle| 
         \begin{array}{c}
-            (\crs, \crs_{\nay}) \gets \setup(\secparam, \naysecparam)~\land\\
+            (\crs, \crs_{\nay}) \gets \Setup(\secparam, \naysecparam)~\land\\
             \Pi.\vrfy(\crs, x,\pi) \neq 1~\land\\
             \pi_{\nay} \gets \naysay(\crs_{\nay}, (x, (\pi, \aux)), \perp)
         \end{array}
-    \right] = 1.
+    \right]% = 1.
 \end{equation*}
 % \noemi{Note this means completeness is only guaranteed to hold if you do not use a trapdoor... is this a problem? Edit: no, more like you can always naysay even without trapdoor}
 \end{definition}
 
-\begin{definition}[Naysayer soundness] Given a proof system $\Pi$, a naysayer proof system $\Pi_{\nay}$ is \emph{sound} if, for all PPT adversaries $\adv$, and for all honestly generated $\crs, \crs_\nay$, all $(x,w) \in \Rel_\Lang$, and all correct proofs $\pi'$, $\adv$ produces a passing naysayer proof $\pi_{\nay}$ with at most negligible probability. That is, for all $\secpar, \naysecpar \in \NN$, and all $\td_\nay$,
+\begin{definition}[Naysayer soundness] Given a proof system $\Pi$, a naysayer proof system $\Pi_{\nay}$ is \emph{sound} if, for all PPT adversaries $\adv$, and for all honestly generated $\crs, \crs_\nay$, all $(x,w) \in \Rel_\Lang$, and all correct proofs $\pi'$, $\adv$ produces a passing naysayer proof $\pi_{\nay}$ with at most negligible probability. That is, for all $\secpar, \naysecpar \in \NN$, and all $\td_\nay$, the following expression is bounded by $\negl[\naysecpar]$:\footnotemark
 \begin{equation*}
     \Pr\left[
         \vrfynay(\crs_{\nay}, (x,\pi'), \pi_{\nay})=0 
         \middle| 
         \begin{array}{c}
-            (\crs, \crs_\nay) \gets \setup(\secparam, \naysecparam)~\land\\
+            (\crs, \crs_\nay) \gets \Setup(\secparam, \naysecparam)~\land\\
             % \Pi.\vrfy(\crs, x,\pi)=1~\land\\
-            (x,w) \in \Rel_\Lang~\land
+            (x,w) \in \Rel_\Lang~\land\\
             \pi' \gets \prove(\crs, x, w)~\land\\
             \pi_\nay \gets \adv(\crs_\nay, (x, \pi'), \td_\nay)
         \end{array}
-    \right] \leq\negl[\naysecpar].\footnotemark
+    \right] %\leq\negl[\naysecpar].\footnotemark
 \end{equation*}
-\footnotetext{If we assume $\aux$ is computed correctly, the second line of the precondition can be simplified to see that $\Pi_\nay$ is required to be a sound proof system for the language $\Lang_\nay = \{(x,\pi) : x \notin \Lang ~\lor~ \Pi.\vrfy(\crs, x, \pi) \neq 1 \}$.}
+\footnotetext{If we assume $\aux$ is computed correctly, the second and third line of the precondition can be simplified to see that $\Pi_\nay$ is required to be a sound proof system for the language $\Lang_\nay = \{(x,\pi) : x \notin \Lang ~\lor~ \Pi.\vrfy(\crs, x, \pi) \neq 1 \}$.}
 \end{definition}
 
 Next, we show that every proof system has corresponding naysayer proof system with a logarithmic-sized (in the size of the verification circuit) naysayer proofs and constant verification time (i.e., a succinct naysayer proof system). %We follow the blueprint of~\cite{FOCS:FeiLapSha90}.
@@ -64,7 +64,7 @@ Next, we show that every proof system has corresponding naysayer proof system wi
     % there exists a naysayer proof system $\Pi_{\nay}$ with logarithmic-sized proofs $\pi_{\nay}$ and constant-time verifier.
 \end{lemma}
 \begin{proof}
-    % For any NP language $\Lang$, there exists a non-interactive proof system $\Pi = (\setup, \prove, \vrfy)$ for $\Rel_\Lang$ where $\vrfy(\crs, \cdot, \cdot)$ can be represented as a boolean circuit $C$ of size $\mathsf{poly}(\lvert x \rvert)$~\cite{C:LapSha90}. Recall that for all $(x,w) \in \Rel_\Lang$ and $\crs \gets \Pi.\setup(\secparam)$, by correctness, we have that if $\pi' \gets \Pi.\prove(\crs, x, w)$ then $C(x,\pi') = 1$. Therefore, if there is some gate of $C$ for which the wire assignment is inconsistent, then the proof $\pi'$ is incorrect. To naysay, i.e., to show the incorrectness of $\pi'$, the naysayer simply provides the index of the inconsistent gate.
+    % For any NP language $\Lang$, there exists a non-interactive proof system $\Pi = (\Setup, \prove, \vrfy)$ for $\Rel_\Lang$ where $\vrfy(\crs, \cdot, \cdot)$ can be represented as a boolean circuit $C$ of size $\mathsf{poly}(\lvert x \rvert)$~\cite{C:LapSha90}. Recall that for all $(x,w) \in \Rel_\Lang$ and $\crs \gets \Pi.\Setup(\secparam)$, by correctness, we have that if $\pi' \gets \Pi.\prove(\crs, x, w)$ then $C(x,\pi') = 1$. Therefore, if there is some gate of $C$ for which the wire assignment is inconsistent, then the proof $\pi'$ is incorrect. To naysay, i.e., to show the incorrectness of $\pi'$, the naysayer simply provides the index of the inconsistent gate.
     % Recall that the verifier has access to the wire assignments of $C(x,\pi')$ as part of $\pi$ (see \Cref{def:naysayer_proof}). 
     Without loss of generality, let $C$ be a circuit of fan-in 2. 
     
@@ -82,8 +82,8 @@ Given any proof system $\Pi$, the evaluation of $\Pi.\vrfy(\crs,\cdot,\cdot)$ ca
 Then the following is a complete and sound naysayer proof system $\Pi_\nay$:
 
 \begin{description}
-    \item[$\setup(\secparam, \naysecparam)$:] Output $\crs \gets \Pi.\setup(\secparam)$ and $\crs_\nay := \varnothing$.
-    % $\crs_\nay \gets \COM.\setup(\naysecparam)$.
+    \item[$\Setup(\secparam, \naysecparam)$:] Output $\crs \gets \Pi.\Setup(\secparam)$ and $\crs_\nay := \varnothing$.
+    % $\crs_\nay \gets \COM.\Setup(\naysecparam)$.
     \item[$\prove(\crs, x, w) \to \pi'$:] Let $\pi \gets \Pi.\prove(\crs, x, w)$ and $\aux$ be the wire assignments of $\Pi.\vrfy(\crs, x, \pi)$. Output $\pi' = (\pi, \aux)$.
     \item[$\naysay(\crs_\nay, (x, \pi'), \td_\nay)$:] Parse $\pi' = (\pi, \aux)$\footnote{If $\sizeof{\aux}$ is larger than the number of wires in $C$, truncate it to the appropriate length.} and output $\pi_\nay := \top$ if $\aux = \aux' \concat 0$. Otherwise, evaluate $\Pi.\vrfy(\crs, x, \pi)$. If the result is not 1, search $\aux$ to find an incorrect wire assignment for some gate $G_i \in C$. %(if $\aux = \aux' \concat 0$, let $i = \sizeof{C}-1$). 
     Output $\pi_\nay := i$.

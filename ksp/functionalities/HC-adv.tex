@@ -6,7 +6,7 @@
     \setlength{\itemsep}{0pt}
     \textbf{Leak}
     \begin{itemize}
-    \item On input $(\sid,\mathsf{Leak}, \adv, (P_i^\hot))$, for every entry $(P_i^\hot, C_j, \hx_i, \pi_i,\allowbreak \texttt{time}, \texttt{leaked}, *) \in \hotlist$, set $\texttt{leaked}$ to $1$ and send $(\texttt{sid}, \mathsf{LeakResult}, \adv,\allowbreak (P_i^\hot, C_j, \hx_i, \pi_i, \texttt{time}))$ to $\adv$.
+    \item On input $(\sid,\mathsf{Leak}, \adv, (P_i^\hot))$, for every entry $(P_i^\hot, C_j, \hx_i, \pi_i, \texttt{time},\allowbreak \texttt{leaked}, *) \in \hotlist$, set $\texttt{leaked}$ to $1$ and send $(\texttt{sid}, \mathsf{LeakResult}, \adv,\allowbreak (P_i^\hot, C_j, \hx_i, \pi_i, \texttt{time}))$ to $\adv$.
     
     \item On input $(\sid,\mathsf{Leak}, \adv, (P_i^\cold))$, retrieve the entry $(P_i^\cold, \ek_i, \dk_i, \texttt{leaked},\allowbreak *, *, *) \in \coldlist$. Set $\texttt{leaked}$ to $1$ and send $(\texttt{sid}, \mathsf{LeakResult}, \adv, (P_i^\cold, \dk_i))$ to $\adv$.
     \end{itemize}
@@ -16,7 +16,7 @@
     \item On input $(\sid,\mathsf{Tamper}, \adv, (P_i^\hot, C, f, g))$, where $f, g$ are functions: %\protect\footnotemark, 
     \begin{enumerate}
         \item Retrieve $(P_i^\hot, C, \hx_i, \pi_i, \texttt{time}, \texttt{leaked}, \texttt{tampered}) \in \hotlist$ for the maximum value of $\texttt{time}$. Let $\hx_i' := f(\hx_i)$ and $\pi_i' := g(\pi_i)$. 
-        \item If $\hx_i', \pi_i' \neq \perp$, let $b:=1$ and update the entry to $(C, P_i^\hot, \hx_i', \pi_i', \texttt{time}, \texttt{leaked}, \texttt{tampered}=1)$. Otherwise let $b:=0$. 
+        \item If $\hx_i', \pi_i' \neq \perp$, let $b:=1$ and update the entry to $(C, P_i^\hot, \hx_i', \pi_i',\allowbreak \texttt{time}, \texttt{leaked}, \texttt{tampered}=1)$. Otherwise let $b:=0$. 
         \item Send $(\sid, \mathsf{TamperDone}, \adv, (C, P_i^\hot, b))$ to $\adv$.
     \end{enumerate}
     

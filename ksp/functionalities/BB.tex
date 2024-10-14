@@ -15,7 +15,7 @@
         \item On input $(\sid, \mathsf{ComUpdate}, C, (\ucom, \pi_{\ucom}))$:
         \begin{enumerate}
             \item Retrieve $(C, \vk, t, \com, \texttt{time}) \in \clientlist$ for the maximum value of $\texttt{time}$.
-            \item If $\Pi_{\sf Ref}.\mathsf{UC}\vrfy((\crs, \ucom, t), \pi_{\ucom}) = 1$, set $b := 1$ and add $(C, \vk, t, \com \cdot \ucom,\allowbreak \texttt{time++})$ to $\clientlist$ and $(C, \ucom, \texttt{time++})$ to $U$. Otherwise set $b := 0$.
+            \item If $\Pi_{\sf Ref}.\mathsf{UC}\vrfy((\crs, \ucom, t), \pi_{\ucom}) = 1$, set $b := 1$ and add $(C, \vk,\allowbreak t, \com \cdot \ucom,\allowbreak \texttt{time++})$ to $\clientlist$ and $(C, \ucom, \texttt{time++})$ to $U$. Otherwise set $b := 0$.
             % \item For all $i \in [n]$, output $(\sid, \mathsf{UpdateCom},P_i, (C, \ucom))$. \noemi{make this a separate interface for the $P_i$'s to query since $\Fbb$ shouldn't keep track of each $C$'s signing set.}
             \item Output $(\sid, \mathsf{ComUpdateResult}, C, (b))$.
         \end{enumerate}

@@ -18,11 +18,11 @@
         \item Interpolate the degree-$n$ polynomial $\tilde{f}$ such that $\tilde{f}(i) = \lhlhash(\ek_i^x) + x_i~\forall i\in [n]$. Compute $\com \gets \mathsf{KZG}.\Commit(\crs, \tilde{f})$ %and ${\sf d}\com := g_1^{\tau^{d-n} \cdot \tilde{f}(\tau)}$. 
         \chblue{and send $(\sid,\allowbreak \mathsf{Setup}, C, (y, t, n, \com))$ to $\Fbb$.}
         \item Delete any existing entries $(C, *, *) \in \clientlist$ and add $(C, \mathcal{P}, t)$ to $\clientlist$.
-        \item For each $i \in [n]$, compute $(\hx_i, \pi_i) \gets \mathsf{KZG}.\Open(\crs, \tilde{f}, i)$ and output $(\texttt{sid},\mathsf{SecretShare}, P_i,\allowbreak (C, i, \hx_i, \pi_i))$.
-        \item Finally, output $(\texttt{sid}, \mathsf{SSSetupDone}, C, (y, \{y_i\}_{i \in [n]}))$.
+        \item For each $i \in [n]$, compute $(\hx_i, \pi_i) \gets \mathsf{KZG}.\Open(\crs, \tilde{f}, i)$ and output $(\sid,\mathsf{SecretShare}, P_i,\allowbreak (C, i, \hx_i, \pi_i))$.
+        \item Finally, output $(\sid, \mathsf{SSSetupDone}, C, (y, \{y_i\}_{i \in [n]}))$.
         \end{enumerate}
     \underline{Generating share refreshes:}
-    On input $(\texttt{sid},\mathsf{ZeroSetup}, C, (t, \mathcal{P}))$, where $t,\allowbreak n \in \mathbb{N}$ s.t. $n = \sizeof{\mathcal{P}}$ and $t \leq n \leq d$, and $\mathcal{P} = \{P_1 \ldots P_n\}$ a set of parties, $C$ will proceed as follows:
+    On input $(\sid,\mathsf{ZeroSetup}, C, (t, \mathcal{P}))$, where $t,\allowbreak n \in \mathbb{N}$ s.t. $n = \sizeof{\mathcal{P}}$ and $t \leq n \leq d$, and $\mathcal{P} = \{P_1 \ldots P_n\}$ a set of parties, $C$ will proceed as follows:
         \begin{enumerate}
             \item Generate $t$-out-of-$n$ Shamir Shares of $0$ as $x_1, \ldots x_n \in \ZZ_p$; let $f$ be the polynomial used.
             \item Compute $\com_0 \gets \mathsf{KZG}.\Commit(\crs, f)$
@@ -33,7 +33,7 @@
             \item \chblue{Each party $P_i$ for $i \in [n]$ 
             % compute $(\delta_i, \pi_i) \gets \mathsf{KZG}.\Open(\crs, f, i)$ and % redundant, already done by $\Pi_{\sf Ref}$
             will send $(\sid, \mathsf{UComRecover}, P_i, (C))$ to $\Fbb$ and receive $(\sid, \mathsf{UCom}, P_i, (C, \ucom))$ in return. It checks that $\Pi_{\sf Ref}.\mathsf{H}\vrfy((\crs, \ucom, i, x_i), \zopen_i) = 1$. If not, set $x_i, \zopen_i = \perp$.}
-            Output $(\texttt{sid},\mathsf{ZeroShare}, P_i,\allowbreak (C, x_i, \zopen_i))$. % (C, \delta_i, \pi_i))$.
+            Output $(\sid,\mathsf{ZeroShare}, P_i,\allowbreak (C, x_i, \zopen_i))$. % (C, \delta_i, \pi_i))$.
         \end{enumerate}
     \underline{Providing auxiliary information:}
     On input $(\sid, \mathsf{AuxRecover}, P, (C))$ for some client $C$, \chblue{$P$ sends $(\sid, \mathsf{ClientInfoRecover}, P, (C))$ to $\Fbb$}. %to get $(\vk, \com)$}.

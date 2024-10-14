@@ -27,18 +27,18 @@ In a sealed-bid auction for a single item (e.g., an NFT or domain name), users s
 
 \subsection{Time-Lock Puzzles}\label{sec:tlp}
 
-A time-lock puzzle (TLP)~\cite{RivShaWag96} consists of three efficient algorithms $\mathsf{TLP} = (\mathsf{Setup}, \mathsf{Gen}, \mathsf{Solve})$ allowing a party to ``encrypt'' a message to the future. To recover the solution, one needs to perform a computation that is believed to be inherently sequential, with a parameterizable number of steps.
+A time-lock puzzle (TLP)~\cite{RivShaWag96} consists of three efficient algorithms $\mathsf{TLP} = (\Setup, \mathsf{Gen}, \mathsf{Solve})$ allowing a party to ``encrypt'' a message to the future. To recover the solution, one needs to perform a computation that is believed to be inherently sequential, with a parameterizable number of steps.
 
 \begin{definition}[Time-lock puzzle~\cite{RivShaWag96}] A time-lock puzzle scheme $\sf TLP = (\Setup, \mathsf{Gen}, \mathsf{Solve})$ for solution space $\mathcal{X}$ consists of the following three efficient algorithms:
     \begin{itemize}
-        \item \underline{$\mathsf{TLP.Setup}(\secparam, \Ttime) \randout \pparam$:} The (potentially trusted) setup algorithm takes as input a security parameter $\secparam$ and a difficulty (time) parameter $\Ttime$, and outputs public parameters $\pparam$. % (usually a group $\mathbb{G}$ with $\lambda$ bits of security). 
+        \item \underline{$\tlp.\Setup(\secparam, \timeT) \randout \pparam$:} The (potentially trusted) setup algorithm takes as input a security parameter $\secparam$ and a difficulty (time) parameter $\timeT$, and outputs public parameters $\pparam$. % (usually a group $\mathbb{G}$ with $\lambda$ bits of security). 
         % Typically $\mathbb{G}$ is a group of unknown order, e.g., the group $\mathbb{Z}^{*}_N$. 
         \item \underline{$\mathsf{TLP.Gen}(\pparam, s) \randout Z$:} Given a solution $s \in \X$, the puzzle generation algorithm efficiently computes a time-lock puzzle $Z$.
-        \item \underline{$\mathsf{TLP.Solve}(\pparam, Z) \rightarrow s$:} Given a TLP $Z$, the puzzle-solving algorithm requires at least $\Ttime$ sequential steps to output the solution $s$.
+        \item \underline{$\mathsf{TLP.Solve}(\pparam, Z) \rightarrow s$:} Given a TLP $Z$, the puzzle-solving algorithm requires at least $\timeT$ sequential steps to output the solution $s$.
     \end{itemize}
 \end{definition}
 
-Informally, we say that a TLP scheme is \emph{correct} if $\mathsf{TLP.Gen}$ is efficiently computable, and $\tlp.{\sf Solve}$ always recovers the original solution $s$ to a validly constructed puzzle. A TLP scheme is \emph{secure} if $Z$ hides the solution $s$ and no adversary can compute $\mathsf{TLP.Solve}$ in fewer than $\Ttime$ steps with non-negligible probability. For the formal definitions, see~\cite{C:MalThy19}.
+Informally, we say that a TLP scheme is \emph{correct} if $\mathsf{TLP.Gen}$ is efficiently computable, and $\tlp.{\sf Solve}$ always recovers the original solution $s$ to a validly constructed puzzle. A TLP scheme is \emph{secure} if $Z$ hides the solution $s$ and no adversary can compute $\mathsf{TLP.Solve}$ in fewer than $\timeT$ steps with non-negligible probability. For the formal definitions, see~\cite{C:MalThy19}.
 
 \paragraph{Homomorphic TLPs.}
 Malavolta and Thyagarajan~\cite{C:MalThy19} introduce \emph{homomorphic} TLPs (HTLPs). An HTLP is defined with respect to a circuit class $\mathcal{C}$ and has an additional algorithm $\sf Eval$ defined as:
@@ -63,7 +63,7 @@ We recall their constructions below.
     \begin{construction}[Linear HTLP~\cite{C:MalThy19}]\label{con:paillierHTLP}
     \hfill
     \begin{itemize}
-        \item \underline{$\htlp.\Setup(\secparam, \Ttime) \randout \pparam$:} Sample a strong semiprime $N$ and a generator $g \sample \ZZ_N^*$, then compute $h = g^{2^\Ttime} \mod{N} \in \ZZ_N^*$. (This can be computed efficiently using the factorization of $N$). Output $\pparam := (N, g, h)$.
+        \item \underline{$\htlp.\Setup(\secparam, \timeT) \randout \pparam$:} Sample a strong semiprime $N$ and a generator $g \sample \ZZ_N^*$, then compute $h = g^{2^\timeT} \mod{N} \in \ZZ_N^*$. (This can be computed efficiently using the factorization of $N$). Output $\pparam := (N, g, h)$.
         \item \underline{$\htlp.{\sf Gen}(\pparam, s; r) \rightarrow Z$:} Given a value $s \in \ZZ_N$, use randomness $r \in \ZZ_{N^2}$ to compute and output
             $$Z := (g^r \mod{N},\ h^{r \cdot N} \cdot (1+N)^s \mod{N^2}) \in \JJ_N \times \ZZ_{N^2}^*$$
         \item \underline{$\htlp.\Open(\pparam, Z, r) \rightarrow s$:} Parse $Z := (u,v)$ and compute $w := u^{2^T} \mod{N} \allowbreak= h^r$ via repeated squaring. Output $s := \frac{(v/w^N \mod{N^2})- 1}{N}$.
@@ -94,11 +94,11 @@ which opens to $f(s_1, s_2)$ by \Cref{eq:correctness1}.
     \begin{construction}[Multiplicative HTLP~\cite{C:MalThy19}]\label{con:multHTLP}
     \hfill
     \begin{itemize}
-        \item \underline{$\htlp.\Setup(\secparam, \Ttime) \randout \pparam$:} Same as \Cref{con:paillierHTLP}.
+        \item \underline{$\htlp.\Setup(\secparam, \timeT) \randout \pparam$:} Same as \Cref{con:paillierHTLP}.
         \item \underline{$\htlp.{\sf Gen}(\pparam, s; r) \rightarrow Z$:} Given a value $s \in \JJ_N$, use randomness $r \in \ZZ_{N^2}$ to compute and output
             $$Z := (g^r \mod{N},\ h^r \cdot s \mod{N}) \in \ZZ_N^* \times \ZZ_N^*$$
         \item \underline{$\htlp.\Open(\pparam, Z, r) \rightarrow s$:} Parse $Z := (u,v)$ and compute $w := u^{2^T} \mod{N} \allowbreak= h^r$ via repeated squaring. Output $s := v/w$.
-        \item \underline{$\htlp.{\sf Eval}(\pparam, f, Z_1, Z_2) \rightarrow Z$:} To evaluate a multiplicative function $f(x_1, x_2) \allowbreak= a x_1 x_2$ homomorphically on puzzles $Z_1 := (u_1, v_1)$ and $Z_2 := (u_2, v_2)$, return
+        \item \underline{$\htlp.{\sf Eval}(\pparam, f, Z_1, Z_2) \rightarrow Z$:} To evaluate a multiplicative function $f(x_1,\allowbreak x_2) \allowbreak= a x_1 x_2$ homomorphically on puzzles $Z_1 := (u_1, v_1)$ and $Z_2 := (u_2,\allowbreak v_2)$, return
         $$Z = (u_1 \cdot u_2 \mod{N}, a \cdot v_1 \cdot v_2 \mod{N})$$
     \end{itemize}
     \end{construction}
@@ -122,7 +122,7 @@ The construction requires a small solution space $\X \subset \ZZ_N$, i.e., $\X =
 \begin{construction}[Efficient linear HTLP.]\label{con:exp_elgamalHTLP}
     \hfill
     \begin{description}
-        \item[$\htlp.\Setup(\secparam, \Ttime) \randout \pp$.] Output $\pp := (N, g, h, y)$, where $y \sample \ZZ_N^*$ and the remaining parameters are the same as in \cref{con:paillierHTLP,con:multHTLP}.
+        \item[$\htlp.\Setup(\secparam, \timeT) \randout \pp$.] Output $\pp := (N, g, h, y)$, where $y \sample \ZZ_N^*$ and the remaining parameters are the same as in \cref{con:paillierHTLP,con:multHTLP}.
         \item[$\htlp.{\sf Gen}(\pp, s; r) \rightarrow Z$.] Given a value $s \in \chblue{\X \subset \ZZ_N}$, use randomness $r \in \ZZ_{N}$ to compute and output
             $$Z := (g^r \mod{N},\ h^r \cdot \chblue{y^s} \mod{N}) \in \ZZ_N^* \times \ZZ_N^*$$
         \item[$\htlp.\Open(\pp, Z, r) \rightarrow s$.] Parse $Z := (u,v)$ and compute $w := u^{2^T} \mod{N} \allowbreak= h^r$ via repeated squaring. \chblue{Compute $S := v/w$ and brute force the discrete logarithm of $S$ w.r.t. $y$ to obtain $s$.}

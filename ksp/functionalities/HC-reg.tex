@@ -15,7 +15,7 @@
     \item On input $(\texttt{sid},\mathsf{ColdRegister},P_i^\cold)$, it proceeds as follows:
         \begin{enumerate}
         \item Sample $\dk_i \sample \ZZ_p$ and set $\ek_i := g_2^{\dk_i}$. 
-        \item Delete any existing entries for $P_i^\cold$ in $\coldlist$ and add $(P_i^\cold, \ek_i, \dk_i, \texttt{leaked}:=0,\texttt{tampered}:=0,\texttt{corrupted}:=0,\texttt{allowc}:=1)$ to $\coldlist$.
+        \item Delete any existing entries for $P_i^\cold$ in $\coldlist$ and add $(P_i^\cold, \ek_i, \dk_i,\allowbreak \texttt{leaked}:=0,\texttt{tampered}:=0,\texttt{corrupted}:=0,\texttt{allowc}:=1)$ to $\coldlist$.
         \item Output $(\texttt{sid},\mathsf{ColdRegistered}, P_i^\cold, \ek_i)$.
         \end{enumerate}
     
@@ -30,7 +30,7 @@
         \begin{enumerate}
             \item Compute $(\hx_i, \pi_i) \gets \mathsf{KZG}.\Open(\crs, \tilde{f}, i)$. %and let $\aux_i := (\com, \pi_i)$, 
             \item Output $(\texttt{sid},\mathsf{ClientRegistered}, P_i^\hot, (C, b_i=1))$.
-            \item Once $\adv$ has allowed delivery of the message, delete any existing entries $(P_i^\hot, C, *, *, *, *, *) \in \hotlist$ and add $(P_i^\hot, C, \hx_i, \pi_i, \texttt{time} := 0, \texttt{leaked} := 0,\allowbreak \texttt{tampered} := 0)$ to $\hotlist$. Delete any existing entries $(P_i^\hot, \texttt{corrupted}, \texttt{allowc}) \in \hotstates$ and add $(P_i^\hot, \texttt{corrupted} := 0, \texttt{allowc} := 1)$.
+            \item Once $\adv$ has allowed delivery of the message, delete any existing entries $(P_i^\hot, C, *, *, *, *, *) \in \hotlist$ and add $(P_i^\hot, C,\allowbreak \hx_i, \pi_i, \texttt{time} := 0, \texttt{leaked} := 0,\allowbreak \texttt{tampered} := 0)$ to $\hotlist$. Delete any existing entries $(P_i^\hot, \texttt{corrupted}, \texttt{allowc}) \in \hotstates$ and add $(P_i^\hot, \texttt{corrupted} := 0, \texttt{allowc} := 1)$.
         \end{enumerate}
         \end{enumerate}
     \end{itemize}

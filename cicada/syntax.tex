@@ -4,17 +4,17 @@ We introduce a generic syntax for a time-locked voting/auction protocol. Any suc
 For example, in FPTP voting, the tally function $t$ is addition, and the finalization function $f$ is $\argmax$ over the final tally/bids.
 
 \begin{definition}[Time-locked voting/auction protocol]\label{def:syntax}
-A time-locked voting/auction protocol $\Pi_\Sigma = (\Setup, \Seal,\allowbreak \Aggr, \Open, \Finalize)$ is defined with respect to a base voting/auction protocol $\Sigma = \final \circ \tally$, where $\tally : \X^n \to \X'$ and $\final : \X' \to \Y$. %where $n$ is the number of participants.
+A time-locked voting/{\allowbreak}auction protocol $\Pi_\Sigma = (\Setup, \Seal,\allowbreak \Aggr, \Open, \Finalize)$ is defined with respect to a base voting/auction protocol $\Sigma = \final \circ \tally$, where $\tally : \X^n \to \X'$ and $\final : \X' \to \Y$. %where $n$ is the number of participants.
 
 \begin{description}
-    \item[$\Setup(\secparam, \Ttime) \randout (\pparam, \Z)$.] Given a security parameter $\secpar$ and a time parameter $\Ttime$, output public parameters $\pparam$ and an initial time-locked value $\Z$.
+    \item[$\Setup(\secparam, \timeT) \randout (\pparam, \Z)$.] Given a security parameter $\secpar$ and a time parameter $\timeT$, output public parameters $\pparam$ and an initial time-locked value $\Z$.
     %HTLP that corresponds to the running tally or bid computation.
     \item[$\Seal(\pparam, i, s) \randout (\Z_i, \pi_i)$.] User $i\in[n]$ seals its submission $s \in \X$ into a time-locked submission %a (list of) HTLP(s) 
     $\Z_i$. It also outputs a proof of well-formedness $\pi_i$.
     \item[$\Aggr(\pparam, \Z, i, \Z_i, \pi_i) \to \Z'$.] Given a time-locked aggregate %list of (tally) HTLPs 
     $\Z$, a time-locked submission $\Z_i$ of user $i$, and a proof $\pi_i$, the aggregation algorithm checks the proof and potentially uses $\Z_i$ to update $\Z$ to $\Z'$. %aggregates the sealed submission homomorphically into $\Z$ to get an updated (tally) $\Z' = \tally(\Z, \Z_i)$.
-    \item[$\Open(\pparam, \Z) \to (\vec{s}, \pi_\open)$.] Using $\Ttime$ sequential steps, open the time-locked aggregate $\Z$ to $\vec{s}$ (in a correct execution, $\vec{s} = \tally(s_1, \dots, s_n)$) and compute a proof $\pi_\open$ to prove correct opening of $\Z$ to $\vec{s}$.
-    \item[$\Finalize(\pparam, \Z, \vec{s}, \pi_\open) \to \{y, \perp\}$.] Given proposed opening $\vec{s}$ of $\Z$ and proof $\pi_{\sf open}$, either reject $\vec{s}$ or compute the final result $y = \final(\vec{s}) \in \Y$. %, which specifies the winner and, in the case of an auction, the amount to be paid as well as the appropriate items to be transferred.
+    \item[$\Open(\pparam, \Z) \to (\vec{s}, \pi_\open)$.] Using $\timeT$ sequential steps, open the time-locked aggregate $\Z$ to $\vec{s}$ (in a correct execution, $\vec{s} = \tally(s_1, \dots, s_n)$) and compute a proof $\pi_\open$ to prove correct opening of $\Z$ to $\vec{s}$.
+    \item[$\Finalize(\pparam, \Z, \vec{s}, \pi_\open) \to \{y, \perp\}$.] Given a proposed opening $\vec{s}$ of $\Z$ and a proof $\pi_{\sf open}$, either reject $\vec{s}$ or compute the final result $y = \final(\vec{s}) \in \Y$. %, which specifies the winner and, in the case of an auction, the amount to be paid as well as the appropriate items to be transferred.
 \end{description}
 \end{definition}
 
@@ -27,7 +27,7 @@ A time-locked voting/auction protocol $\Pi_\Sigma$ must satisfy the following th
 $\Pi_\Sigma$ is \emph{correct} if, assuming setup, submission of $n$ puzzles, aggregation of all $n$ submissions, and opening are all performed honestly, $\sf Finalize$ outputs a winner consistent with the base protocol $\Sigma$.
 
 \begin{definition}[Correctness]\label{def:correctness_cicada}
-We say a voting/auction protocol $\Pi_\Sigma$ with $\Sigma: \X^n \to \mathcal{Y}$ is \emph{correct} if for all $\Ttime,\secpar \in \mathbb{N}$ and submissions $s_1, \dots, s_n \in \X$,
+We say a voting/auction protocol $\Pi_\Sigma$ with $\Sigma: \X^n \to \mathcal{Y}$ is \emph{correct} if for all $\timeT,\secpar \in \mathbb{N}$ and submissions $s_1, \dots, s_n \in \X$,
 \[
     \Pr\left[
         \begin{aligned}
@@ -38,7 +38,7 @@ We say a voting/auction protocol $\Pi_\Sigma$ with $\Sigma: \X^n \to \mathcal{Y}
         \end{aligned}
         \middle|
         \begin{array}{c}
-            (\pparam, \Z) \sample \Setup(\secparam, \Ttime)~\land\\
+            (\pparam, \Z) \sample \Setup(\secparam, \timeT)~\land\\
             (\Z_i, \pi_i) \sample \Seal(\pparam, i, s_i)~\forall i \in [n]~\land\\
             \Z_{\sf final} \gets \Aggr(\pparam, \Z, \{i, \Z_i, \pi_i\}_{i \in [n]})~\land\\
             (\mathcal{S}, \pi_{\sf open}) \gets \Open(\pparam, \Z_{\sf final}) \\
@@ -49,16 +49,16 @@ where the aggregation step is performed over all $n$ submissions in any order.
 \end{definition}
 
 \paragraph{Submission privacy.} 
-The protocol satisfies \emph{submission privacy} if the adversary cannot distinguish between two submissions, i.e., bids or ballots. Note that this property is only ensured up to time $\Ttime$.
+The protocol satisfies \emph{submission privacy} if the adversary cannot distinguish between two submissions, i.e., bids or ballots. Note that this property is only ensured up to time $\timeT$.
 
 \begin{definition}[Submission privacy]\label{def:submission_privacy}
-We say that a voting/auction protocol $\Pi_\Sigma$ with $\Sigma: \X^n \to \mathcal{Y}$ is \emph{submission-private} if for all $\Ttime,\secpar \in \mathbb{N}, i \in [n]$ and all PPT adversaries $\mathcal{A}$ running in at most $\Ttime$ sequential steps, there exists a negligible function $\negl$ such that 
+We say that a voting/auction protocol $\Pi_\Sigma$ with $\Sigma: \X^n \to \mathcal{Y}$ is \emph{submission-private} if for all $\timeT,\secpar \in \mathbb{N}, i \in [n]$ and all PPT adversaries $\mathcal{A}$ running in at most $\timeT$ sequential steps, there exists a negligible function $\negl$ such that 
 \begin{equation*}
     \Pr\left[
         b=b'
         \middle|
         \begin{array}{c}
-            (\pparam, \Z) \sample \Setup(\secparam, \Ttime)~\land\\       
+            (\pparam, \Z) \sample \Setup(\secparam, \timeT)~\land\\       
             b\sample\{0,1\}~\land\\
             (\Z_i, \pi_i) \sample \Seal(\pparam, i, b)~\land\\
             b'\gets\adv(\pparam,\Z,i, \Z_i, \pi_i)\\
@@ -72,7 +72,7 @@ We say that a voting/auction protocol $\Pi_\Sigma$ with $\Sigma: \X^n \to \mathc
 Submission privacy alone does not suffice for security: even without knowing the contents of other puzzles, an adversary could submit a value that depends on other participants' (sealed) submissions. For example, in an auction, an attacker can always win by homomorphically computing an HTLP containing the sum of all the other participants' bids plus a small value $\varepsilon$. Therefore, we also define \emph{non-malleability}, which requires that no participant can take another's submission and replay it or ``maul'' it into a valid submission under its own name.
 
 \begin{definition}[Non-malleability]\label{def:non_malleability}
-We say that a voting/auction protocol $\Pi_\Sigma$ with $\Sigma: \X^n \to \Y$ is \emph{non-malleable} if for all $\Ttime,\secpar \in \mathbb{N}$ and all PPT adversaries $\adv$ running in at most $\Ttime$ sequential steps, there exists a negligible function $\negl$ such that %the following probability is bounded by $\negl[\secpar]$:
+We say that a voting/auction protocol $\Pi_\Sigma$ with $\Sigma: \X^n \to \Y$ is \emph{non-malleable} if for all $\timeT,\secpar \in \mathbb{N}$ and all PPT adversaries $\adv$ running in at most $\timeT$ sequential steps, there exists a negligible function $\negl$ such that %the following probability is bounded by $\negl[\secpar]$:
 \begin{align*}
     \Pr\left[
         \begin{array}{c}
@@ -81,7 +81,7 @@ We say that a voting/auction protocol $\Pi_\Sigma$ with $\Sigma: \X^n \to \Y$ is
         \end{array}
         \middle|
         \begin{array}{c}
-            (\pparam, \Z) \sample \Setup(\secparam, \Ttime)~\land\\
+            (\pparam, \Z) \sample \Setup(\secparam, \timeT)~\land\\
             (i, \Z_i, \pi_i) \gets \adv^{\oracle_\Seal(\pparam,\cdot,\cdot)}(\pparam, \Z)
         \end{array}
     \right]
