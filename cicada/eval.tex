@@ -1,26 +1,23 @@
-\section{Implementation}\label{sec:implementation} 
+\section{Implementation}\label{sec:cicada_eval} 
 
-% Assuming the off-chain solver has $2^{\tau}$ computational time \noemi{what's a proper unit for this?} on the discrete logarithm computation (e.g., using Pollard's rho algorithm~\cite{pollard1978monte}), the exponential ElGamal HTLP is $(n+1)^m\leq 2^{2\tau}$. Otherwise, the Paillier HTLP is faster. 
-% It is also necessary that $(nw+1)^m< \sizeof{\gp}$ to preserve the correctness of our schemes.
-% % We discuss which HTLP constructions can be used for concrete settings of $(n,m,\tau)$, along with other deployment choices, in \Cref{sec:feasability}. 
-% We detail these limitations and explore the practical parameter range of each HTLP construction in \Cref{sec:feasability}.
+\input{cicada/params}
 
-%we instantiated our schemes with the exponential ElGamal HTLP for space-efficiency reasons. 
-% Specifically, all ballots/bids and the tally HTLP have the form $Z:=(u,v)=(g^r,\ h^r y^s) \in \ZZ_N^* \times \ZZ_N^*$, where $(g,h,y)\sample(\ZZ_N^*)^3$ (see \Cref{eq:exp_elgamalHTLP}). 
+\subsection{Our Implementation}\label{sec:implementation}
+
 We implemented our transparent on-chain coordinator as an Ethereum smart contract in Solidity.\footnote{Open-sourced at \url{https://github.com/a16z/cicada}.} 
 For efficiency, we use the exponential ElGamal HTLP with a 1024-bit modulus $N$.
 To enable 1024-bit modular arithmetic in $\ZZ_N^*$, we developed a Solidity library which may be of independent interest. 
 This size of $N$ corresponds to approximately $\secpar=80$ bits of security.
 Although this security level is no longer deemed cryptographically safe, the secrecy of the HTLP solutions is only guaranteed up to time $T$ regardless, so this security level will suffice for our use case as long as the best-known factoring attack takes at least $T$ time. A 2012 estimate for factoring 1024-bit integers is about a year~\cite{facthacks}, which is significantly longer than the typical submission period of a decentralized auction or election.
 
-The main factors influencing gas cost (see \Cref{sec:empirical_performance}) are submission size, correctness proof size, and verification complexity. These factors mainly depend on the packing parameter $\ell\in[m]$, which determines a storage-computation trade-off with the following extremes:
+The main factors influencing gas cost (see \Cref{sec:cicada_costs}) are submission size, correctness proof size, and verification complexity. These factors mainly depend on the packing parameter $\ell\in[m]$, which determines a storage-computation trade-off with the following extremes:
 % For the implementation, our main concern is minimizing the size of the ballots/bids, their correctness proofs, and the verification complexity of the correctness proofs. These metrics influence the gas cost efficiency of our transparent tallying authorities/auctioneers implemented as Ethereum smart contracts in Solidity. Our code is open-sourced.~\footnote{\url{https://github.com/a16z/cicada}\todo{anonymize}}
 
 \begin{description}
     \item[One aggregate HTLP for all.] If $\ell=m$, the contract maintains a single aggregate HTLP $Z$. This greatly reduces the on-chain space requirements of the resulting voting or auction scheme at the expense of typically more complex and larger submission correctness proofs.
     \item[One aggregate HTLP per candidate.] If $\ell=1$, the contract must maintain $m$ aggregate HTLPs $\{Z_j\}_{j\in[m]}$. This increases the on-chain storage, but the submissions of correctness proofs become smaller and cheaper to verify.
 \end{description}
-In~\Cref{sec:empirical_performance}, we empirically explore this trade-off space by measuring the gas costs of various deployments of our framework with a range of parameter settings $M,n,m,w,\ell$.
+In~\Cref{sec:cicada_costs}, we empirically explore this trade-off space by measuring the gas costs of various deployments of our framework with a range of parameter settings $M,n,m,w,\ell$.
 % \joe{what about other points in the trade-off space?}
 %\noemi{we don't actually measure any ``in-between'' settings of $\ell$ though, can we simulate or at least discuss whether it's linear?}\istvan{should be linear} 
 
@@ -39,7 +36,7 @@ To illustrate two extremes of the packing spectrum, we implement two flavors of 
 The second approach applies $b$ aggregate HTLPs (i.e., $\ell = 1$): Each bidder $i$ submits $b$ HTLPs $\{Z_{ij}\}_{j \in [b]}$ and uses the same proof system as in binary voting to prove their well-formedness, i.e., the user inserted for each bit of the bid $0$ or $1$. The coordinator adds $2^i \cdot Z_{ij}$ to each corresponding aggregate HTLP $Z_j$.%\footnote{We implement\noemi{check this} an optimization in which the bidders perform the scalar multiplication on behalf of the coordinator, proving instead $\forall j\in[b]$, $(u=g^r\land v=h^r)\lor(u=g^r\land vy^{-2^i}=h^r)$.\noemi{not sure if it's easy to discuss at which $M > 2$ this stops being more efficient than having the contract do the multiplication?}\istvan{doesn't the contract need to do the multiplication anyways because of security reasons? You cannot trust the user computing $y^{-2^i}$.}}\istvan{see signal conversation for more discussion on this.}
 % We also describe the proof systems used for the implemented schemes in the full version.
 
-% \section{Empirical Performance Evaluation}\label{sec:empirical_performance}
+\subsection{Deployment Costs}\label{sec:cicada_costs}
 
 \begin{table*}[tb!]
     \makebox[\linewidth]{
@@ -48,66 +45,40 @@ The second approach applies $b$ aggregate HTLPs (i.e., $\ell = 1$): Each bidder 
     \setlength{\belowbottomsep}{6pt}
     \begin{tabular}{l c ccccc}
         \toprule
-        % \multicolumn{6}{c}{\textbf{Approval vote} ($\ell=1$)} & \\\midrule
-        %$m$             & $2$ (binary) & $3$ & $4$ & $5$ & $6$ & \\\midrule
-        %\Aggr      & $418,358$ & - & - & - & - & \\
-        %\Finalize  & $115,690$ & & & & & \\
-        %\midrule
         & \textbf{Binary vote} & \multicolumn{5}{c}{\textbf{Cumulative vote} ($\ell=1$)} \\\midrule
         $m$             & $1$ & $2$ & $3$ & $4$ & $5$ & $6$ \\\midrule
         \Aggr      & $418,358$ & $3,391,514$ & $5,081,542$ & $6,781,389$ & $8,489,786$ & $10,208,185$ \\
         \Finalize  & $115,690$ & $269,505$ &$397,789$&$521,895$&$644,814$&$770,934$ \\
-        % \bottomrule
-    % \end{tabular}
-    %
-    % \begin{tabular}{l ccccc c}
-        % \toprule
-        \midrule
-        %
+        \midrule %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         & \textbf{Sealed-bid auction} ($\ell = b$) & \multicolumn{5}{c}{\textbf{Sealed-bid auction} ($\ell=1$)} \\\midrule
         $b$                  & any & $8$ & $10$ & $12$ & $14$ & $16$ \\\midrule
-        %\Aggr ($\ell=b$)       & $3,055,107$ &&&&\\
-        %\Finalize ($\ell=b$)   & $147,634$ &&&&\\
         \Aggr                & $3,055,107$ & $3,586,022$ & $4,488,050$ & $5,394,047$ & $6,304,164$ & $7,218,905$ \\
         \Finalize            & $147,634$ & $1,005,208$ & $1,253,119$ & $1,497,760$ & $1,749,489$ & $2,003,282$ \\
         \bottomrule
     \end{tabular}
     }
-    \caption{Gas costs for Cicada cumulative voting and sealed-bid auctions with various numbers of candidates $m$, bid bit-lengths $b$ (max. bid $M = 2^{b-1}$), and packing parameters $\ell$.} %We discuss the cost of a maximally packed auction ($\ell=b$) in the text since it is independent of $b$.}
+    \caption{Gas costs for Cicada cumulative voting and sealed-bid auctions with various numbers of candidates $m$, bid bit-lengths $b$ (max. bid $M = 2^{b-1}$), and packing parameters $\ell$.}
     \label{tab:gas_table}
 \end{table*}
 
-%\begin{figure}[tb]
-    %\centering
-    %\includegraphics[width=9cm]{Figures/GasCosts.pdf}
-    %\caption{Gas costs of sealed-bid auction and cumulative voting as implemented in an Ethereum smart contract. %\todo{[Istvan] make this a table}}\label{fig:gas_costs}
-%\end{figure}
+We report EVM gas costs of several instantiations of Cicada in \Cref{tab:gas_table}. 
 
-%% This is what I have used for Gas to USD conversion: https://www.rareskills.io/ethereum-gas-price-calculator
-
-\paragraph{Submission costs.} 
-The on-chain cost of submitting a bid/ballot is the cost of running the $\sf Aggr$ function by the contract, i.e., the verification of the well-formedness proofs plus adding the users' submissions to the tally HTLPs (if and only if they verify). We report our measurements without packing (i.e., $\ell=1$) in \Cref{tab:gas_table}. Submitting a binary vote ballot costs $418,358$ gas ($\approx 11.02$ USD on Ethereum).\footnote{We can estimate gas costs for approval voting using the cost of binary voting, as the former uses a disjunction of $m$ copies of the same NIZK and thus scales linearly.
-% \noemi{Maybe we should include these in the table, for completeness}
-} 
+\paragraph{Submission costs} 
+The on-chain cost of submitting a bid/ballot is the cost of running the $\sf Aggr$ function by the contract, i.e., the verification of the well-formedness proofs plus adding the users' submissions to the tally HTLPs (if and only if they verify). We report our measurements without packing (i.e., $\ell=1$). Submitting a binary vote ballot costs $418,358$ gas ($\approx 15.36$ USD on Ethereum).\footnote{We can estimate gas costs for approval voting using the cost of binary voting, as the former uses a disjunction of $m$ copies of the same NIZK and thus scales linearly.} 
 For cumulative voting, the submission cost scales linearly in $m$: with $m=2$ candidates, submitting a ballot costs 
-$3,391,514$ gas ($\approx94.49$ USD), 
-and each additional candidate adds $\approx 1,699,847$ gas ($\approx 44.79$ USD).
+$3,391,514$ gas ($\approx124.51$ USD), 
+and each additional candidate adds $\approx 1,699,847$ gas ($\approx 62.40$ USD).
 
 An auction with a single HTLP for each bit of the bid (the $\ell=1$ case) requires a submission cost of $3,586,022$ gas ($\approx94.49$ USD) for an $8$-bit bid. Every additional bit in the submitted bid burns $\approx451,014$ gas ($\approx 11.89$ USD). 
-On the other hand, if one applies packing, i.e., $\ell=b$, then the cost of submitting a sealed bid is constant at $3,055,107$ gas ($\approx80.50$ USD). As seen in~\Cref{tab:gas_table}, with bid-space $M=2^7$ it is already more economical to have a single aggregate HTLP and use a packing scheme, despite more complex bid-correctness proofs.
+On the other hand, if one applies packing, i.e., $\ell=b$, then the cost of submitting a sealed bid is constant at $3,055,107$ gas ($\approx131.65$ USD). With bid-space $M=2^7$ it is already more economical to have a single aggregate HTLP and use a packing scheme, despite more complex bid-correctness proofs.
 
-% \joe{Where is the evaluation of brute-force costs for El Gamal?}\istvan{it happens off-chain...do we need an evaluation for that?}\todo{move some of the discussion about this from appendix}
-
-\paragraph{Finalization costs.} 
-Our voting and auction schemes end with solving the tally HTLP(s) off-chain, i.e., computing $(g^r)^{2^{\Ttime}}(=h^r)$. With exponential ElGamal, solving the puzzle also requires a brute-force discrete logarithm computation by the off-chain solver. The correctness of this computation is proven to the contract with Wesolowski's \poe~\cite{EC:Wesolowski19} (recalled in \Cref{sec:sigmas}). The $\Finalize$ cost comes from verifying the \poe(s) on-chain, which burns $101,066$ gas ($\approx2.66$ USD) per proof. Without packing, the untrusted solver must provide a Wesolowski proof per tally HTLP, so the $\Finalize$ gas cost is linear in the number of tally HTLPs, as evidenced by \Cref{tab:gas_table}. A portion of the Wesolowki verification cost comes from checking that the challenge is a prime number. In our implementation, the prover provides a Baillie-PSW~\cite{PomSelWag80} primality certificate, whose verification cost is $44,972$ gas ($\approx1.18$ USD). 
-
-\paragraph{Verification costs.}
-We implemented the sigma protocols described in \Cref{sec:sigmas} in Solidity and report their verification costs in~\Cref{tab:sigma_verification_gas_costs}. With Groth's trick~\cite{ACNS:Groth05} in the proof of positivity (\zkpopos), we must decompose the integer solution into the sum of only three squares. Therefore, the gas cost of verifying \zkpopos equals the cost of verifying three proofs of knowledge of square solutions (\zkposqs) and one proof of knowledge of equal solution (\zkposeq).
+\paragraph{Finalization costs} 
+Our voting and auction schemes end with solving the tally HTLP(s) off-chain, i.e., computing $(g^r)^{2^{\Ttime}}$. With exponential ElGamal, solving the puzzle also requires the off-chain solver to brute-force a discrete logarithm. The correctness of this computation is proven to the contract with Wesolowski's \poe~\cite{EC:Wesolowski19} (recalled in \Cref{sec:sigmas}). The $\Finalize$ cost comes from verifying the \poe(s) on-chain, which burns $101,066$ gas ($\approx3.71$ USD) per proof. Without packing, the untrusted solver must provide a Wesolowski proof per tally HTLP, so the $\Finalize$ gas cost is linear in the number of tally HTLPs. A portion of the Wesolowki verification cost comes from checking that the challenge is a prime number. Our implementation uses a Baillie-PSW~\cite{PomSelWag80} primality test, which costs $44,972$ gas ($\approx1.65$ USD). 
 
 \begin{table}[ht]
     \centering
     \setlength{\tabcolsep}{6pt}
-    \setlength{\belowbottomsep}{6pt}
+    % \setlength{\belowbottomsep}{6pt}
     \begin{tabular}{l r}
        \toprule
        \textbf{Sigma protocol}  & \textbf{Verification gas cost}\\
@@ -120,9 +91,77 @@ We implemented the sigma protocols described in \Cref{sec:sigmas} in Solidity an
         \bottomrule
     \end{tabular}
     \caption{EVM gas costs of verification for the proof systems described in~\Cref{sec:sigmas}.}
-    \label{tab:sigma_verification_gas_costs}
+    \label{tab:sigmas_gas}
 \end{table}
 
-\hfill\\
-In the short-term, deploying on Layer 2 (L2) already brings these costs down by 1--2 orders of magnitude. For example, when deploying our implementation on the Optimism L2 rollup, casting a binary vote would cost less than 0.30 USD.
+\paragraph{Verification costs}
+Our Solidity implementation includes the sigma protocols described in \Cref{sec:sigmas}. We report their verification costs in~\Cref{tab:sigmas_gas}. With Groth's trick~\cite{ACNS:Groth05} in the proof of positivity (\zkpopos), we must decompose the integer solution into the sum of only three squares. Therefore, the gas cost of verifying \zkpopos equals the cost of verifying three proofs of knowledge of square solutions (\zkposqs) and one proof of knowledge of equal solution (\zkposeq).
+
+\begin{table*}[ht!]
+    % \adjustbox{width=1.2\textwidth,center}{
+    \centering
+    \setlength{\tabcolsep}{6pt}
+    \setlength{\belowbottomsep}{6pt}
+    \begin{tabular}{l SS}
+        \toprule
+        & {\textbf{Binary vote}} & {\textbf{Sealed-bid auction} ($\ell = b$)} \\\midrule
+        & {$m=1$} & {$b=$ any} \\\midrule
+        $\Aggr$\ (ETH L1)     & 15.36 & 112.16 \\
+        $\Aggr$\ (Arbitrum Nova)      & 0.35 & 2.55 \\
+        $\Aggr$\ (Optimism)      & 0.00918 & 0.06701 \\
+        $\Aggr$\ (zkSync Era)     & 0.063 & 0.459 \\\midrule
+        $\Finalize$\ (ETH L1)  & 4.25 & 5.42 \\
+        $\Finalize$\ (Arbitrum Nova)  & 0.10 & 0.12 \\
+        $\Finalize$\ (Optimism) & 0.00254 & 0.00324 \\
+        $\Finalize$\ (zkSync Era)  & 0.017 & 0.022 \\
+        \bottomrule
+    \end{tabular}
+    \caption{USD costs of Cicada binary vote and fully packed ($\ell=b$) sealed-bid auction on Ethereum L1, Arbitrum Nova, Optimism, and zkSync Era as of July 30, 2024 at 7:30 PM UTC.}
+    \label{tab:usd_table1}
+\end{table*}
+
+\begin{table*}[ht!]
+    % \makebox[\linewidth]{
+    % \resizebox{1.2\textwidth}{!}{
+    \adjustbox{width=1.2\textwidth,center}{
+    \centering
+    \setlength{\tabcolsep}{6pt}
+    \setlength{\belowbottomsep}{6pt}
+    \begin{tabular}{l SSSSS}
+        \toprule
+        & \multicolumn{5}{c}{\textbf{Cumulative vote} ($\ell=1$)} \\\midrule
+        $m$             & {2} & {3} & {4} & {5} & {6} \\\midrule
+        $\Aggr$\ (ETH L1)     & 124.51 & 186.55 & 248.95 & 311.67 & 374.75 \\
+        $\Aggr$\ (Arbitrum Nova)      & 2.83 & 4.24 & 5.66 & 7.08 & 8.52 \\
+        $\Aggr$\ (Optimism)      & 0.07439 & 0.11145 & 0.14874 & 0.18621 & 0.22390 \\
+        $\Aggr$\ (zkSync Era)     & 0.509 & 0.763 & 1.018 & 1.275 & 1.533 \\\midrule
+        $\Finalize$\ (ETH L1)  & 9.89 & 14.60 & 19.16 & 23.67 & 28.30 \\
+        $\Finalize$\ (Arbitrum Nova)  & 0.22 & 0.33 & 0.44 & 0.54 & 0.64 \\
+        $\Finalize$\ (Optimism) & 0.00591 & 0.00872 & 0.01145 & 0.01414 & 0.01691 \\
+        $\Finalize$\ (zkSync Era)  & 0.040 & 0.060 & 0.078 & 0.097 & 0.116 \\
+        \midrule
+        & \multicolumn{5}{c}{\textbf{Sealed-bid auction} ($\ell=1$)} \\\midrule
+        $b$                  & {8} & {10} & {12} & {14} & {16} \\\midrule
+        $\Aggr$ (ETH L1)                & 131.65 & 164.76 & 198.02 & 231.43 & 265.01 \\
+        $\Aggr$ (Arbitrum Nova)                & 2.99 & 3.74 & 4.50 & 5.26 & 6.02 \\
+        $\Aggr$ (Optimism)                & 0.07865 & 0.09844 & 0.11831 & 0.13827 & 0.15833 \\
+        $\Aggr$ (zkSync Era)                & 0.539 & 0.674 & 0.810 & 0.947 & 1.084 \\\midrule
+        $\Finalize$ (ETH L1)            & 36.90 & 46.00 & 54.98 & 64.23 & 73.54 \\
+        $\Finalize$ (Arbitrum Nova)            & 0.84 & 1.05 & 1.25 & 1.46 & 1.67 \\
+        $\Finalize$ (Optimism)            & 0.02205 & 0.02748 & 0.03285 & 0.03837 & 0.04394 \\
+        $\Finalize$ (zkSync Era)            & 0.151 & 0.188 & 0.225 & 0.263 & 0.301 \\
+        \bottomrule
+    \end{tabular}
+    }
+    \caption{USD costs of unpacked ($\ell=1$) Cicada cumulative voting and sealed-bid auctions for various settings of $m, b$ on Ethereum L1, Arbitrum Nova, Optimism, and zkSync Era as of July 30, 2024 at 7:30 PM UTC.}
+    \label{tab:usd_table2}
+\end{table*}
+
+\paragraph{USD cost estimates on L1 and L2}
+In the short-term, deploying on Layer 2 (L2) already brings the costs down by 1--2 orders of magnitude. 
+In \Cref{tab:usd_table1,tab:usd_table2}, we provide a rough estimate of the concrete cost in USD as of July 30, 2024 of deploying Cicada on Ethereum and several Layer-2 (L2) networks. These numbers are conversions of the gas costs in \Cref{tab:gas_table} and should not be viewed as precise costs predictions, but rather as evidence of Cicada's concrete efficiency and feasibility. Precisely benchmarking costs in terms of USD is difficult due to the volatility of both the ETH/USD price and of transaction/priority fees on Ethereum and its L2s.
+At the time of conversion (July 30, 2024 at 7:30 PM UTC), the Ethereum price was $0.00000333736$ USD per gwei and a medium priority fee on Ethereum L1 was $11$ gwei. We also consider three popular Ethereum rollups: Arbitrum Nova, Optimism, and zkSync Era. At the time of our measurement, transaction fees for Arbitrum Nova, Optimism, and zkSync Era were $0.25$, $0.006572$ and  $0.045$ gwei, respectively. 
+
+While possible, our Cicada deployments are overall prohibitively expensive on Ethereum L1. However, the costs are quite reasonable on its L2s: participating in a Cicada sealed-bid auction, cumulative vote, or binary vote would cost less than $1$ USD on these popular Ethereum L2s, which we deem highly practical.
+For example, when deploying our implementation on the Optimism L2 rollup, casting a binary vote would cost less than 0.30 USD.
 Further optimizations (e.g., Karatsuba multiplication~\cite{KarOfm62}, batched Wesolowski proof verification~\cite{TCC:Rotem21}, or verification via efficient zkSNARKs~\cite{EC:Groth16,EPRINT:GabWilCio19}) can bring the costs down even more.

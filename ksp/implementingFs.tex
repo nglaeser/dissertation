@@ -25,13 +25,10 @@ To do this, we assume a public bulletin board functionality $\Fbb$ with limited 
 Specifically, instead of only running the steps of $\Fs$ locally, $C$ will compute some additional values using $\Pi_{\sf Ref}$ to let $\Fbb$ and each $P_i^\hot$ check the correctness of the share and update commitments. 
 The proof for the update commitment $\ucom$ will be checked by $\Fbb$ before updating the stored commitment. 
 Additionally, $C$ will let $\Fbb$ store and distribute $\ucom$ instead. 
-\renewcommand{\chblue}[1]{\textcolor{blue}{#1}}
 We describe the full protocol in \Cref{fig:fs_protocol}. %where changes with respect to locally running the ideal functionality $\Fs$ are shown in \chblue{blue}.
 
 \input{ksp/functionalities/BB}
 \input{ksp/protocols/Fs-usingBB}
-
-\renewcommand{\chblue}[1]{#1}
 
 \begin{theorem}\label{thm:fs-protocol}
 The encrypted secret sharing protocol in \Cref{fig:fs_protocol} UC-realizes $\Fs$ in the $\Fbb$-hybrid model.

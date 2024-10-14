@@ -1,21 +1,17 @@
-Auctions and voting are essential applications of Web3. For example, decentralized marketplaces run auctions to sell digital goods like non-fungible tokens (NFTs)~\cite{opensea_auction} or domain names~\cite{ARXIV:XWYLLX21}, while decentralized autonomous organizations (DAOs) deploy voting schemes to enact decentralized governance~\cite{optimismgov}. Most auction or voting schemes currently deployed on blockchains, e.g., NFT auctions on OpenSea or Uniswap governance~\cite{ARXIV:FriMulWat22}, lack bid/ballot privacy. This can negatively influence user behavior, for example, by vote herding or discouraging participation~\cite{FC:ElkLip04,WTSC:GalYou18,FC:SuzYok03}. The lack of privacy can cause surges in congestion and transaction fees as users try to outbid each other to participate, a negative externality for the entire network.
+Auctions and voting are essential applications of Web3. For example, decentralized marketplaces run auctions to sell digital goods like non-fungible tokens (NFTs)~\cite{opensea_auction} or domain names~\cite{ARXIV:XWYLLX21}, while decentralized autonomous organizations (DAOs) deploy voting schemes to enact decentralized governance~\cite{optimismgov,ARXIV:FFHVW24}. Most auction or voting schemes currently deployed on blockchains, e.g., OpenSea NFT auctions or Uniswap governance \cite{ARXIV:FriMulWat22}, do not hide user bids/votes during the submission phase. This can negatively influence user behavior, for example, by vote herding or discouraging participation~\cite{FC:ElkLip04,WTSC:GalYou18,FC:SuzYok03}. It can also cause network congestion as users engage in bidding wars, leading to surges in transaction fees and causing a negative externality for the entire network.
+
+\paragraph{Privacy as a means for fairness}
+These negative outcomes can be avoided if a protocol offers fairness, i.e., leaks no information about votes or bids until the end of the submission phase. A natural way to achieve this is to hide everything but the outcome. Existing works keep submissions hidden by introducing one or more trusted authorities who are still able to view all submissions and are trusted to correctly compute the result~\cite{FC:BCDGJK09,C:AOZZ15} or prove its correctness in zero-knowledge (ZK)~\cite{USENIX:Adida08,maci,plume,rln}. 
+Others rely on advanced cryptographic primitives~\cite{PQCRYPTO:CGGI16,CCS:DLNS17}, e.g., (fully) homomorphic encryption ((F)HE~\cite{STOC:Gentry09}). 
+Neither of these approaches is suitable for an on-chain setting. Relying on a trusted third party (or a threshold of them) is at odds with the ethos of decentralization, whereas advanced cryptographic primitives are impractical on-chain today, incurring high computation or storage fees.
+
+In any case, the privacy guarantees offered by these protocols are stronger than is necessary for achieving fairness: bids/ballots need only remain hidden \emph{until the end of the submission phase}. This is acceptable in practice, with some deployed systems (e.g., ENS domain name bids~\cite{ARXIV:XWYLLX21}) achieving fairness via this weaker notion of privacy. We refer to this weaker notion as \emph{tally-privacy} (as opposed to everlasting privacy).
+In fact, limited privacy can actually be a desideratum in certain settings, e.g., in representative democracies or in DAOs where delegates' votes are published to encourage accountability.
+
+A common paradigm for tally-private, trustless protocols is a two-round commit-reveal protocol~\cite{AUSC:FujOkaOht93,WTSC:GalYou18,CCS:TAFWBM23}. In the first round, every party commits to their bid or ballot. In the second round, they open their commitments, and the winner is determined.
+Due to the lightweight cryptography used, these schemes are efficient enough to be deployed on-chain.
+However, their interactivity is a usability hurdle that causes friction in the protocols' execution since users must remember to come online and reveal their submissions after the voting or bidding period has elapsed. The reveal phase can also be an avenue for censorship: an attacker can bribe block proposers to exclude the openings of certain bids or ballots until after the result has been determined~\cite{ARXIV:PaiResFox23}.
+
+We summarize these approaches for private voting and auctions in \Cref{tab:approaches}.
 
 \input{cicada/tables/approaches}
-
-Existing private voting protocols~\cite{maci,plume,rln} achieve privacy at the cost of introducing a trusted authority who is still able to view all submissions.
-Alternatively, the only private \emph{and} trustless auction in deployment we are aware of~\cite{ARXIV:XWYLLX21} uses a two-round commit-reveal protocol: in the first round, every party commits to their bid, and in the second round they open the commitments and the winner can be determined.
-Other protocols relying on more heavyweight cryptographic building blocks have been proposed in the literature.
-We summarize the various approaches for private voting and auctions in \Cref{tab:approaches}.
-Unfortunately, all of them suffer from at least one of the following limitations, hindering widespread adoption:
-
-\begin{description}
-    \item[Interactivity.] Interactivity is a usability hurdle that often causes friction in the protocols' execution. Mandatory bid/ballot reveals are also a target for censorship.     
-    %\item[Lack of censorship-resistance]  Voting and auction schemes can be easily censored due to their public nature.
-    A malicious party can bribe the block proposers to exclude certain bids or ballots until the auction/voting ends~\cite{ARXIV:PaiResFox23}. %With bid/ballot privacy the cost of censorship can be increased substantially.
-    %
-    \item[Trusted third party (TTP).] Many protocols~\cite{maci} use a trusted coordinator to tally submissions during the voting/bidding phase. This introduces a strong assumption which is at odds with the trustless ethos of the blockchain ecosystem.
-    %
-    \item[Inefficiency.] 
-    Compute and storage costs are substantial bottlenecks in decentralized applications running on a public blockchain. Some approaches~\cite{PQCRYPTO:CGGI16,CCS:DLNS17} avoid the previous pitfalls by relying on complex cryptographic primitives such as fully-homomorphic encryption (FHE), whose overheads are impractical in the blockchain setting.
-    % \item[Inefficiency.] Introducing more complicated cryptographic primitives such as fully-homomorphic encryption (FHE) introduces additional overheads which can incur extra gas fees or at least extra time for all participants.
-\end{description}

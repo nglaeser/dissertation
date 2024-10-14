@@ -1,0 +1,99 @@
+\subsection{Security Proofs of Sigma Protocols}
+Finally, we prove special-soundness and honest-verifier zero-knowledge (HVZK) of the sigma protocols in \Cref{sec:sigmas}. Any such protocol can be made into a non-interactive zero-knowledge proof of knowledge (NIZKPoK) via the Fiat-Shamir transform~\cite{C:FiaSha86}.
+
+\begin{theorem}[\zkpoks]\label{thm:poks}
+    The protocol \zkpoks is a special sound and HVZK proof system in the generic group model.
+\end{theorem}
+\begin{proof}
+    For special soundness, we show that given two distinct accepting transcripts with the same first message, i.e., $(A, B, e, w, x)$ and $(A, B, e', w', x')$ where $e \neq e'$, we can extract the witnesses $r, s$. The proof follows the blueprint of the proof of Theorem 10 in \cite{C:BonBunFis19}. Since the transcripts are accepting, we have
+    \begin{align*}
+        h^w y^x &= v^e A               & h^{w'} y^{x'} &= v^{e'} A \\
+                &= h^{r e + \alpha} y^{s e + \beta} &  &= h^{r e' + \alpha} y^{s e' + \beta}
+    \end{align*}
+    Combining the two equations we get 
+    \begin{align}
+         h^{r \Delta e} y^{s \Delta e} &= h^{\Delta w} y^{\Delta x} \nonumber \\
+    \iff \hspace{2em} v^{\Delta e} &= h^{\Delta w} y^{\Delta x} \label{eq:combo}
+    \end{align}
+    where $\Delta e = e-e'$ and $\Delta y, \Delta x$ are defined similarly. 
+    Then with overwhelming probability, $r \Delta e = \Delta w$ and $s \Delta e = \Delta x$ (cf. Lemma 4 of \cite{C:BonBunFis19}), so $\Delta e \in \ZZ$ divides $\Delta w \in \ZZ$ and $\Delta x \in \ZZ$ and we can extract $r,s \in \ZZ$ as $r = \Delta w / \Delta e$ and $s = \Delta x/\Delta e$.
+    
+    We will now show that these values are correct, i.e., $v = h^{\Delta w/\Delta e} y^{\Delta x/\Delta e}$. Assume towards a contradiction that this does not hold and $\mu = h^{\Delta w/\Delta e} y^{\Delta w/\Delta e}\allowbreak \neq v$. Since $\mu^{\Delta e} = v^{\Delta e}$ by \Cref{eq:combo}, this must mean that $(\mu/v)^{\Delta e} = 1$ and therefore $\mu/v \in \GG_2$ is an element of order $\Delta e > 1$. Since $\Delta e$ is easy to compute and $\mu/v$ is a non-identity element of $\GG_2$, this contradicts the assumption that $\GG_2$ is a generic group (specifically, it contradicts non-trivial order hardness \cite[Corollary 2]{C:BonBunFis19}). We thus conclude that our extractor successfully recovers the witnesses $r$ and $s$.
+    
+    We still need to verify that the $r^*$ we can extract from $u$ will be consistent with the one extracted from $v$, i.e., $r^* = r$. Again we know
+    \begin{align*}
+             g^w &= u^e B            & g^{w'} &= u^{e'} B \\
+                 &= g^{r^* e + \alpha^*} &    &= g^{r^* e' + \alpha^*}
+    \end{align*}
+    so by a similar argument $r^* = \Delta w/\Delta e$, which equals $r$.
+    Thus the protocol satisfies special soundness.
+    
+    To prove HVZK, we give a simulator which produces an accepting transcript $(\tilde{A}, \tilde{B}, \tilde{e}, \tilde{w}, \tilde{x})$ that is perfectly indistinguishable from an honest transcript $(A, B, e, w, x)$. The simulator is quite simple: it samples $\tilde{e} \sample [2^\secpar]$ identically to an honest verifier, then samples $\tilde{w}, \tilde{x} \sample \ZZ$ and sets $\tilde{A} := h^{\tilde{w}} y^{\tilde{x}} v^{-\tilde{e}}$ and $\tilde{B} := g^{\tilde{w}} u^{-\tilde{e}}$. It follows by inspection that the transcript is an accepting one. Furthermore, notice that $\tilde{A}$ and $\tilde{B}$ are uniformly distributed in $\GG_2$ and $\GG_1$, respectively, just like $A, B$ in the honest transcript. Also, both $\tilde{x}$ and $x$ are uniform in $\ZZ$. Thus the simulated transcript is perfectly indistinguishable from an honest one.
+\end{proof}
+
+
+% \begin{theorem}[\zkposeq]
+%     The protocol \zkposeq is special sound and HVZK.
+% \end{theorem}
+% \begin{proof}
+%     Given two distinct accepting transcripts with the same first message, i.e., $(A, e, x)$ and $(A, e', x')$ where $e \neq e'$, we can extract the witness $\rho$ (which in an honest execution equals $r_1 - r_2$). Since the transcripts are accepting, we have
+%     \begin{align*}
+%              & (v_1/v_2)^e A = h^x \\
+%         \iff & (h^\rho)^e A = h^x \\
+%         \iff & \rho e + \alpha \equiv x \pmod{N}
+%     \end{align*}
+%     Similarly, $x' \equiv \rho e' + \alpha \pmod{N}$.
+%     Therefore $x-x' = \rho (e-e')$.
+%     Since $e - e' \neq 0$, we can extract the witness $\rho$ and the protocol is special sound.
+    
+%     To prove HVZK, we give a simple simulator which, given and arbitrary challenge $e$, produces an accepting transcript $(A, e, x)$. The simulator samples $x \sample \GG$ and sets $A := h^x (v_1/v_2)^{-e}$. It follows by inspection that the transcript is an accepting one.
+    % \iffc\qed\fi
+% \end{proof}
+
+\begin{theorem}[\zkposqs]\label{thm:posqs}
+    The protocol \zkposqs is a special sound and HVZK proof system in the generic group model.
+\end{theorem}
+\begin{proof}
+    For special soundness, we show that given two distinct accepting transcripts with the same first message, i.e., $(A_1, A_2, e, w_1,\allowbreak w_2, x)$ and $(A_1, A_2, e', w_1',\allowbreak w_2', x')$ where $e \neq e'$, we can extract the witnesses $r_1, r_2, s$. Notice that $v_2$ is not guaranteed to encode the square of $s_1$, so $v_2 = h^{r_2 - r_1 s_2/s_1} v_1^{s_2/s_1}$. Let $\sigma_2 = s_2/s_1$ and $\rho_2 := r_2 - r_1 s_2/s_1 = r_2 - r_2 \sigma_2$. 
+
+    Using the same extractor as in the proof of \Cref{thm:poks}, we can extract correct integers $r_1 = \Delta w_1 / \Delta e$, $s_1 = \Delta x/\Delta e$, $\rho_2 = \Delta w_2 / \Delta e$, and $\sigma_2 = \Delta x/\Delta e$. Notice $s_1 = \sigma_2$, which implies $\sigma_2 = s_1^2$. Finally we use $r_1, s_1, \rho_2 \in \ZZ$ to recover $r_2 := \rho_2 + r_1 s_1 \in \ZZ$. 
+    Thus the protocol is special sound.
+    % Since the transcripts are accepting, we have
+    % \begin{align*}
+    %          & v_1^e A_1 = h^{w_1} y^x \\
+    %     \iff & h^{r_1 e + \alpha_1} y^{s_1 e + \beta} = h^{w_1} y^x \\
+    %     \iff & r_1 e + \alpha_1 \equiv w_1 \pmod{N} \land\ s_1 e + \beta \equiv x \pmod{N}
+    % \end{align*}
+    % and
+    % \begin{align*}
+    %          & v_2^e A_2 = h^{w_2} v_1^x \\
+    %     \iff & h^{\rho_2 e + \alpha_2} v_1^{s_2 s_1^{-1} e + \beta} = h^{w_2} v_1^x \\
+    %     \iff & \rho_2 e + \alpha_2 \equiv w_2 \pmod{N} \land\ s_2 s_1^{-1} e + \beta \equiv x \pmod{N}
+    % \end{align*}
+    % Notice that the two constraints on $x$ imply $s_2 \equiv s_1^2 \pmod{N}$.
+    
+    % Similarly, $w_1' = r_1 e' + \alpha_1$, $w_2' = \rho_2 e' + \alpha_2$, and $x' = s_1 e' + \beta$ in $\ZZ_N$.
+    % Therefore $w_1-w_1' = r_1(e-e')$, $w_2-w_2' = \rho_2(e-e')$, and $x-x' = s_1(e-e')$.
+    % Since $e - e' \neq 0$, we can extract $r_1, \rho_2, s_1$ and compute $r_2 := \rho_2 + r_1 s_1$. 
+    % Thus the protocol is special sound.
+    
+    To prove HVZK, we give a simulator which produces an accepting transcript $(\tilde{A}_1, \tilde{A}_2, \tilde{e}, \tilde{w}_1, \tilde{w}_2, \tilde{x})$ that is perfectly indistinguishable from an honest transcript $(A_1, A_2, e, w_1, w_2, x)$. The simulator is quite simple: it samples $\tilde{e} \sample [2^\secpar]$ identically to an honest verifier, then samples $\tilde{w}_1, \tilde{w}_2, \tilde{x} \sample \ZZ$ and sets $\tilde{A}_1 := h^{\tilde{w}_1} y^{\tilde{x}} v_1^{-\tilde{e}}$ and $\tilde{A}_2 := h^{\tilde{w}_2} v_1^{\tilde{x}} v_2^{-\tilde{e}}$. It follows by inspection that the transcript is an accepting one. Furthermore, notice that $\tilde{A}_1, \tilde{A}_2$ are uniformly distributed in $\GG_2$, respectively, just like $A_1, A_2$ in the honest transcript. Also, both $\tilde{w}_1,\tilde{w}_2,\tilde{x}$ are uniform in $\ZZ$ just like $w_1, w_2, x$. Thus the simulated transcript is perfectly indistinguishable from an honest one.
+    %
+    % The HVZK simulator is very simple: given an arbitrary challenge $e$, it samples $w_1, w_2, x \sample \GG$ and sets $A_1 := h^{w_1} y^x v_1^{-e}$ and $A_2 := h^{w_2} v_1^x v_2^{-e}$. Again, it follows by inspection that the transcript is an accepting one.
+\end{proof}
+
+\begin{theorem}[\zkpopos]
+    The protocol \zkpopos is sound and HVZK.
+\end{theorem}
+\begin{proof}
+    Soundness follows directly from the (knowledge) soundness of \zkposqs and \zkposeq as well as Legendre's three-square theorem~\cite{ACNS:Groth05}.
+
+    For HVZK, note that an honest \zkpopos transcript has the form $( \{A_{1,j},\allowbreak A_{2,j}\}_{j\in[3]},\allowbreak R, e, \{w_{1,j}, w_{2,j}, x_j\}_{j\in[3]})$, where $(R, e, x)$ is an honest \zkposeq transcript and $(A_{1,j}, A_{2,j}, e, w_{1,j}, w_{2,j}, x_j)$ for $j=1,2,3$ are honest \zkposqs transcripts. Given the instance $v$, our \zkpopos simulator first computes some random HTLPs $(\tilde{u}_j, \tilde{v}_j), (\tilde{u}_j', \tilde{v}_j') \sample \htlp.{\sf Gen}(0)$ for $j=1,2,3$. These simulated underlying instances are indistinguishable from the honest instances an honest prover would use. This follows from the security of \htlp.
+    
+    Next, our simulator samples $\tilde{e} \sample [2^\secpar]$ identically to an honest verifier and uses the simulators of the proof systems, always with the same challenge $\tilde{e}$, to produce a simulated transcript: 
+    \begin{align*}
+    (\tilde{A}_{1,j}, \tilde{A}_{2,j}, \tilde{e}, \tilde{w}_{1,j}, \tilde{w}_{2,j}, \tilde{x}_j) &\gets \Sim_{\zkposqs}(\tilde{v}_j, \tilde{v}_j'; \tilde{e}) ~\forall j=1,2,3\\
+    (\tilde{R}, \tilde{e}, \tilde{x}) &\gets \Sim_{\zkposeq}\left(\frac{4 \cdot v \boxplus 1}{\tilde{v}_1' \boxplus \tilde{v}_2' \boxplus \tilde{v}_3'}; \tilde{e}\right)
+    \end{align*}
+    By HVZK of \zkposqs and \zkposeq, these transcripts are accepting and indistinguishable from an honestly generated transcript.
+\end{proof}

@@ -46,5 +46,5 @@
         \end{scope}
     \end{tikzpicture}
     \caption{A \hcwl with $n=3$. Given a message $m$, each $P_i^\cold$ uses its cold share $\sk_i^\cold$ to compute a cold partial signature $\sigma_i^\cold$ on $m$ and sends it to its hot storage. $P_i^\hot$ uses $m$ and its hot share $\sk_i^\hot$ to compute $\sigma_i^\hot$, which it combines with $\sigma_i^\cold$ to get $\sigma_i$. The hot parties broadcast their partial signatures to each other to reconstruct the full signature $\sigma$ on $m$. The dashed lines between each cold and hot storage represent the authenticated channel between them which is only active at signing time. The hot parties are always online and connected, represented by the solid lines.}
-    \label{fig:model}
+    \label{fig:hc_model}
 \end{figure*}

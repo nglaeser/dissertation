@@ -5,13 +5,10 @@ We introduce extensions to the Cicada framework that may be useful in future app
 
 \input{cicada/protocols/batching}
 
-\noemi{Note this introduces interactivity but off-chain}
+The basic Cicada framework does not guarantee long-term ballot privacy. Submissions are public after the $\Open$ stage. This is because users publish their HTLPs on-chain: once public, the votes contained in the HTLPs are only guaranteed to be hidden for the time it takes to compute $\Ttime$ sequential steps, after which point it is plausible that someone has computed the solution. In many applications, it is desirable that individual ballots remain hidden \emph{even after voting has ended} since the lack of everlasting privacy may facilitate coercion and vote-buying. As mentioned in \Cref{sec:cicada_contrib}, this can be achieved modularly by first decoupling the ballots from their voters via a privacy-enhancing overlay. Alternatively, we describe how the $\Seal$ procedure can be modified to prevent the opening of individual ballots, achieving everlasting privacy at the cost of additional \emph{off}-chain interaction.
 
-The basic Cicada framework does not guarantee long-term ballot privacy. Submissions are public after the $\Open$ stage. This is because users publish their HTLPs on-chain: once public, the votes contained in the HTLPs are only guaranteed to be hidden for the time it takes to compute $\Ttime$ sequential steps, after which point it is plausible that someone has computed the solution. In many applications, it is desirable that individual ballots remain hidden \emph{even after voting has ended} since the lack of everlasting privacy may facilitate coercion and vote-buying. As mentioned in \Cref{sec:syntax}, this can be achieved modularly by first decoupling the ballots from their voters via a privacy-enhancing overlay. Alternatively, we describe how the $\Seal$ procedure can be modified to prevent the opening of individual ballots, achieving everlasting privacy.
+Observe that all known \emph{efficient HTLP constructions} are of the form $(u,v) = (g^r, {h'}^r X)$,\footnote{In the exponential ElGamal case, $h' = h$, while in the Paillier construction, $h' = h^N$ (see \Cref{sec:tlp}). We will drop the tickmark on $h'$ in the remainder of this section to avoid notational clutter.} where the solution is encoded in $X$ and recovering it requires recomputing $h^r=(g^{r})^{2^{\Ttime}}$ via repeated squaring of the first component. Our insight is that the puzzle information-theoretically hides the solution $X$ without the first component. Importantly, publishing $g^r$ is not necessary in any of our HTLP-based voting protocols \emph{except as a means to verifiably compute the first component of the final HTLP}, i.e., $g^{R}=g^{\sum_{i\in[n]} r_i}$. The observation that $g^R$ can be computed \emph{without} revealing the individual values $g^{r_i}$ enables us to construct the first practical and private voting protocols that guarantee \emph{everlasting} ballot privacy with a single on-chain round.
 
-Observe that all known \emph{efficient HTLP constructions} are of the form $(u,v) = (g^r, {h'}^r X)$,\footnote{In the exponential ElGamal case, $h' = h$, while in the Paillier construction, $h' = h^N$ (see \Cref{app:htlp_constructions}). We will drop the tickmark on $h'$ in the remainder of this section to avoid notational clutter.} where the solution is encoded in $X$ and recovering it requires recomputing $h^r=(g^{r})^{2^{\Ttime}}$ via repeated squaring of the first component. Our insight is that the puzzle information-theoretically hides the solution $X$ without the first component. Importantly, publishing $g^r$ is not necessary in any of our HTLP-based voting protocols \emph{except as a means to verifiably compute the first component of the final HTLP}, i.e., $g^{R}=g^{\sum_{i\in[n]} r_i}$. The observation that $g^R$ can be computed \emph{without} revealing the individual values $g^{r_i}$ enables us to construct the first practical and private voting protocols that guarantee \emph{everlasting} ballot privacy with a single on-chain round.
-
-% \todo{change text starting around here...} \noemi{Note you can use aggregatable sigs for efficiency}
 For simplicity, consider a protocol in which both the ballot of user $i$ and the tally consists of a single HTLP, respectively $Z_i=(g^{r_i},h^{r_i}X_i)$ and $Z = (g^R, h^R X)$. Observe that for everlasting ballot privacy, updates to $Z$ must inherently be batched: a singleton update $\Aggr(\pparam, Z, Z_i, \pi) \to (g^{R+r_i}, h^{R+r_i} Y)$ (for some $Y$) would reveal $g^{r_i} = g^{R+r_i}/g^R$, which is the opening information to $Z_i$, as the quotient of the first component of $Z$ after and before the update. Hence, the ballot $X_i$ of user $i$ would be recoverable in $\Ttime$ sequential steps, i.e., after computing $h^{r_i}=(g^{r_i})^{2^{\Ttime}}$.
 
 Batching ballot submissions off-chain in groups of $k$ allows parties to achieve everlasting privacy as long as at least one party is honest. 
@@ -20,8 +17,6 @@ The parties aggregate their submissions off-chain as $(g^R, h^R X) = (\prod_i g^
 % $\Aggr(\pparam, Z, \{(g^R, h^{r_1} X_1),\allowbreak (g^0, h^{r_2} X_2), \dots,\allowbreak (g^0, h^{r_k} X_k) \}, \pi_{\sf batch}),$
 % where $\pi_{\sf batch}$ additionally proves to the contract that ${\sf dlog}_g(g^R) = {\sf dlog}_h(\prod_i h^{r_i} X_i)$, 
 (see~\Cref{fig:batching_ballots} for details).
-
-\input{cicada/protocols/borda}
 
 This idea opens up a new design space for the MPC protocol used for batching, such as doing the randomness generation in a preprocessing phase instead, allowing dynamic additions to the anonymity set, optimizing the batch proof generation, and dealing with parties who fail to submit. We leave the full exploration of this large design space and related questions to future work.
 
@@ -63,86 +58,87 @@ This idea opens up a new design space for the MPC protocol used for batching, su
 
 % \todo{there is an impossibility result (\url{https://hackingdistributed.com/2018/07/02/on-chain-vote-buying/}) that coercion-resistance in the permissionless setting requires trusted hardware (trusted setup)}
 
-\subsection{Succinct ballot-correctness proofs}\label{sec:succinct_ballot_correctness}
+% \subsection{Succinct ballot-correctness proofs}\label{sec:succinct_ballot_correctness}
 
-Real-world elections often have hundreds of candidates, e.g., Optimism's retroactive public good funding~\cite{retropgf_voterguide}. However, the state-of-the-art ballot correctness proofs~\cite{C:BBCGI23,ACNS:Groth05} for all voting schemes (e.g., FPTP, approval voting, etc.) are linear in the number of candidates, rendering these schemes impractical in the blockchain setting. To counter these issues, we design constant-size ballot correctness proofs with constant verification time at the expense of an added preprocessing phase. The high-level idea is as follows. All correct ballots (e.g., $\{ \pack(s) : s\in\{0,1\}^{m}\}$ in the case of approval voting) are inserted into an accumulator or polynomial commitment (PC)~\cite{AC:KatZavGol10} during a transparent preprocessing phase. When users submit their votes $Z \sample \htlp.\mathsf{Gen}(s)$, they prove in zero-knowledge that $Z$ encodes a correct ballot, i.e., the users show that the solution $s$ of $Z$ had been previously inserted into the accumulator or PC with a succinct (blinded) membership proof~\cite{CCS:ZBKMNS22}.
-% We detail our succinct ballot-correctness proof using the KZG commitment in \Cref{app:succinct}.
+% Real-world elections often have hundreds of candidates, e.g., Optimism's retroactive public good funding~\cite{retropgf_voterguide}. However, the state-of-the-art ballot correctness proofs~\cite{C:BBCGI23,ACNS:Groth05} for all voting schemes (e.g., FPTP, approval voting, etc.) are linear in the number of candidates, rendering these schemes impractical in the blockchain setting. To counter these issues, we design constant-size ballot correctness proofs with constant verification time at the expense of an added preprocessing phase. The high-level idea is as follows. All correct ballots (e.g., $\{ \pack(s) : s\in\{0,1\}^{m}\}$ in the case of approval voting) are inserted into an accumulator or polynomial commitment (PC)~\cite{AC:KatZavGol10} during a transparent preprocessing phase. When users submit their votes $Z \sample \htlp.\mathsf{Gen}(s)$, they prove in zero-knowledge that $Z$ encodes a correct ballot, i.e., the users show that the solution $s$ of $Z$ had been previously inserted into the accumulator or PC with a succinct (blinded) membership proof~\cite{CCS:ZBKMNS22}.
+% % We detail our succinct ballot-correctness proof using the KZG commitment in \Cref{app:succinct}.
 
-In this section, we assume that a common reference string for the KZG polynomial commitment (PC) scheme~\cite{AC:KatZavGol10} is already available to users, namely $\mathsf{crs}:=\{g_1^{\tau^{j}}\}^{d}_{j=1}$, where $g_1\in\mathbb{G}_1$ is a generator in a bilinear pairing-friendly cyclic group $\mathbb{G}_1$ over $\mathbb{F}_p$ for some prime $p$, $\tau\sample\mathbb{F}_p$ hidden to everyone. The $\mathsf{crs}$ is typically established during a sequential, secure multi-party computation (MPC), e.g.,~\cite{FCW:BowGabGre18}.
+% In this section, we assume that a common reference string for the KZG polynomial commitment (PC) scheme~\cite{AC:KatZavGol10} is already available to users, namely $\mathsf{crs}:=\{g_1^{\tau^{j}}\}^{d}_{j=1}$, where $g_1\in\mathbb{G}_1$ is a generator in a bilinear pairing-friendly cyclic group $\mathbb{G}_1$ over $\mathbb{F}_p$ for some prime $p$, $\tau\sample\mathbb{F}_p$ hidden to everyone. The $\mathsf{crs}$ is typically established during a sequential, secure multi-party computation (MPC), e.g.,~\cite{FCW:BowGabGre18}.
 
-\input{cicada/protocols/succinct-proofs}
+% \input{cicada/protocols/succinct-proofs}
 
-Let us assume that users have established during a preprocessing phase (\Cref{fig:preprocessing_ballots}) a short commitment $\mathsf{com}$ that encodes all the possible ballots in a particular voting scheme, e.g., $\X= [0,1]^{m}$ for approval voting. The size of classical proofs of well-formedness, e.g., OR-composition of sigma-protocols, scale linearly in the number of candidates $m$. The following proof strategy yields a constant-size proof of correctness for moderately-sized $\X$, i.e., $\sizeof{\X} \leq d$\footnote{The largest KZG CRS we know of~\cite{largekzg} is for $d = 2^{28}$, so in the case of $\X = [0,1]^m$ this strategy requires $m \leq 28$.}.
-% $m$, say $m\leq 30$, depending on the size of the available  $\mathsf{crs}$ of the polynomial commitment scheme.
+% Let us assume that users have established during a preprocessing phase (\Cref{fig:preprocessing_ballots}) a short commitment $\mathsf{com}$ that encodes all the possible ballots in a particular voting scheme, e.g., $\X= [0,1]^{m}$ for approval voting. The size of classical proofs of well-formedness, e.g., OR-composition of sigma-protocols, scale linearly in the number of candidates $m$. The following proof strategy yields a constant-size proof of correctness for moderately-sized $\X$, i.e., $\sizeof{\X} \leq d$\footnote{The largest KZG CRS we know of~\cite{largekzg} is for $d = 2^{28}$, so in the case of $\X = [0,1]^m$ this strategy requires $m \leq 28$.}.
+% % $m$, say $m\leq 30$, depending on the size of the available  $\mathsf{crs}$ of the polynomial commitment scheme.
 
-First, given a ballot $Z=(g^r,h^ry^s) \in \tilde{\GG}_1 \times \tilde{\GG}_2$, the user creates an elliptic curve point $Z_1=h^r_1y^s_1 \in \GG_1$ for random generators $h_1,y_1\sample\mathbb{G}_1$ in a pairing-friendly group. Using the discrete logarithm across different groups techniques developed in~\cite{EPRINT:COPZ22}, the user can show that $Z$ and $Z_1$ have the same discrete logarithms $r$ and $s$ with for their bases $h,y\in\mathbb{G},h_1,y_1\in\mathbb{G}_1$, respectively. Now that $Z_1$ and the polynomial commitment are in the same pairing-friendly group $\GG_1$, the user can create a blinded KZG opening proof~\cite{CCS:ZBKMNS22} to prove ballot correctness. Specifically, the proof $\pi$ shows that the value $s$ in $Z_1$ matches an evaluation of the polynomial $f$ committed by $\mathsf{com}$ at some (hidden) point $j$, i.e., $f(j)=s$. Note that the verifier only sees constant-size commitments of $f,j$, and $s$. Since the blinded KZG proof $\pi$ is also constant-size, this strategy yields the first succinct ballot-correctness proofs for many common voting schemes, e.g., approval and range voting.
+% First, given a ballot $Z=(g^r,h^ry^s) \in \tilde{\GG}_1 \times \tilde{\GG}_2$, the user creates an elliptic curve point $Z_1=h^r_1y^s_1 \in \GG_1$ for random generators $h_1,y_1\sample\mathbb{G}_1$ in a pairing-friendly group. Using the discrete logarithm across different groups techniques developed in~\cite{EPRINT:COPZ22}, the user can show that $Z$ and $Z_1$ have the same discrete logarithms $r$ and $s$ with for their bases $h,y\in\mathbb{G},h_1,y_1\in\mathbb{G}_1$, respectively. Now that $Z_1$ and the polynomial commitment are in the same pairing-friendly group $\GG_1$, the user can create a blinded KZG opening proof~\cite{CCS:ZBKMNS22} to prove ballot correctness. Specifically, the proof $\pi$ shows that the value $s$ in $Z_1$ matches an evaluation of the polynomial $f$ committed by $\mathsf{com}$ at some (hidden) point $j$, i.e., $f(j)=s$. Note that the verifier only sees constant-size commitments of $f,j$, and $s$. Since the blinded KZG proof $\pi$ is also constant-size, this strategy yields the first succinct ballot-correctness proofs for many common voting schemes, e.g., approval and range voting.
 
 \subsection{Coercion-Resistance}\label{sec:extension_coercion_resistance}
+\todo{Move into main text (just a short sentence wherever we mention coercion-resistance)}
 Lastly, we briefly outline how one could add coercion-resistance~\cite{WPES:JueCatJak05} to our framework. In the e-voting literature, there are two main pathways to obtaining coercion-resistance: receipt-freeness or allowing unlikable revotes. Receipt-freeness seems challenging to achieve in the blockchain context, and we leave it to future work.  Therefore, we follow the revoting paradigm akin to Lueks et al. ~\cite{USENIX:LueQueTro20}. One can allow indistinguishable revotes as follows. We could store our ballots in a zero-knowledge set (e.g., Semaphore is a readily available implementation of this concept for Ethereum~\cite{semaphore}). Additionally, we would need to store a Merkle tree of nullifiers on-chain containing the ballots that are revoked due to revoting. Whenever users want to revote, they could prove in zero-knowledge that they revoke a previous ballot that they inserted in the zero-knowledge set while they reveal the accompanying nullifier and insert it into the nullifier tree. We leave it to future work to flesh out the technical details and implementation of such an extension.
 
-\subsection{Bayesian truth serum}\label{sec:bayesian_truth}
+% \subsection{Bayesian truth serum}\label{sec:bayesian_truth}
 
-Bayesian truth serum~\cite{Prelec04} is a method for eliciting truthful subjective answers where objective truth does not exist or is not knowable. The core of the idea is to reward answers that are ``surprisingly common'' by leveraging respondents' own predictions of what will be common. Thus, for a question with many (mutually exclusive) potential answers, the score of user $i$ responding $\vec{x}_i := (x_{i1}, \dots, x_{im})$ and $\vec{y}_i := (y_{i1}, \dots, y_{im})$ is calculated as
-%
-\begin{equation}\label{eqn:bts}
-    {\sf score}_i := \sum_{j \in [m]} x_{ij} \log{\frac{\overline{x}_j}{\overline{y}_j}} + \alpha \sum_{j \in [m]} \overline{x}_j \log{\frac{y_{ij}}{\overline{x}_j}}
-\end{equation}
-%
-where $\alpha > 0$ is a constant. The variable $x_{ij} \in \{0,1\}$ denotes user $i$'s decision (choose or don't choose) for option $j \in [m]$, $\overline{x}_j$ is the empirical frequency of choice $j$ over all the users' answers, $y_{ij}$ is user $i$'s estimate of $\overline{x}_j$ (i.e., their estimate of the probability of answer $j$ among all users), and $\overline{y}_j$ is the empirical (geometric) average of $y_{ij}$ over all the users' answers. Since each user can only choose a single answer, $x_{ij}$ will be 0 for all but one value of $j$, which we denote $j^*$. Thus, we can think of the equation above as equivalent to
-%
-\[
-    x_{ij^*} \log{\frac{\overline{x}_{j^*}}{\overline{y}_{j^*}}} + \alpha \sum_{j \in [m]} \overline{x}_j \log{\frac{y_{ij}}{\overline{x}_j}}.
-\]
+% Bayesian truth serum~\cite{Prelec04} is a method for eliciting truthful subjective answers where objective truth does not exist or is not knowable. The core of the idea is to reward answers that are ``surprisingly common'' by leveraging respondents' own predictions of what will be common. Thus, for a question with many (mutually exclusive) potential answers, the score of user $i$ responding $\vec{x}_i := (x_{i1}, \dots, x_{im})$ and $\vec{y}_i := (y_{i1}, \dots, y_{im})$ is calculated as
+% %
+% \begin{equation}\label{eqn:bts}
+%     {\sf score}_i := \sum_{j \in [m]} x_{ij} \log{\frac{\overline{x}_j}{\overline{y}_j}} + \alpha \sum_{j \in [m]} \overline{x}_j \log{\frac{y_{ij}}{\overline{x}_j}}
+% \end{equation}
+% %
+% where $\alpha > 0$ is a constant. The variable $x_{ij} \in \{0,1\}$ denotes user $i$'s decision (choose or don't choose) for option $j \in [m]$, $\overline{x}_j$ is the empirical frequency of choice $j$ over all the users' answers, $y_{ij}$ is user $i$'s estimate of $\overline{x}_j$ (i.e., their estimate of the probability of answer $j$ among all users), and $\overline{y}_j$ is the empirical (geometric) average of $y_{ij}$ over all the users' answers. Since each user can only choose a single answer, $x_{ij}$ will be 0 for all but one value of $j$, which we denote $j^*$. Thus, we can think of the equation above as equivalent to
+% %
+% \[
+%     x_{ij^*} \log{\frac{\overline{x}_{j^*}}{\overline{y}_{j^*}}} + \alpha \sum_{j \in [m]} \overline{x}_j \log{\frac{y_{ij}}{\overline{x}_j}}.
+% \]
 
-The first term is referred to as the \emph{information score} and the second as the \emph{prediction score}. The information score is highest when the user's choice $k^*$ is ``surprisingly common'', i.e., when the empirical frequency of answer $j^*$ ($\overline{x}_{j^*}$) is higher than the crowd's estimate of the empirical frequency of $j^*$ ($\overline{y}_{j^*}$). Therefore participants are incentivized to submit their truthful responses, even (and especially) if they believe them to be uncommon. 
+% The first term is referred to as the \emph{information score} and the second as the \emph{prediction score}. The information score is highest when the user's choice $k^*$ is ``surprisingly common'', i.e., when the empirical frequency of answer $j^*$ ($\overline{x}_{j^*}$) is higher than the crowd's estimate of the empirical frequency of $j^*$ ($\overline{y}_{j^*}$). Therefore participants are incentivized to submit their truthful responses, even (and especially) if they believe them to be uncommon. 
 
-The prediction score is the Kullback-Leibler divergence~\cite{KulLei51} between the user's estimate of the average answer and the true average answer, weighted by $\alpha$. This is maximized when the two values are equal (i.e., the divergence is 0), and so incentivizes truthful reporting of $y_{ij}$, the user's estimate of $\overline{x}_j$. 
+% The prediction score is the Kullback-Leibler divergence~\cite{KulLei51} between the user's estimate of the average answer and the true average answer, weighted by $\alpha$. This is maximized when the two values are equal (i.e., the divergence is 0), and so incentivizes truthful reporting of $y_{ij}$, the user's estimate of $\overline{x}_j$. 
 
-We show how Bayesian truth serum can be implemented in the Cicada framework. First, rewrite \Cref{eqn:bts} as
-%
-\begin{equation}\label{eqn:bts-cicada}
-    \begin{aligned}
-        {\sf score}_i :=& \sum_{j \in [m]} x_{ij} (\log{\overline{x}_j}-\overline{y}_j') + \alpha \sum_{j \in [m]} \overline{x}_j (y_{ij}' - \log{\overline{x}_j})\\
-        % =& \sum_{j \in [m]} x_{ij} (\log{\overline{x}_j}-\overline{y}_j') + \alpha \sum_{j \in [m]} (\overline{x}_j y_{ij}' - \overline{x}_j \log{\overline{x}_j})
-    \end{aligned}
-\end{equation}
-%
-where $y_{ij}' = \log{y_{ij}}$ and $\overline{y}_{j}' = \log{\overline{y}_j}$.
-\def\tallyx{\ensuremath{\overline{\vec{x}}}}
-\def\tallyy{\ensuremath{\overline{\vec{y}}'}}
-The smart contract will use two (lists of) HTLPs $\Z_{\tallyx}^{\sf tally}, \Z_{\tallyy}^{\sf tally}$ to keep track of two running ``tallies'':
-\begin{align*}
-\tallyx &= (\overline{x}_1, \dots, \overline{x}_m) = \sum_i \vec{x}_i\\
-\tallyy &= (\overline{y}_1', \dots, \overline{y}_m') = \sum_i \frac{1}{n} \vec{y}_i'
-\end{align*}
+% We show how Bayesian truth serum can be implemented in the Cicada framework. First, rewrite \Cref{eqn:bts} as
+% %
+% \begin{equation}\label{eqn:bts-cicada}
+%     \begin{aligned}
+%         {\sf score}_i :=& \sum_{j \in [m]} x_{ij} (\log{\overline{x}_j}-\overline{y}_j') + \alpha \sum_{j \in [m]} \overline{x}_j (y_{ij}' - \log{\overline{x}_j})\\
+%         % =& \sum_{j \in [m]} x_{ij} (\log{\overline{x}_j}-\overline{y}_j') + \alpha \sum_{j \in [m]} (\overline{x}_j y_{ij}' - \overline{x}_j \log{\overline{x}_j})
+%     \end{aligned}
+% \end{equation}
+% %
+% where $y_{ij}' = \log{y_{ij}}$ and $\overline{y}_{j}' = \log{\overline{y}_j}$.
+% \def\tallyx{\ensuremath{\overline{\vec{x}}}}
+% \def\tallyy{\ensuremath{\overline{\vec{y}}'}}
+% The smart contract will use two (lists of) HTLPs $\Z_{\tallyx}^{\sf tally}, \Z_{\tallyy}^{\sf tally}$ to keep track of two running ``tallies'':
+% \begin{align*}
+% \tallyx &= (\overline{x}_1, \dots, \overline{x}_m) = \sum_i \vec{x}_i\\
+% \tallyy &= (\overline{y}_1', \dots, \overline{y}_m') = \sum_i \frac{1}{n} \vec{y}_i'
+% \end{align*}
 
-Each user's ballot consists of the vectors $\vec{x}_i, \vec{y}_i'$, where $\vec{x}_i \in [0,1]^m$ has $\ell_1$ norm 1 and $\vec{y}_i' = \log{\vec{y}} \in \mathbb{N}^m$ with $\sum_{j \in [m]} y_{ij} = n$. Assuming no packing for simplicity, the ballot is encoded as three lists of HTLPs: a list of linear HTLPs $\Z_i^{\sf ans} := \{Z_{ij}^{\sf ans}\}_{j \in [m]}$ for the entries of $\vec{x}_i$, and two lists of (respectively) linear and multiplicative HTLPs $\Z_i^{+} := \{Z_{ij}^{+}\}_{j \in [m]}$ and $\Z_i^{\times} := \{Z_{ij}^{\times}\}_{j \in [m]}$, both encoding the entries of $\vec{y}_i'$. The smart contract coordinator must ensure that the following hold:
-\begin{description}
-    \item[Check \#1a.] All $Z_{ij}^{\sf ans}$ encode $x_{ij} \in [0,1]$.
-    \item[Check \#1b.] $\sum_{j \in [m]} x_{ij} = 1$.
-    \item[Check \#2a.] All $Z_{ij}^{+}$ encode $y_{ij}' > 0$.
-    \item[Check \#2b.] $\sum_{j \in [m]} 2^{y_{ij}'} = n$ (assuming $\log$ base 2).
-    \item[Check \#3.] $Z_{ij}^{\times}$ contains the same value as $Z_{ij}^{+}$ for all $j \in [m]$.
-\end{description}
+% Each user's ballot consists of the vectors $\vec{x}_i, \vec{y}_i'$, where $\vec{x}_i \in [0,1]^m$ has $\ell_1$ norm 1 and $\vec{y}_i' = \log{\vec{y}} \in \mathbb{N}^m$ with $\sum_{j \in [m]} y_{ij} = n$. Assuming no packing for simplicity, the ballot is encoded as three lists of HTLPs: a list of linear HTLPs $\Z_i^{\sf ans} := \{Z_{ij}^{\sf ans}\}_{j \in [m]}$ for the entries of $\vec{x}_i$, and two lists of (respectively) linear and multiplicative HTLPs $\Z_i^{+} := \{Z_{ij}^{+}\}_{j \in [m]}$ and $\Z_i^{\times} := \{Z_{ij}^{\times}\}_{j \in [m]}$, both encoding the entries of $\vec{y}_i'$. The smart contract coordinator must ensure that the following hold:
+% \begin{description}
+%     \item[Check \#1a.] All $Z_{ij}^{\sf ans}$ encode $x_{ij} \in [0,1]$.
+%     \item[Check \#1b.] $\sum_{j \in [m]} x_{ij} = 1$.
+%     \item[Check \#2a.] All $Z_{ij}^{+}$ encode $y_{ij}' > 0$.
+%     \item[Check \#2b.] $\sum_{j \in [m]} 2^{y_{ij}'} = n$ (assuming $\log$ base 2).
+%     \item[Check \#3.] $Z_{ij}^{\times}$ contains the same value as $Z_{ij}^{+}$ for all $j \in [m]$.
+% \end{description}
 
-Most of these checks can be achieved using the protocols in \Cref{sec:sigmas}: Check \#1a with the binary solution protocol, \#1b and \#2b by providing randomness which opens the homomorphic sum to the correct value, and \#2a with \zkpopos. Check \#2b additionally requires a zero-knowledge proof of exponentiation, e.g., \cite{C:BonBunFis19}. Because the puzzles to check in \#3 use different constructions, we can't apply \zkposeq directly; instead, one can combine two \zkpoks proofs with a standard PoK for discrete logarithm.
+% Most of these checks can be achieved using the protocols in \Cref{sec:sigmas}: Check \#1a with the binary solution protocol, \#1b and \#2b by providing randomness which opens the homomorphic sum to the correct value, and \#2a with \zkpopos. Check \#2b additionally requires a zero-knowledge proof of exponentiation, e.g., \cite{C:BonBunFis19}. Because the puzzles to check in \#3 use different constructions, we can't apply \zkposeq directly; instead, one can combine two \zkpoks proofs with a standard PoK for discrete logarithm.
 
-The aggregation algorithm $\Aggr((\Z_{\tallyx}^{\sf tally}, \Z_{\tallyy}^{\sf tally}), i, \Z_i, \pi_i)$ updates the tally to $(\Z_{\tallyx}^{\sf tally} \boxplus \Z_i^{\sf ans}, \Z_{\tallyy}^{\sf tally} \boxplus \frac{1}{n} \cdot \Z_i^{+})$. During the opening phase, anyone can solve for the final tallies $\tallyx_{\sf final}, \tallyy_{\sf final}$ and the individual user submissions $\{(\vec{x}_i, \vec{y}_i')\}_{i \in [n]}$. If correct, they are used in $\Finalize$ to compute the final set of scores as follows:
+% The aggregation algorithm $\Aggr((\Z_{\tallyx}^{\sf tally}, \Z_{\tallyy}^{\sf tally}), i, \Z_i, \pi_i)$ updates the tally to $(\Z_{\tallyx}^{\sf tally} \boxplus \Z_i^{\sf ans}, \Z_{\tallyy}^{\sf tally} \boxplus \frac{1}{n} \cdot \Z_i^{+})$. During the opening phase, anyone can solve for the final tallies $\tallyx_{\sf final}, \tallyy_{\sf final}$ and the individual user submissions $\{(\vec{x}_i, \vec{y}_i')\}_{i \in [n]}$. If correct, they are used in $\Finalize$ to compute the final set of scores as follows:
 
-\begin{enumerate}
-    \item Let $\tallyx' := \log{\tallyx}$. Compute $\vec{I}' := \tallyx' - \tallyy$ and $\vec{P}' := \tallyx \cdot \tallyx'$.
-    % \item Compute $P := \sum_j \overline{x}_j \log{\overline{x}_j}$.
-    \item For each user $i \in [n]$:
-    \begin{enumerate}
-        \item Compute $i$'s information score $I_i := \sum_{j \in [m]} I_{ij}$, where $\vec{I}_i = (I_{i1},\allowbreak \dots, I_{im}) := \vec{x}_i \cdot \vec{I}'$.
-        \item Compute $i$'s prediction score $P_i := \sum_{j \in [m]} P_{ij}$, where $\vec{P}_i = (P_{i1},\allowbreak \dots, P_{im}) := \tallyx \cdot \vec{y}_i' - \vec{P}'$.
-        \item User $i$'s score is $I_i - P_i$.
-        % \item Compute ${\Z_i^{\times}}' := \Z_i^{\times} \cdot \tallyx$.
-        % \item $Z_i^{Y} := \bigotimes_{j \in [m]} {Z_{i,j}^{\times}}'$.
-        % \item $Z_i^{I} := \bigoplus_{j \in [m]} (I_j \cdot Z_{i,j}^{{\sf ans}})$.
-        % \item Set $Z_i^{\sf score} := Z_i^I \oplus \alpha (\log{Z_i^{Y}} - P)$. \noemi{this logarithm can't be computed over a puzzle, so actually $Z_Y^{(i)}$ has to be solved first before the score puzzle can be computed (contract could keep a list).}
-    \end{enumerate}
-\end{enumerate}
+% \begin{enumerate}
+%     \item Let $\tallyx' := \log{\tallyx}$. Compute $\vec{I}' := \tallyx' - \tallyy$ and $\vec{P}' := \tallyx \cdot \tallyx'$.
+%     % \item Compute $P := \sum_j \overline{x}_j \log{\overline{x}_j}$.
+%     \item For each user $i \in [n]$:
+%     \begin{enumerate}
+%         \item Compute $i$'s information score $I_i := \sum_{j \in [m]} I_{ij}$, where $\vec{I}_i = (I_{i1},\allowbreak \dots, I_{im}) := \vec{x}_i \cdot \vec{I}'$.
+%         \item Compute $i$'s prediction score $P_i := \sum_{j \in [m]} P_{ij}$, where $\vec{P}_i = (P_{i1},\allowbreak \dots, P_{im}) := \tallyx \cdot \vec{y}_i' - \vec{P}'$.
+%         \item User $i$'s score is $I_i - P_i$.
+%         % \item Compute ${\Z_i^{\times}}' := \Z_i^{\times} \cdot \tallyx$.
+%         % \item $Z_i^{Y} := \bigotimes_{j \in [m]} {Z_{i,j}^{\times}}'$.
+%         % \item $Z_i^{I} := \bigoplus_{j \in [m]} (I_j \cdot Z_{i,j}^{{\sf ans}})$.
+%         % \item Set $Z_i^{\sf score} := Z_i^I \oplus \alpha (\log{Z_i^{Y}} - P)$. \noemi{this logarithm can't be computed over a puzzle, so actually $Z_Y^{(i)}$ has to be solved first before the score puzzle can be computed (contract could keep a list).}
+%     \end{enumerate}
+% \end{enumerate}
 
 \subsection{A trusted setup protocol for the CJSS scheme}\label{sec:seq_mpc_tlp}
 

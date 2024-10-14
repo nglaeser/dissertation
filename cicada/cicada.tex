@@ -1,85 +1,37 @@
 \section{The Cicada Framework}\label{sec:cicada_framework}
 
-We present Cicada, our framework for non-interactive private auctions/elections, in \Cref{fig:cicada}. Cicada can be applied to voting and auction schemes where the scoring function $\Score = f \circ t$ has a linear tally function $t$. The framework uses a linear HTLP (\Cref{sec:tlp}), vector packing scheme (\Cref{sec:packing}), and matching NIZK (\Cref{sec:sigmas}) to ensure correctness of submissions by proving both the well-formedness of the puzzle and the solution's membership in $\X$.
+We present Cicada, our framework for non-interactive private auctions/elections, in \Cref{fig:cicada}. Cicada can be applied to voting and auction schemes where the scoring function $\Score = f \circ t$ has a linear tally function $t$. The framework uses a linear HTLP (\Cref{sec:tlp}), a vector packing scheme (\Cref{sec:packing}), and matching NIZKs (which we present in \Cref{sec:sigmas}) to ensure correctness of submissions by proving both the well-formedness of the puzzle and the solution's membership in $\X$.
 
-At a high level, Cicada enables auction or voting schemes with the following five steps. 
-\emph{First}, system participants agree on a delay parameter $\Ttime$ and packing parameter $\ell$. The $\Setup$ algorithm outputs HTLP public parameters $\pparam$ (note this might require private randomness) and initializes a set of the tally HTLPs $\mathcal{Z}$ containing zeros. 
-\emph{Second}, a user $i$ uses the $\Seal$ algorithm to encode their submission (a bid or ballot) $\vec{v}_i$ into (a set of) HTLP(s) $\Z_i$. $\Seal$ also outputs a NIZK $\pi_i$ proving that the submission $\Z_i$ is well-formed, i.e., is in the domain $\mathcal{X}$ of the scoring function $\Score$. Users will send these submissions and corresponding proofs to the on-chain coordinator. 
-\emph{Third}, the coordinator (Cicada smart contract) runs $\Aggr$ to verify the user-submitted proof $\pi_i$, and if it is valid, aggregate the user submission $\Z_i$ into the tally HTLPs $\Z$, resulting in updated tally HTLP(s) $\Z'$. 
-\emph{Fourth}, after the voting/bidding period has ended, any party can open the tally HTLPs $\Z$ off-chain by running $\Open$, which outputs the opening(s) $\mathcal{S}$ of the tally HTLP(s) $\Z$ along with a proof of correct opening $\pi_{\textsf{open}}$ (using a proof of solution $\pos$, see \Cref{sec:sigmas}). The off-chain solver will send $\mathcal{S}, \pi_{\mathsf{open}}$ to the contract. 
-\emph{Fifth}, the on-chain contract runs $\Finalize$ to verify the correctness of $\mathcal{S}$ by checking $\pi_{\mathsf{open}}$. If the check passes, it computes the auction/election winner(s) as $y=f(\vec{v})$.
+\input{cicada/model}
 
-% \noemi{In Cicada we need to talk about the function that is applied to the final tally, not the ballots -- maybe we could introduce a definition of ``linear'' protocols $\Sigma : \X^n \to \Y$ which are those functions that have an associated function $\Sigma_{\sf winner}: \X' \to \Y$ such that $\Sigma_{\sf winner}(t) = \Sigma(s_1, \dots, s_n)$ where $t = f(s_1, \dots, s_n)$ for some linear function $f$.}
-%\noemi{difference between $\Sigma$ and $\Sigma_{\sf winner}$ is the domain, $\X^n$ and $\X$, resp.}
-
-Intuitively, submission privacy follows from the security of the HTLP and zero-knowledge of the NIZK used: the submission can't be opened before time $\Ttime$ and none of the proofs leak any information about it. Non-malleability is enforced by requiring the NIZK to be a proof of knowledge and including the user's identity $i$ in the instance to prove, e.g., including it in the hash input of the Fiat-Shamir transform. This prevents a malicious actor from replaying a different user's ballot correctness proof.
-% \istvan{Correctness is due to the correctness of the underlying NIZKs. Submission privacy is reduced to the HTLP sequentiality, while non-malleability is ensured by the proof of knowledge property of our applied NIZKs.} 
+Cicada implements a time-locked auction/voting scheme (\Cref{def:syntax}) as follows:
+(0) System participants agree on a delay parameter $\Ttime$ and packing parameter $\ell$. The latter introduces a crucial design choice, defining a storage-computation trade-off we detail in~\Cref{sec:cicada_eval}. The coordinator (or a set of trusted parties, depending on the HTLP construction used) runs the $\Setup$ algorithm to output HTLP public parameters $\pparam$ and initialize a (set of) aggregate HTLP(s) $\Z$ containing zeros. 
+(1) A user $i$ runs the $\Seal$ algorithm to encode their submission (a bid or ballot) $\vec{v}_i$ into (a set of) HTLP(s) $\Z_i$. $\Seal$ also outputs a NIZK $\pi_i$ proving that $\Z_i$ is well-formed, i.e., its contents are in the domain $\X$ of the scoring function $\Score$. Users send their submissions and proofs to the on-chain coordinator. 
+(2) Upon receiving a user submission $\Z_i, \pi_i$, the coordinator (Cicada smart contract) runs $\Aggr$ to verify $\pi_i$, and if it is valid, aggregates $\Z_i$ into the tally HTLPs $\Z$, resulting in updated tally $\Z'$. 
+(3) After the voting/bidding period has ended, any party can open the tally HTLPs $\Z$ off-chain by running $\Open$, which outputs the opening(s) $\vec{s}$ of the tally HTLP(s) $\Z$ along with a proof of correct opening $\pi_{\textsf{open}}$ (using a proof of solution $\pos$, see \Cref{sec:sigmas}). The off-chain solver will send $\vec{s}, \pi_{\mathsf{open}}$ to the contract. 
+(4) The on-chain contract runs $\Finalize$ to verify the correctness of $\vec{s}$ by checking $\pi_{\mathsf{open}}$. If the check passes, it computes the auction/election winner(s) as $y=f(\vec{s})$.
 
 \input{cicada/protocols/cicada}
 
-As we will see next, this captures many common schemes such as cumulative voting and sealed-bid auctions. 
-Cicada introduces a crucial design choice via the packing parameter $\ell\in[m]$, which defines a storage-computation trade-off that we detail in~\Cref{sec:implementation}. %The on-chain footprint of a protocol is minimized by using a ballot correctness proof system $\sf NIZK$ with low verification cost. % this seems kind of obvious? And if anything it belongs in the implementation section
+\paragraph{Additive voting}
+Cicada captures ``additive'' voting schemes, meaning each ballot (a length-$m$ vector) is simply added to the tally, and a finalization function $f$ is applied to the tally after the voting phase has ended to determine the winner. 
+This includes many popular voting schemes such as first-past-the-post (FPTP), approval, range, and cumulative voting. Simple ranked-choice voting schemes, e.g., Borda count~\cite{Emerson13}, are also additive, differing only in what qualifies as a ``proper'' ballot (restrictions on vector entries, norm, etc.; see \Cref{tab:voting_schemes}). 
+Thus, Cicada can instantiate fair voting protocols for all these schemes.
 
-% \section{Application to voting schemes}\label{sec:voting}
+\paragraph{Sealed-bid auctions}
+The Cicada framework can also be used to implement a sealed-bid auction with a number of HTLPs which is independent of the number of participants $n$. 
+Assuming bids are bounded by $M$, we use an HTLP with solution space $\X$ such that $\sizeof{\X} > M^n$.
+Each user $i$ submits $Z_i \gets \htlp.{\sf Gen}({bid}_i)$ and $\pi_i$, where $\pi_i$ proves $0 \leq {bid}_i \leq M$. A packing of the bids is computed at aggregation time, with $\Aggr$ updating $Z$ to $Z \boxplus (M^{i-1} \cdot Z_i)$. After the bidding phase, the final ``tally'' is opened to $s^*$ and the bids are recovered as ${\sf Bids} := \{ s^* \mod{M^{i-1}} \}_{i \in [n]}$. Any payment and allocation function can now be computed over the bids; in the simplest case, the winner is $\argmax_i ({\sf Bids})$ and their payment is $\max_i ({\sf Bids})$. Here, the full set of bids is revealed after the auction concludes since $\max_i$ is a nonlinear function and cannot be computed homomorphically using linear HTLPs.
 
-% \todo{revisit this} The main reason we are interested in building protocols for cardinal voting schemes is that they allow voters to express more fine-grained preferences. Put differently, they bypass Arrow's impossibility theorem~\cite{arrow1950difficulty}, i.e., cardinal voting schemes satisfy non-dictatorship, unrestricted domain, independence of irrelevant alternatives and Pareto efficient. 
+Locking up collateral is necessary for every (private) auction scheme. We treat the problem of collateral lock-up as an important but orthogonal problem and refer to~\cite{CCS:TAFWBM23} for an extensive discussion.
 
-\paragraph{Additive voting.}
-Many common voting schemes are ``additive'', meaning each ballot (a length-$m$ vector) is simply added to the tally, and a finalization function $f$ is applied to the tally after the voting phase has ended to determine the winner. 
-Additive voting schemes include first-past-the-post (FPTP), approval, range, and cumulative voting. Simple ranked-choice voting schemes, e.g., Borda count~\cite{Emerson13}, are also additive, differing only in what qualifies as a ``proper'' ballot (restrictions on vector entry domain, vector norm, etc.; see \Cref{tab:voting_schemes}). 
-Thus, we can use Cicada to instantiate private voting protocols for all these schemes.
-
-% \paragraph{Majority vote and approval voting.}
-% We start off by describing a protocol for approval voting. Approval voting is a generalization of majority vote, whereby, a voter can cast a vote for multiple candidates. In case of a majority vote, a ballot can be thought of as a binary vector of Hamming weight $1$, while approval voting lifts this restriction, i.e., the ballot can be any length-$m$ binary vector $\vec{b} \in\{0,1\}^{m}$. The challenge is to design a protocol that applies a single HTLP for tallying the approval votes.
-
-% Following~\cite{hirt2000efficient}, we encode the $i$th voter's ballot as the integer
-% \begin{equation}\label{eq:approval_voting_ballot_encoding}
-%     % b_j\in \Big\{
-%     % \sum\limits_{i=1}^{m} b_j^{(i)} (n+1)^{i-1}: b_j^{(i)} = 1 \iff\textit{j votes for candidate i}\in[m]\Big\}. 
-%     b_i\in \Big\{
-%     \sum\limits_{j=1}^{m} b_i^{(j)} (n+1)^{j-1}: b_i^{(j)} = 1 \iff\textit{i votes for candidate j}\in[m]\Big\}. 
-% \end{equation}
-% Note the number of votes for candidate $j$ can be obtained as $\sum\limits^{n}_{i=1}b_i\bmod{(n+1)^{j-1}}$.
-
-% \begin{figure}[h!]
-% \begin{mdframed}
-% \begin{description}
-%     \item[$\mathsf{Setup}(\secparam, \Ttime) \randout (\pparam, Z^*)$.]  Set up HTLP parameters $\pparam_{\sf tlp} \sample \htlp.\Setup(\secparam, \Ttime)$. Let $Z^* \sample \htlp.{\sf Gen}(\pparam_{\sf tlp}, 0)$. Output $\pparam := (\pparam_{\sf tlp},Z^*)$.
-%     \item[$\Seal(\pparam,i,b_i) \randout (Z_i, \pi_{\sf i})$.] Let $b_i$ encode the $i$th user's approval vote as in Equation~\ref{eq:approval_voting_ballot_encoding}. Let $Z_i \gets \htlp.{\sf Gen}(\pparam_{\sf tlp}, b_i)$. The  correctness proof $\pi_i$ is obtained as $\pi_i:=\bigwedge\limits_{i=1}^{m}\zkprove(\mathcal{R}_{\pokemon}(Z_i/Z'_j,0,n^{j-1};b_i) \lor\mathcal{R}_{\pokemon}(Z_i/Z'_j,1,n^{j-1};b_i))$, where $Z'_j$ is the residual approval vote, i.e., $Z'_j\gets\htlp.{\sf Gen}(\pparam_{\sf tlp}, b_i\mod{n^{j-1}})$. 
-    
-%     Output $(Z_i,\pi_i)$.
-%     \item[$\Aggr(\pparam,Z^*,Z_j,\pi_{\sf j}) \rightarrow Z^*$.] If $\zkvfy((\pparam,j,Z_j),\pi_{\sf j}) \neq 1$, leave $Z^*$ unchanged and abort. Otherwise, update $Z^* = Z^* \oplus Z_j$.
-%     \item[$\Open(\pparam,Z^*,\mathcal{R}) \rightarrow s^*$.] Solve the tally puzzle for $s^* \gets \htlp.{\sf Solve}(\pparam_{\sf tlp}, Z^*)$.
-%     \item[$\Finalize(\pparam, s^*) \rightarrow {\sf winner}$.] Compute the sum of the votes for each candidate $j \in [m]$ as $s^*_j := s^* \mod{n^{j-1}}$. The winner is $\argmax_j \{s^*_1, \dots, s^*_m\}$.
-% \end{description}
-
-
-% \end{mdframed}
-% \caption{A protocol for approval voting among $m$ candidates using a single HTLP.}
-% \label{fig:voting_approval}
-% \end{figure}
-
-% \paragraph{Ranked choice voting, range voting, and cumulative voting.}
-
-% In a na\"ive Borda count protocol, the tally consists of $m$ HTLPs $\{Z^{*}_i\}^{m}_{i=1}$ (one per candidate) that encode the accumulated points of each candidate, initially set to $0$.  During the voting phase, each voter creates $m$ HTLPs $\{Z_i\}^{m}_{i=1}$ encoding integers from $0$ to $m-1$. Afterwards, voters homomorphically add each ballot HTLP $Z_i$ to the corresponding tally HTLP $Z^{*}_i$. This solution is suboptimal in terms of the number of HTLPs needed. 
-% 
-% We show a protocol that requires only a single HTLP. Let the $i$th voter's preference vector be defined as $\mathbf{q^{(i)}}=(q^{(i)}_1,q^{(i)}_2,\dots,q^{(i)}_m)$, which is required to be a permutation of $[0,m-1]$ .
-% % $\forall j:q^{(i)}_j\in[0,m-1]\land\forall j,k: q^{(i)}_{j}\neq q^{(i)}_k$ i.e., it is a permutation of $[0,m-1]$. 
-% % Let $\mathbf{p}=(p_1,p_2,\dots,p_m)$ be a vector of prime numbers such that $\min_{i}p_i\geq (m-1)n$ and $\prod\limits_{i=1}^{m} p_i\leq N$.
-% Now encode $\vec{q}^{(i)}$ as an integer $s_i$ using the Chinese Remainder Theorem (see \cref{sec:packing}) and encode it in an HTLP $Z_i$.
-% % Specifically, $s_i\equiv q^{(i)}_{j}\mod{p_j}$, which can be efficiently found by the Chinese Remainder's Theorem (CRT).
-% The user submits their puzzle $Z_i$ with the accompanying zero-knowledge proofs for ballot correctness, and the on-chain contract homomorphically adds $Z_i$ and $Z^*$.
-
-% At the end of the voting phase, a single party solves the tally HTLP $Z^*$ to obtain the solution $s^{*}$. We claim that the total preference points (Borda counts) for candidate $j$ can be computed as $s^{*}\mod{p_j}$. The correctness of this protocol for ranked voting follows from the observation that for any preference $j$, we have 
-% \begin{equation}\label{eq:borda_correctness_argument}
-%     s^{*}\bmod{p_j}=\sum\limits^n_{i=1}s_i\bmod{p_j}\equiv\sum\limits^n_{i=1}q^{(i)}_j\bmod{p_j}=\sum\limits^n_{i=1}q^{(i)}_j\leq(m-1)n. 
-% \end{equation}
+\subsection{Security Proof of Cicada}
+Intuitively, submission privacy follows from the security of the HTLP (assuming the delay $\Ttime$ is longer than the submission phase) and the zero-knowledge property of the NIZKs: the submission can't be opened before time $\Ttime$ and none of the proofs leak any information about it. Non-malleability is enforced by requiring the NIZK to be a proof of knowledge and including the user's identity $i$ in the instance to prove, e.g., including it in the hash input of the Fiat-Shamir transform. This prevents a malicious actor from replaying a different user's ballot correctness proof.
 
 \begin{theorem}\label{thm:cicada}
     Given a linear scoring function $\Sigma$, a secure NIZKPoK $\NIZK$ and proof of solution $\pos$, a secure $\htlp$, and a packing scheme $({\sf PSetup},\allowbreak \pack,\allowbreak \unpack)$, the Cicada protocol $\Pi_\Sigma$ (\Cref{fig:cicada}) is a secure time-locked voting/auction protocol. % i.e., it satisfies correctness, bid/ballot privacy, and non-malleability.
 \end{theorem}
 
-% We delegate the full proof to \Cref{sec:secproofs}.
 \begin{proof}
 \def\Exp{\ensuremath{\mathsf{ExpSPriv}_{\Pi_\Sigma}^\adv(\secpar,\Ttime,i)}}
     For simplicity, we give a proof for the simple case of $\X=[0,1]$, i.e., submissions consist of a single bit, but our argument generalizes to larger domains $\X$. Let $n \in \mathbb{N}$ be the number of users.
@@ -99,18 +51,11 @@ Thus, we can use Cicada to instantiate private voting protocols for all these sc
 
     \underline{$\hybrid_2$:} Replace $Z_i$ with $Y_i \gets \htlp.{\sf Gen}(1-b)$ and $\tilde{\pi}$ with $\tilde{\sigma} \gets {\sf NIZK}.\Sim(i, Y_i)$. $\hybrid_1$ and $\hybrid_2$ are indistinguishable because the distributions $\{Z_i, \Sim(i, Z_i)\}$ and $\{Y_i, \Sim(i, Y_i)\}$ are indistinguishable since $\{Z_i\}, \{Y_i\}$ are indistinguishable by the security of $\htlp$.
 
-    % \underline{$\hybrid_3$:} Replace $\tilde{\pi}$ with $\tilde{\sigma} \gets {\sf NIZK}.\Sim(i, Y_i)$. $\hybrid_3$ is indistinguishable from $\hybrid_2$ again by security of $\htlp$: since the distributions of $Z_i, Y_i$ are indistinguishable, so must the distributions ...
-    
     \underline{$\hybrid_3$:} Replace $\tilde{\sigma}$ with $\sigma \gets \NIZK.\prove(i, Y_i, 1-b)$. $\hybrid_3$ is indistinguishable from $\hybrid_2$ by the zero-knowledge property of $\sf NIZK$.
 
     This series of hybrids implies $\Pr[b'=b] \approx_\secpar \Pr[b'=1-b]$, where $b'$ is the output of $\adv$ in $\hybrid_0$ or $\hybrid_3$, respectively. Therefore $\Pr[\Exp = 1] \leq \frac{1}{2} + \negl[\secpar]$.
     
-    % --- reduction attempt ---
-    % Suppose towards a contradiction that there exists a $\Ttime$-bounded adversary $\adv$ who wins the submission privacy game with non-negligible probability. We will use give a $\Ttime$-bounded adversary $\bdv$ capable of violating either the zero-knowledge of $\sf NIZK$ or the privacy of $\htlp$.
-
-    % Given a puzzle $Z$ containing an unknown bit $b_1$ and a proof $\pi$ that some independent unknown bit $b_2 \in [0,1]$, $\bdv$ constructs two different queries $(Z, \tilde{\pi})$ and $(\tilde{Z}, \pi)$ as follows: sample $i \sample [n]$ and compute $\tilde{\pi} \gets {\sf NIZK}.\Sim(i, Z)$ and $\tilde{Z} \gets \htlp.{\sf Gen}(0)$. Query $\adv$ on both 
-
-    Finally, we show that if $\NIZK$ is a PoK and $\htlp$ is secure, then Cicada is non-malleable, cf.~\Cref{def:non_malleability}. Suppose towards a contradiction that Cicada is malleable. We will use this and the fact that $\NIZK$ is a PoK to construct an adversary $\bdv$ which has non-negligible advantage in the $\htlp$ security game. Again, we work in the simple case $\X = [0,1]$, i.e., $m,\ell,w=1$, but the argument generalizes to other parameter settings.
+    Finally, we show that if $\NIZK$ is a PoK and $\htlp$ is secure, then Cicada is non-malleable (\Cref{def:non_malleability}). Suppose towards a contradiction that Cicada is malleable. We will use this and the fact that $\NIZK$ is a PoK to construct an adversary $\bdv$ which has non-negligible advantage in the $\htlp$ security game. Again, we work in the simple case $\X = [0,1]$, i.e., $m,\ell,w=1$, but the argument generalizes to other parameter settings.
     
     Since by our assumption Cicada is malleable, there exists $\adv$ which outputs $(i, \cdot, \Z_i, \pi_i) \notin \mathcal{Q}$ such that $\NIZK.\vrfy((i,\allowbreak \Z_i), \pi)=1$ with non-negligible probability. 
     % Also, $\sf NIZK$ is a PoK, so it has an efficient knowledge extractor $\Ext$. 

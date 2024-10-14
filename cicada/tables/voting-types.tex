@@ -1,42 +1,31 @@
 \def\sp{\hspace{1em}}
-% \newcommand{\enf}[1]{\textcolor{green}{#1}} % constraint to enforce
-\newcommand{\enf}[1]{#1}
 %%------------------- BEGIN Ballot domain TABLE ----------------------
 \begin{table*}[tb]
     \centering
 \makebox[\linewidth]{
     \setlength{\tabcolsep}{6pt}
     \setlength{\belowbottomsep}{6pt}
-    % \begin{tabular}{l|ccc|ccc}
-    % \begin{tabular}{r@{\hspace{3pt}}l@{\hspace{12pt}}ccc}
     \begin{tabular}{l@{\hspace{12pt}}ccc}
-        % \multirow{2}*{Protocol}& \multirow{2}*{Ballot domain}    & \multirow{2}*{Hamming wt}& \multirow{2}*{$\ell_1$ norm}& \multicolumn{3}{c}{Proof system}\\
-        %                        &                                 &                       &                              & no packing & PNS & RNS \\\hline
         \toprule
                         & \textbf{Submission domain}    & \textbf{Hamming wt}   & \textbf{Norm} \\\midrule
-        \emph{Voting schemes}  &&& \\
-        % \multirow{6}{*}{\rotatebox[origin=c]{90}{\textit{Voting}}} &
-        \sp First-past-the-post & \enf{$[0,1]^m$} & \enf{1}       & 1 \\%& \todo{\sf PoKS} \& \cite[\S3]{groth2005voting} & &\\
-        \sp Approval    & \enf{$[0,1]^m$} & \enf{$\leq m$}& $\leq m$ \\%& '' && \\
-        \sp Range       & \enf{$[0,w]^m$} & $\leq m$& $\leq wm$ \\%& range proof~\cite{arun2022dew} && \\
-        \sp Cumulative  & $[0,w]^m$ & $\leq m$      & \enf{$\leq w$} \\%& {\sf PoPos} \& \todo{norm? \cite{groth2005voting}}&& \\
-        \sp Ranked-choice (Borda) 
-                        & \enf{$\pi([0,m-1])$}& $m-1$     & $m(m-1)/2$ \\%& Borda shuffle proof~\cite[\S6]{groth2005voting} &&\\
-        % 
-        \sp Quadratic (\Cref{sec:voting_quadratic})   & $[0,\sqrt{w}]^m$& $\leq m$& \enf{$\lVert \vec{b} \rVert_2^2 = \langle \vec{b}, \vec{b} \rangle = w$} \\%& {\sf PoSqDLog} (\cref{fig:squares_proof}) \& \pokcsmon (\cref{fig:pokcsmon_protocol}) && \\\hline
+        FPTP voting     & $[0,1]^m$ & $\leq 1$& $\leq 1$ \\
+        Approval voting     & $[0,1]^m$ & $\leq m$& $\leq m$ \\
+        Range voting  & $[0,w]^m$ & $\leq m$      & $\leq wm$ \\
+        Cumulative voting  & $[0,w]^m$ & $\leq m$      & $\leq w$ \\
+        Ranked-choice voting (Borda) 
+                        & $\pi([0,m-1])$& $m-1$     & $m(m-1)/2$ \\
+        Quadratic voting
+        & $[0,\sqrt{w}]^m$& $\leq m$& $\lVert \vec{b} \rVert_2^2 = \langle \vec{b}, \vec{b} \rangle = w$ \\
         \midrule
-        % \emph{Sealed-bid auction} &&& \\%                             &&& \\
-        Single-item sealed-bid auction & $[0, w]$  & \enf{1}     & \enf{$\leq w$} \\%& range proof~\cite{arun2022dew} & - & -\\
-        \midrule
-        % \emph{Other}              &&& \\%                             &&& \\
-        Bayesian truth serum (\ref{sec:voting_bayesian_truth})
-                        & $[0,1]^m \times \mathbb{N}^m$ & $1, 1$ & $1, \leq m$ \\
+        Single-item sealed-bid auction & $[0, w]$  & 1 & $\leq w$ \\
+        % \midrule
+        % Bayesian truth serum %(\Cref{sec:voting_bayesian_truth})
+        %                 & $[0,1]^m \times \mathbb{N}^m$ & $1, 1$ & $1, \leq m$ \\
         \bottomrule
     \end{tabular}
 }
-    \caption{Requirements for the domain, Hamming weight, and norm of a vector $\vec{b}$ in order for it to be a valid submission in various voting/auction schemes. %and the proof system used to enforce them.
-    $\pi(S)$ denotes the set of permutations of $S$. The norm is an $\ell_1$ norm unless otherwise specified. $m$ is the number of candidates and $w$ is the maximum weight which can be assigned to any one candidate. %The \enf{green column} indicates the predicate enforced by the proof.
+    \caption{Requirements for the domain, Hamming weight, and norm of a vector $\vec{b}$ for it to be a valid submission in various voting/auction schemes.
+    $\pi(S)$ denotes the set of permutations of $S$. The norm is an $\ell_1$ norm unless otherwise specified. $m$ is the number of candidates, and $w$ is the maximum weight that can be assigned to any candidate.
     }
     \label{tab:voting_schemes}
 \end{table*}
-%%------------------- END Ballot domain TABLE ----------------------

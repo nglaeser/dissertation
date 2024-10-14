@@ -1,37 +1,33 @@
-%-----------------------------BEGIN Approaches Table---------------------------
 \begin{table*}[tb]
-    \footnotesize
-    \centering
-    \makebox[\linewidth]{
-     \setlength{\tabcolsep}{3pt}
-     \setlength{\belowbottomsep}{6pt}
-    %  \newcolumntype{R}{>{\begin{turn}{90}\begin{minipage}}r%
-    % <{\end{minipage}\end{turn}}%
-    % }
-    %  \newcolumntype{v}{>{\rotatebox{270}}r<{}}}
-     \begin{tabular}{lccccc} 
-     \toprule
-      \textbf{Approach} & NI        & No TTPs   &Efficient & Tally privacy & Ev. ballot privacy \\
-    \midrule 
-    Commit-reveal~\cite{AUSC:FujOkaOht93,WTSC:GalYou18}              & \no                 & \yes   &\yes    &\yes & \no     \\ %\color{green}{One-way functions} \\
-    Zero-knowledge proofs~\cite{maci}              & \no                 & \no   &\yes    &\yes & \yes     \\ %\color{green}{One-way functions} \\
-    Fully homomorphic TLPs~\cite{C:MalThy19}  & \yes                 & \yes   &\no    &\yes & \no     \\ %\color{red}{Indistinguishability Obfuscation} \\
-    FHE~\cite{STOC:Gentry09,PQCRYPTO:CGGI16,CCS:DLNS17}                              & \yes                 & \no   &\no    &\yes & \yes     \\ %\color{green}{Bounded Distance Decoding Problem} \\
-    %Functional encryption~\cite{boneh2011functional}&\color{green}{$1$}&\cmark&\cmark&\xmark& \\
-    Multi-party computation~\cite{FC:BDJNPT06,C:AOZZ15}                        & \no                 & \halfcirc &\yes    &\yes & \yes     \\ %\color{red}{Trusted third parties}& \\
-    TLPs + homomorphic encryption~\cite{ESORICS:CJSS21}                    & \yes                 & \halfcirc   &\yes    &\yes & \no     \\\midrule
-    HTLPs (our approach)                                    & \yes                 & \yes$^{*}$   &\yes     & \yes & \halfcirc \\ %\color{yellow}{Sequentiality of repeated squaring}~\cite{rotem2020generically}\\[1ex]
-     \bottomrule
-     $^{*}$ when using class groups &&&&&
-    \end{tabular}
-    }
-    \caption{Qualitative comparison of major cryptographic approaches for designing private auction/voting schemes. 
-    % (H)TLP stands for (homomorphic) time-lock puzzle. 
-    %Our approach can support everlasting privacy while remaining non-interactive and efficient. 
-    % No TTPs refer to the absence of trusted third parties. 
-    % An asterisk indicates that those schemes can be instantiated with a transparent setup using class groups, cf.~\Cref{sec:feasability}.}
-    NI = non-interactive, Ev. = everlasting. \cite{C:AOZZ15,ESORICS:CJSS21} require a trusted setup but no TTP. Everlasting ballot privacy can be added to our approach via an extension (\Cref{sec:cicada_extensions}).
-    }
-    \label{tab:approaches}
-    \end{table*}
-    %------------------------------END Approaches Table---------------------------
+  \centering
+  \makebox[\linewidth]{
+    \setlength{\tabcolsep}{3pt}
+    \setlength{\belowbottomsep}{6pt}
+    \begin{tabular}{lccccc} 
+    \toprule
+    \multirow{2}*{\textbf{Approach}} & \multirow{2}*{No TTPs} & Non-interactive & Everlasting & \multirow{2}*{Practical} \\
+      & & voting & privacy & \\
+  \midrule 
+  MPC~\cite{FC:BDJNPT06,C:AOZZ15}
+  & \no & \yes & \yes & \yes \\ 
+  ZK proofs~\cite{USENIX:Adida08,maci,plume,rln}
+  & \no & \yes & \yes & \yes \\ 
+  FHE~\cite{PQCRYPTO:CGGI16,CCS:DLNS17} 
+  & \no & \yes & \yes & \no \\
+  HE+ZK proofs~\cite{CCS:DLNS17}
+  & \no & \yes & \yes & \halfcirc \\ 
+  Commit-reveal~\cite{AUSC:FujOkaOht93,WTSC:GalYou18}
+  & \yes & \no & \no & \yes \\
+  TLPs+HE~\cite{ESORICS:CJSS21} (\Cref{sec:seq_mpc_tlp})
+  & \halfcirc & \yes & \no & \yes \\\midrule
+  Cicada (this work) 
+  & \yes$^*$ & \yes & \halfcirc & \yes \\ 
+    \bottomrule
+  \end{tabular}
+  }
+  \caption{Major approaches for tally-private auction/voting schemes. MPC stands for secure multi-party computation. \cite{CCS:DLNS17} aims to be practical but uses lattice-based cryptography, which is not feasible on-chain today. \cite{C:AOZZ15,ESORICS:CJSS21} require a trusted setup but no TTP. 
+  The asterisk indicates that our scheme does not inherently require any TTPs (in particular, if the class group HTLP construction (\Cref{sec:htlp-choice}) is used, Cicada has a transparent setup). Everlasting privacy can be added via an extension (\Cref{sec:everlasting_ballot_privacy}).
+  }
+  \label{tab:approaches}
+  \end{table*}
+  %------------------------------END Approaches Table---------------------------
