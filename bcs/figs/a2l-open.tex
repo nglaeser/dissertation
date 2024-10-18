@@ -1,0 +1,13 @@
+\begin{figure}[tb]
+    \centering
+    \begin{pchstack}[boxed]
+         \procedure[mode=text]{{$\Open(\tau, s')$}}{
+     $\mathbf{Parse}\ \tau := (r, \cdot, \presig, \cdot,\cdot)$\\
+     $s := s' - r $\\
+     $\sigma \gets \Pi_\ADP.\adapt(\presig, s)$\\ 
+     $\pcreturn \sigma$
+    }
+    \end{pchstack}
+    \caption{Open algorithm of \aal}
+    \label{fig:a2l_openverif}
+    \end{figure}

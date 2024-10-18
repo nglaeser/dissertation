@@ -1,0 +1,77 @@
+\section{Blind Conditional Signatures}\label{sec:bcs-defs}
+
+Next, we formally define and instantiate blind conditional signatures, the central cryptographic notion for coin mixing services. 
+Our goal here is to give a simple and easy-to-understand formalization of a \syncpuzzle. 
+
+% \subsection{Definitions}
+A blind conditional signature (BCS) is executed among users Alice, Bob, and Hub. The interfaces and associated security properties are defined below.
+% \todo{Notation note: \aal paper uses $m'$ for the promise and $m$ for the solver, which is the opposite of what we do here. Personally I think something like $m_\hb$ and $m_\ah$ (or $m^\hb,m^\ah$) is clearer.}
+
+\begin{definition}[Blind Conditional Signature]
+A blind conditional signature $\Pi_\mathsf{BCS} :=(\Setup, \Promise, \Pay, \open)$ is defined with respect to a signature scheme $\Pi_\DS := (\kgen, \sign, \vrfy)$ and consists of the following efficient algorithms.
+
+\begin{itemize}
+    \item {$(\tilde{\ek}, \tilde{\dk})\gets \Setup(\secparam)$}: The setup algorithm takes as input the security parameter $\secparam$ and outputs a key pair $(\tilde{\ek}, \tilde{\dk})$.
+    \item {$(\bot, \{\tau, \bot\}) \gets \Promise \left\langle \begin{matrix} H \left(\tilde{\dk}, \sk^H, m_\hb \right)\\ \bob \left(\tilde{\ek}, \vk^H, m_\hb \right) \end{matrix} \right\rangle $}: The puzzle promise algorithm is an interactive protocol between two users $H$ (with inputs the decryption key $\tilde \dk$, the signing key $\sk^H$, and a message $m_\hb$) and $\bob$ (with inputs the encryption key $\tilde \ek$, the verification key $\vk^H$, and a message $m_\hb$)  and returns $\bot$ to $H$ and either a puzzle $\tau$ or $\bot$ to $B$.
+    \item {$(\{(\sigma^*, s), \bot\}, \{\sigma^*, \bot\}) \gets \Pay \left\langle \begin{matrix} \alice \left(\sk^A, \tilde{\ek}, m_\ah, \tau\right)\\ H \left(\tilde{\dk}, \vk^A, m_\ah\right) \end{matrix} \right\rangle $}: The puzzle solving algorithm is an interactive protocol between two users $\alice$ (with inputs the signing key $\sk^A$, the encryption key $\tilde \ek$, a message $m_\ah$, and a puzzle $\tau$) and $H$ (with inputs the decryption key $\tilde \dk$, the verification key $\pk^A$, and a message $m_\ah$) and returns to both users either a signature $\sigma^*$ ($\alice$ additionally receives a secret $s$) or $\bot$.
+    \item {$\{\sigma, \bot\}\gets \open(\tau, s)$}: The open algorithm takes as input a puzzle $\tau$ and a secret $s$ and returns a signature $\sigma$ or $\bot$.
+\end{itemize}
+\end{definition}
+
+Next, we define correctness.
+
+\begin{definition}[Correctness]
+A blind conditional signature $\Pi_\mathsf{BCS}$ is correct if for all $\secpar\in \mathbb{N}$, all $(\tilde{\ek}, \tilde{\dk})$ in the support of $\Setup(\secparam)$, all $(\vk^H, \sk^H)$ and $(\vk^A, \sk^A)$ in the support of $\Pi_\DS.\kgen(\secparam)$, and all pairs of messages $(m_\hb, m_\ah)$, it holds that
+$$
+\Pr\left[\vrfy(\vk^H,m_\hb, \open(\tau, s)) = 1\right] = 1
+$$
+and
+$$
+\Pr\left[\vrfy(\vk^A,m_\ah, \sigma^*) = 1\right] = 1
+$$
+where 
+\begin{itemize}
+    \item $\tau \gets \Promise \left\langle \begin{matrix} H \left(\tilde{\dk}, \sk^H, m_\hb \right)\\ \bob \left(\tilde{\ek}, \vk^H, m_\hb\right) \end{matrix} \right\rangle$ and
+    \item $((\sigma^*, s), \sigma^*) \gets \Pay \left\langle \begin{matrix} \alice \left(\sk^A,  \tilde{\ek}, m_\ah, \tau\right)\\ H \left(\tilde{\dk}, \vk^A, m_\ah\right) \end{matrix} \right\rangle$.
+\end{itemize}
+\end{definition}
+
+We now present the security guarantees of BCS in the game-based setting.
+Our definition of blindness is akin to the strong blindness notion of standard blind signatures~\cite{C:Chaum82}, in which the adversary picks the keys (as opposed to the weak version in which they are chosen by the experiment)\footnote{We opt for this stronger version since we want to provide anonymity even in the case of a fully malicious hub, which can pick its keys adversarially to try to link a sender/receiver pair.}. Roughly speaking, it says that two promise/solve sessions cannot be linked together by the hub.\footnote{We do not consider the case in which Hub colludes with either Alice or Bob, since deanonymization is trivial (Alice (resp. Bob) simply reveals the identity of Bob (resp. Alice) to Hub); this is in line with \cite{SP:TaiMorMaf21}.}
+
+\begin{definition}[Blindness]
+A blind conditional signature $\Pi_\mathsf{BCS}$ is blind if there exists a negligible function $\negl$ such that for all $\secpar \in \NN$ and all PPT adversaries $\adv$, the following holds:
+\[ \prob{\expUnlink^{\adv}_{\Pi_{\mathsf{puzzle}}}(\secpar) = 1} \le \frac{1}{2} + \negl\]
+where $\expUnlink$ is defined in~\Cref{fig:exp_unlinkability}.\footnote{In previous works, descriptions of unlinkability assume an explicit step for blinding the puzzle $\tau$ between $\Promise$ and $\Pay$. Here, we assume that $\Pay$ performs this blinding functionality.}
+\end{definition}
+
+\input{bcs/games/bcs-unlink}
+
+Next, we define unlockability, which says that it should be hard for Hub to create a valid signature on Alice's message that does not allow Bob to unlock the full signature in the corresponding promise session.
+
+\begin{definition}[Unlockability]
+A blind conditional signature $\Pi_\mathsf{BCS}$ is unlockable if there exists a negligible function $\negl$ such that for all $\secpar \in \NN$ and all PPT adversaries $\adv$, the following holds:
+\[ \prob{\expUnlock^{\adv}_{\Pi_{\mathsf{BCS}}}(\secpar) = 1} \le \negl\]
+where $\expUnlock$ is defined in~\Cref{fig:exp_unlockability}.
+\end{definition}
+
+\input{bcs/games/bcs-unlock}
+
+Our definition of unforgeability is inspired by the unforgeability of blind signatures~\cite{C:Chaum82}. We require that Alice and Bob cannot recover $q$ signatures from Hub while successfully querying the solving oracle at most $q-1$ times. Since each successful query reveals a signature from Alice's key (which in turn corresponds to a transaction from Alice to Hub), this requirement implicitly captures the fact that Alice and Bob cannot steal coins from Hub. The winning condition $b_0$ captures the scenario where the adversary forges a signature of the hub on a message previously not used in any promise oracle query.
+The remaining conditions $b_1, b_2$ and $b_3$ together capture the scenario in which the adversary outputs $q$ valid distinct key-message-signature tuples while having queried for solve only $q-1$ times. Hence, in the second condition, the attacker manages to \emph{complete} $q$ promise interactions with only $q-1$ solve interactions, whereas in the first winning condition, the adversary computes a \emph{fresh} signature that is not the completion of any promise interaction. These conditions are technically incomparable: an attacker that succeeds under one condition does not imply an attacker succeeding on the other.
+It is important to note that this is different from the unforgeability notion of blind signatures (where the attacker only has access to a single signing oracle), since in our case the hub is offering the attacker two oracles: promise and solve.
+
+\begin{definition}[Unforgeability]
+A blind conditional signature $\Pi_\mathsf{BCS}$ is \emph{unforgeable} if there exists a negligible function $\negl$ such that for all $\secpar \in \NN$ and all PPT adversaries $\adv$, the following holds:
+\begin{equation*}
+     \prob{\expSec^{\adv}_{\Pi_{\mathsf{BCS}}}(\secpar) = 1} \le \negl
+\end{equation*}
+where $\expSec$ is defined in~\Cref{fig:exp_security_ab}.
+\end{definition}
+
+\input{bcs/games/bcs-unforge}
+
+We define security as the collection of all properties.
+\begin{definition}[Security]
+A blind conditional signature $\Pi_\mathsf{BCS}$ is secure if it is blind, unlockable, and unforgeable.
+\end{definition}

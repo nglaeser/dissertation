@@ -1,0 +1,38 @@
+\begin{figure}[ht]
+    \centering
+
+    \begin{pchstack}[boxed]
+        \procedure[space=keep]{$\AExtractability_{\adv, \Pi_\ADP}(\secpar)$}{
+                \queryM := \emptyset\\
+                (\sk,\vk) \gets \kgen(\secparam)\\
+                (m,Y) \gets \adv^{\oracle^\sign(\cdot), \oracle^\presign(\cdot,\cdot)}(\vk) \\
+                \presig \gets \presign(\sk,m,Y)\\
+                \sigma \gets \adv^{\oracle^\sign(\cdot), \oracle^\presign(\cdot,\cdot)}(\presig)\\
+                y' := \ext( \sigma, \presig, Y)\\
+                \pcreturn (m \not \in \queryM \land (Y,y')\not \in R \\
+                \land \vrfy(\vk, m, \sigma))
+        }
+        
+        \pchspace
+        
+        \begin{pcvstack}
+            \begin{subprocedure}
+                \procedure[space=keep]{$\oracle^\sign(m)$}{
+                        \sigma \gets \sign(\sk, m)\\
+                        \queryM := \queryM \cup \{m\}\\
+                        \pcreturn \sigma 	
+                }
+            \end{subprocedure}
+        
+            \pcvspace[5pt]
+            \begin{subprocedure}
+                \procedure[space=keep]{$\oracle^\presign(m, Y)$}{
+                        \presig \gets \presign(\sk, m, Y)\\
+                        \queryM := \queryM \cup \{m\}\\
+                        \pcreturn \presig 	
+                }
+            \end{subprocedure}
+        \end{pcvstack}
+    \end{pchstack}
+\caption{Witness extractability experiment for adaptor signatures\label{fig:as-witness-ext}}
+\end{figure}

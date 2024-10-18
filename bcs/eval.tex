@@ -1,0 +1,57 @@
+\section{Performance Evaluation}\label{sec:bcs_eval}
+%We now discuss the efficiency of our constructions \aalplus and \aaluc in terms of number of cryptographic operations.
+
+\subsection{\aalplus}
+
+\begin{table}[tb]
+\centering
+\makebox[\linewidth]{
+\begin{tabular}{c c cccc cc cc c} 
+    \toprule
+    & & \multicolumn{4}{c}{Class group} & \multicolumn{2}{c}{Prime order group $\GG$} & \multicolumn{2}{c}{$\mod{q}$} & \multirow{2}{*}{\#H} \\ 
+    \cmidrule(r{5pt}){3-6} \cmidrule(r{5pt}){7-8} \cmidrule{9-10} %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    & & Exp & Op & Inv & DLog & Exp & Op & $\times$ & $+$ & 
+    \\\midrule %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \textbf{\aal}        & Schnorr & 18 & 12 & 1 & 1 & 13 & 8 &  4 &  9 &  6
+    \\
+    (insecure)      & ECDSA & 18 & 12 & 1 & 1 & 27 & 8 & 17 & 10 & 11
+    \\
+    \midrule
+    \textbf{\aalplus}    & Schnorr & 28 & 20 & 2 & 2 & 14 &  9 &  5 &  9 &  6
+    \\ 
+                    & ECDSA   & 28 & 20 & 2 & 2 & 32 & 10 & 21 & 12 & 11
+    \\
+    \bottomrule
+\end{tabular}
+}
+\label{tab:op-counts}
+\caption{Operations in \aal and \aalplus when instantiated with Schnorr or ECDSA adaptor signatures \cite{AC:AEEFHM21}. We give the number group exponentiations (Exp) and group operations (Op) in both class groups and groups $\GG$ of prime order $p$, where $\log{p} = n$. Group element inversions (Inv) only occur in class groups. 
+Decryption of a class group ciphertext also involves solving a discrete logarithm in a class group (DLog).
+We denote by \#H the number of hash computations. 
+} 
+\end{table}
+
+Recall that we use an encryption scheme $\Pi_\ENC$ in the LOE model. Below we present an instantiation of such a $\Pi_\ENC$.
+
+\paragraph{Instantiating Linear-Only Encryption} 
+As shown in~\cite{TCC:BCIOP13} it is not sufficient to instantiate this with any linearly homomorphic encryption (e.g., ElGamal). Though the scheme may not support homomorphic operations beyond linear, it may still have \emph{obliviously sampleable ciphertexts}, i.e., the ability to sample a ciphertext without knowing the underlying plaintext. Note that this falls outside the LOE model, since there is no oracle that implements this functionality. Thus, as suggested in~\cite{TCC:BCIOP13} we implement an additional safeguard needed to prevent oblivious sampling. Given a linearly homomorphic encryption scheme $\Pi_\ENC^* := (\kgen^*,\enc^*,\dec^*)$ over $\ZZ_p$, we define a candidate LOE $\Pi_\ENC := (\kgen,\enc,\dec)$ as follows:
+
+\begin{itemize}
+    \item $\kgen(\secparam)$: Sample $(\ek^*, \dk^*) \gets \kgen^*(\secparam)$ and some $\alpha \sample\ZZ_p$. Return $\dk:=(\dk^*, \alpha)$ as the decryption key and $\ek:=(\ek^*, \enc^*(\ek^*, \alpha))$ as the encryption key.
+    \item $\enc(\ek^*,x)$: Compute $c$ as $(\enc^*(\ek^*, x), \enc^*(\ek^*, \alpha \cdot x))$, where $\enc^*(\ek^*,\allowbreak \alpha \cdot x)$ is computed homomorphically using $\ek$.
+    \item $\dec(\dk^*,c)$: Parse $c$ as $(c_0, c_1)$ and compute $x_0 \gets \dec^*(\dk^*, c_0)$ and $x_1 \gets \dec^*(\dk^*, c_1)$. If $x_1 = \alpha \cdot x_0$ return $x_0$, else return $\bot$.
+\end{itemize}
+
+We note that the security of $\Pi_\ENC$ follows from the security of $\Pi_\ENC^*$. 
+Intuitively, we prevent oblivious ciphertext sampling, since it is infeasible for an adversary to sample a ciphertext component $c_0$ that is consistent with $c_1$ without knowing the  plaintext of $c_0$.
+
+\paragraph{Added Costs} 
+The new consistency check by the hub in $\Pay$ adds 1 group operation and group exponentiation (Schnorr) or 5 group operations and 2 group exponentiations (ECDSA). The check on Alice's verification key $\vk_\ah^A$ adds 3 modular multiplications and 2 modular additions in the ECDSA case. Furthermore, applying the LOE transformation described above to the CL encryption scheme results in a doubled ciphertext size and a corresponding increase in the operation count for decryption. % (the second ciphertext can be safely ignored everywhere else)
+We summarize the costs of \aal and \aalplus in~\Cref{tab:op-counts}.
+
+\subsection{\aaluc}
+
+Compared to \aalplus, our \aaluc protocol removes the check on $\vk_\ah^A$, adds a signature verification, and moves the re-randomization and decryption into the 2PC. Additionally, $\Pi_\ENC$ is now required to be CCA-secure and the NIZK used must be UC-secure. The cost of the first two changes is minimal (net 1 group exponentiation, 1 group operation, and 1 hash computation); the most significant overhead is the result of the 2PC computation and the NIZK.
+
+Assuming the CCA-secure $\Pi_\ENC$ in the 2PC is instantiated with the (prime-order-based) Cramer-Shoup cryptosystem~\cite{C:CraSho98} with SHA3-256~\cite{sha3} as the hash function, this incurs an overhead of 11 exponentiations, 9 multiplications,
+and 1 division in a group of prime order $p$ and $\ceil{\frac{3\secpar}{1088}}\cdot38400$ binary ({\sf AND}) operations, where the security parameter $\secpar$ equals $\log p$. Because the 2PC requires a mix of arithmetic and binary operations, a mixed-circuit 2PC protocol as implemented e.g. in~\cite{CCS:Keller20} could be used. Additionally, UC security of the NIZK can be achieved by replacing the use of the Fiat-Shamir transform in \aal (and \aalplus) with the Fischlin transform, incurring a cost of roughly $\bigO{\log(\secpar)}$ parallel repetitions of the base Fiat-Shamir NIZK. We stress that we view \aaluc as a proof-of-concept protocol showing the feasibility of achieving UC-secure blind conditional signatures and leave the problem of constructing an efficient UC-secure realization as an interesting direction for future work.

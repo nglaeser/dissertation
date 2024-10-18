@@ -1,0 +1,22 @@
+\section{Our Contributions}
+We summarize the contributions of this work below.
+
+\smallskip\noindent\textbf{Counterexamples.}
+First, we identify a gap in the security model of the \syncpuzzle protocol \aal~\cite{SP:TaiMorMaf21},  presenting two concrete counterexamples (\Cref{sec:cryptanalysis}). Specifically, we show that there exist underlying cryptographic building blocks that satisfy the prerequisites stated in \aal, yet they allow for:
+\begin{itemize}
+    \item a \emph{key recovery attack}, in which a user can learn the long-term secret decryption key of the hub;
+    \item a \emph{one-more signature attack}, in which a user can obtain $n$ signed transactions from the hub while only engaging in $n-1$ successful instances of signing a transaction which pays the hub. In other words, the user obtains $n$ coins from the hub while the hub receives only $n-1$ coins. 
+\end{itemize}
+Both attacks run in polynomial time and succeed with overwhelming probability.
+
+\smallskip\noindent\textbf{Definitions.} To place the \syncpuzzle on firmer foundations, we propose a new cryptographic notion that we call \emph{blind conditional signatures (BCS)}. Our new notion intuitively captures the functionality of a \emph{\syncpuzzle} from~\cite{NDSS:HABSG17,SP:TaiMorMaf21}. BCS is a simple and easy-to-understand tool, and we formalize its security notions both in the \emph{game-based} (\Cref{sec:bcs-defs}) and \emph{universal composability} (\Cref{sec:uc-bcs}) setting. The proposed game-based definitions for BCS are akin to the well-understood standard security notions for regular blind signatures~\cite{C:Chaum82,JC:SchUnr17}. We hope that this abstraction may lay the foundations for further studies on this primitive in all cryptocurrencies, scriptless or not.
+%We also consider the stronger notion of composable security for BCS as introduced in~\cite{a2l}.
+
+
+\smallskip\noindent\textbf{Constructions.} We give two constructions, one that satisfies our game-based security guarantees and one that is UC-secure. Both require only the same limited functionality as \aal from the underlying blockchain. In more detail:
+\begin{itemize}
+    \item  We give a modified version of \aal (\Cref{sec:modified-a2l,sec:a2l-analysis}) which we refer to as \aalplus that satisfies the game-based notions (\Cref{sec:bcs-defs}) of BCS, albeit in the \emph{linear-only encryption (LOE)} model~\cite{TCC:Groth04}. In this model, the attacker does not directly have access to a homomorphic encryption scheme; instead, it can perform the legal operations by querying the corresponding oracles. This is a strong model with a non-falsifiable flavor, similar to the generic/algebraic group model~\cite{EC:Shoup97,IMA:Maurer05,C:FucKilLos18}.
+    \item  We then provide a less efficient construction \aaluc that securely realizes the UC notion of BCS (\Cref{sec:uc-bcs}). This scheme significantly departs from the construction paradigm of \aal and is based on general-purpose cryptographic tools such as secure two-party computation (2PC).
+\end{itemize}
+%
+Our results hint at the fact that achieving UC-security for a \syncpuzzle requires a radical departure from current construction paradigms, and it is likely to lead to less efficient schemes. On the other hand, we view the game-based definitions (a central contribution of our work) as a reasonable middle ground between security and efficiency.

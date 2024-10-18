@@ -1,0 +1,23 @@
+\begin{figure}[tbh]
+    \centering
+    \begin{pchstack}[boxed]
+    \procedure[space=auto,codesize=\small]{$\expUnlock^{\adv}_{\Pi_{\mathsf{BCS}}}(\secpar)$}{
+    \hfill\\[-0.5\baselineskip]
+    (\tilde{\ek}, \vk^H, m_\hb, m_\ah) \gets \adv(\secparam)\\
+    (\vk^A, \sk^A) \gets \kgen(\secparam)\\
+    \tau \gets \Promise \left\langle  \adv(\vk^A), \bob(\tilde{\ek}, \vk^H, m_\hb) \right\rangle\\
+    \textbf{if } \tau = \bot\\
+    \quad (\hat{\sigma}, \hat{m}) \gets \adv\\ 
+    \quad b_0 := (\vrfy(\vk^A,\hat{\sigma}, \hat{m}) =1)\\
+    \textbf{if } \tau \neq \bot\\
+        \quad (\sigma^*,s) \gets \Pay \left\langle  \alice \left(\sk^A, \tilde{\ek}, m_\ah,\tau\right), \adv \right\rangle\\
+    \quad (\hat{\sigma}, \hat{m}) \gets \adv\\ 
+    \quad b_1 := (\vrfy(\vk^A,\hat{\sigma}, \hat{m}) =1) \land (\hat{m} \neq m_\ah)\\
+     \quad b_2 := (\vrfy(\vk^A,\sigma^*, m_\ah) =1)\\
+    \quad b_3 := (\vrfy(\vk^H, m_\hb, \open(\tau,s)) \neq1) \\
+     \mathbf{return}\ b_0 \lor b_1 \lor (b_2 \land b_3)
+    }
+\end{pchstack}
+    \caption{Unlockability experiment} 
+    \label{fig:exp_unlockability}
+\end{figure}

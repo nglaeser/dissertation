@@ -1,0 +1,273 @@
+\section{UC-Secure Blind Conditional Signatures}\label{sec:uc-bcs}
+
+We now model security in the universal composability framework (\Cref{sec:uc}) extended to support a global setup~\cite{TCC:CDPW07} in order to capture concurrent executions. 
+We consider \emph{static} corruptions, where the adversary announces at the beginning which parties it corrupts.
+
+In our protocol, we assume the existence of a general-purpose UC-secure 2-party computation (2PC) protocol~\cite{C:HorKat07,STOC:CLOS02}, where two parties interact with the ideal functionality to compute a function $f(x,y)$ over their private inputs $x$ and $y$. 
+
+\input{bcs/figs/flocks}
+
+\subsection{Ideal Functionality}
+In \Cref{fig:ideal-a2l}, we describe the ideal functionality $\flocks$ that captures the functionality and security of BCS in the UC framework.
+The ideal functionality has three routines, namely for puzzle promise, puzzle solver, and open, which intuitively capture the functionality of BCS as discussed in~\Cref{sec:bcs}. On a high level, $\flocks$ captures \emph{blindness} by sampling the puzzle identifiers $\pid$ and $\pid'$, which correspond to puzzle promise and puzzle solve interactions, locally together, but never revealing them together to the hub. $\flocks$ captures \emph{atomicity} by returning a successful message (not aborting) for $\pid$ during open if and only if it sent a successful $\mathsf{solved}$ message during the puzzle solve interaction for the puzzle identifier $\pid'$ (where $\pid$ and $\pid'$ correspond to each other). Note that the above atomicity guarantee implies the game-based definitions of unlockability and unforgeability.
+
+Our functionality $\flocks$ is taken verbatim from the $\F_{\AAL}$ functionality in \cite{SP:TaiMorMaf21} except that we do not consider user registrations (as done in $\F_{\AAL}$) to tackle \emph{griefing attacks}~\cite{griefing} in the coin mixing layer. These attacks are mounted by Bob starting many puzzle promise operations, each of which
+requires Hub to lock coins, whereas the corresponding puzzle solver interactions are never carried out. As
+a consequence, all of Hub's coins are locked and no longer
+available, which results in a form of denial of service attack. 
+We argue that the issue does not concern the functionality or security of BCS as a  cryptographic tool, but only affects the coin mixing protocol at the transaction layer.
+We emphasize that griefing attacks can be thwarted at this layer in both the formal model and the construction using the same ideas as in~\cite{SP:TaiMorMaf21}.
+
+\subsection{The \aaluc Protocol}\label{sec:our_protocol}
+
+We now describe our protocol \aaluc that realizes the ideal functionality \flocks.
+% blind conditional signatures construction $\Pi_\mathsf{BCS}$. 
+We assume the following cryptographic building blocks:
+\begin{itemize}
+    \item An adaptor signature scheme $\Pi_\ADP$ defined with respect to $\Pi_\DS$ and a hard relation $R_\mathsf{DL}$.
+    \item A UC-secure NIZK proof system $\Pi_\NIZK$ for the language $$\mathcal{L} := \{ (\ek, Y,c) : \exists s, \suchthat c \gets \Pi_\ENC.\enc(\ek, s) \land Y = g^s \}. $$ 
+    \item A UC-secure 2PC protocol.
+    \item A CCA-secure~\cite{STOC:GolMic82} encryption scheme $\Pi_\ENC := (\kgen, \enc, \dec)$ with unique decryption keys.
+\end{itemize}
+The property of unique decryption keys is formalized below.
+\begin{definition}[Unique Decryption Keys]
+An encryption scheme $\Pi_\ENC$ has unique decryption keys if the $\kgen$ algorithm is of the following form:
+\begin{itemize}
+    \item Sample $\dk \sample \{0,1\}^\secpar$.
+    \item Run $\ek \gets \kgen(\dk)$.
+\end{itemize}
+Furthermore, for all $\ek$ output by $\kgen$, there exists a unique $\dk$ such that $\ek = \kgen(\dk)$. In other words, $\kgen$ is injective.
+\end{definition}
+This property is already satisfied by most natural public-key encryption schemes, but it can be generically achieved by augmenting the encryption key with a perfectly binding commitment $\Commit(\dk)$ to the decryption key $\dk$.
+
+\paragraph{Protocol Description} We assume Alice and Hub have a key pair for the signature scheme $\Pi_\DS$. Specifically, we have the verification-signing key pairs $(\vk_\hb^H, \sk_\hb^H)$ and $(\vk_\ah^A, \sk_\ah^A)$, belonging to Hub and Alice, respectively.
+We then have two messages $m := m_\hb$ and $m' := m_\ah$ for which the users wish to generate blind conditional signatures.
+The setup and open algorithms are formally described in~\Cref{fig:our_protocol_algorithms}. The puzzle promise and puzzle solver of \aaluc are formally described in~\Cref{fig:our_protocol_hub_bob} and~\Cref{fig:our_protocol_alice_hub}, respectively.
+For ease of understanding, we briefly describe below our \aaluc protocol in terms of the differences with the \aal protocol (\Cref{fig:a2l_promise,fig:a2l_payment}).
+
+\begin{itemize}
+    \item The setup algorithm (\Cref{fig:our_protocol_algorithms}) of \aaluc generates the keys of Hub, which are the keys for the (CCA-secure) encryption scheme $\Pi_\ENC$. 
+    \item In $\Promise$ of \aaluc (\Cref{fig:our_protocol_hub_bob}),
+    \begin{itemize}
+        \item The NIZK proof system  is UC-secure.
+        \item Bob no longer re-randomizes the instance or the ciphertext. Therefore, we drop the re-randomization steps 
+        (line 9 and 10) of $\Promise$ in \aal (\Cref{fig:a2l_promise}).
+        Simply set the puzzle to $\tau := (m_\hb, \presig_\hb^H, (Y,c))$.
+    \end{itemize}
+    \item In $\Pay$ of \aaluc (\Cref{fig:our_protocol_alice_hub}),
+    \begin{itemize}
+        \item Alice no longer sends the ciphertext to Hub 
+        (line 5 of~\Cref{fig:a2l_payment}). 
+        We therefore remove the local decryption step 
+        (line 6 of~\Cref{fig:a2l_payment}), 
+        and replace it with a 2PC protocol (line 6 of \Cref{fig:our_protocol_alice_hub}).
+        \item  At the end of the 2PC protocol, Alice receives $\bot$, while Hub receives the value $z$. Hub additionally  checks if $Y' = g^z$ (line 7) and uses $z$ to adapt the pre-signature $\presig_\ah^A$ to signature $\sigma_\ah^A$.
+        \item We add a check for Alice (line 10) that $\sigma_\ah^A$ is a valid signature before extracting the witness $z'$ in line 12. 
+    \end{itemize}
+    \item The $\open$ algorithm (\Cref{fig:our_protocol_algorithms}) is the same as in~\Cref{fig:a2l_openverif}
+    of \aal, except we skip removing the randomness factor. The algorithm in~\Cref{fig:our_protocol_algorithms} now simply adapts a pre-signature $\presig$ to a valid signature $\sigma$ which it returns as output.
+\end{itemize}
+
+\input{bcs/figs/a2luc-other}
+\input{bcs/figs/a2luc-promise}
+\input{bcs/figs/a2luc-solve}
+
+\subsection{Security Analysis}
+
+We now show that \aaluc satisfies UC-security. 
+In favor of a simpler analysis, we assume that the verification keys of all parties are honestly generated. In practice, this can be enforced by augmenting keys with NIZKs that certify their validity~\cite{PKC:Boldyreva03,EC:LOSSW06}.
+
+\begin{theorem}\label{thm:a2luc}
+Let $\Pi_\ENC$ be a CCA-secure encryption scheme, $\Pi_\ADP$ a secure adaptor signature scheme, $\twoPC$ a UC-secure two-party computation protocol, and $\Pi_\NIZK$ a UC-secure NIZK for the language $\LL$ above. Then the \aaluc protocol UC-realizes $\flocks$.
+\end{theorem}
+\begin{proof}
+We proceed by describing the UC simulator and arguing about indistinguishability from the real execution of the protocol. We consider the cases where the adversary corrupts a different subset of parties separately. We describe the simulator for a single session and the security of the overall interaction is established via a standard hybrid argument.
+
+\paragraph{H Corrupted}
+We first give a simulator $\Sim_H$, then give a series of hybrid experiments that gradually change the real experiment (i.e., the construction in ~\Cref{fig:our_protocol_hub_bob,fig:our_protocol_alice_hub}) into the ideal experiment given by the interaction of the corrupted $H$ and the simulator $\Sim_H$, which has access to $\flocks$.
+
+\smallskip
+\noindent\underline{Simulator $\Sim_H$:} Upon receiving $(\mathsf{promise}\mathsf{-req}, B)$ from $\flocks$, $\Sim_H$ proceeds as follows:
+\begin{enumerate}
+    \item Ask the attacker to initiate a session and receive in return $(Y, c, \pi_s, \presig_\hb^H)$. If $\Pi_\ADP.\prevrfy(\vk_\hb^H, m_\hb, Y, \presig_\hb^H) = 1$ and $\NIZK.\mathsf{V}((\ek_H, Y,c), \pi_s) = 1$, proceed as in the protocol and send $(\mathsf{promise}\mathsf{-res}, \top)$ to $\flocks$. Otherwise, abort and send $(\mathsf{promise}\mathsf{-res}, \bot)$.
+    \item Receive $(\mathsf{promise}, \pid)$ from $\flocks$.
+    \item Upon receiving $(\mathsf{solve}\mathsf{-req}, A, \pid')$ from $\flocks$ at some later point, sample $y' \sample \ZZ_q$ and generate keys $(\vk_\ah^A, \sk_\ah^A) \gets \Pi_\ADP.\kgen(\secparam)$. Compute $Y' \gets g^{y'}$, $\presig_\ah^A \gets \Pi_\ADP.\presign(\sk_\ah^A, m_\ah, Y')$ and send them to the attacker.
+    \item When the attacker initiates the 2PC, run the 2PC simulator to recover its input $\dk_H$. If $\ek_H \neq \Pi_\ENC.\kgen(\dk_H)$, program the output of the 2PC to $\bot$, otherwise to $y'$.
+    \item Receive $\sigma_\ah^A$ in response from the attacker and check if $\Pi_\ADP.\vrfy(\vk_\ah^A,\allowbreak m_\ah, \sigma_\ah^A) = 1$. Additionally check if $\Pi_\ADP.\ext(\presig_\ah^A, \sigma_\ah^A, Y') = y'$. If both checks pass, send $(\mathsf{solve}\mathsf{-res}, \top)$ to $\flocks$, compute $s \gets \Pi_\ENC.\dec(\dk_H,\allowbreak c)$, and output $(\sigma_\ah^A, s)$ as in the protocol; otherwise, send $(\mathsf{solve}\mathsf{-res}, \bot)$ and abort.
+    \item If, at any point before the successful completion of step 4, the attacker produces a valid signature $\sigma_\ah^A$, or at any point in the protocol (including after step 4), a valid signature on a message $m_\ah' \neq m_\ah$, send $(\mathsf{solve}\mathsf{-res}, \bot)$ to $\flocks$ and abort.
+\end{enumerate}
+
+\medskip
+
+\noindent\underline{Hybrid $\hybrid_0$:} This corresponds to the real protocol (\Cref{fig:our_protocol_hub_bob,fig:our_protocol_alice_hub}).
+
+\smallskip
+\noindent\underline{Hybrid $\hybrid_1$:} Simulate the 2PC (Fig.~\ref{fig:our_protocol_alice_hub}, line 6) and send the output $z$ to $H$.
+
+\smallskip
+\noindent\underline{Hybrid $\hybrid_2$:} Replace $Y'$ with $Y'' := g^{y'}$ where $y' \sample \ZZ_q$ (Fig.~\ref{fig:our_protocol_alice_hub}, line 2). If $\Pi_\ENC.\kgen(\dk_H)=\ek_H$, send $y'$ to $H$ instead of $z$; otherwise, send $\bot$.
+
+\smallskip
+\noindent\underline{Hybrid $\hybrid_3$:} Abort if $z' \neq y'$ (after line 12 of Fig.~\ref{fig:our_protocol_alice_hub}).
+
+\smallskip
+\noindent{\underline{Hybrid $\hybrid_4$:} Abort if any valid signature $\sigma_\ah^A$ is received on a different message $m_\ah' \neq m_\ah$ or on any message before the 2PC has successfully completed.}
+
+\begin{claim}
+For all PPT distinguishers $\env$,
+\[
+    \exec_{\hybrid_0,\adv,\env} \approx \exec_{\hybrid_1,\adv,\env}
+\]
+\end{claim}
+\begin{proof}
+This follows directly from the security of the 2PC protocol.
+\end{proof}
+
+\begin{claim}
+For all PPT distinguishers $\env$,
+\[
+    \exec_{\hybrid_1,\adv,\env} \approx \exec_{\hybrid_2,\adv,\env}
+\]
+\end{claim}
+\begin{proof}
+By the uniqueness of the decryption key and correctness of $\Pi_\ENC$, $\ek_H = \Pi_\ENC.\kgen(\dk_H)$ implies $\Pi_\ENC.\dec(\dk_H,\Pi_\enc.\enc(\ek_H, m)) = m$ for all $m$ in the message space. Thus, the output of the 2PC $z$ is necessarily $s+r$, where $s \in \ZZ_q$ such that $c = \Pi_\ENC.\enc(\ek_H,s) ~\wedge~ Y=g^s$ (this is guaranteed by the NIZK). 
+Since $r$ is uniformly random, $y'$ is identically distributed to $z=s+r$. The same holds for $Y''$ and $Y' = Y \cdot g^r$. Furthermore, it still holds that $y'$ is the discrete logarithm of $Y''$ (cf. $z$ and $Y'$).
+\end{proof}
+
+\begin{claim}
+For all PPT distinguishers $\env$,
+\[
+    \exec_{\hybrid_2,\adv,\env} \approx \exec_{\hybrid_3,\adv,\env}
+\]
+\end{claim}
+\begin{proof} 
+If $z' \neq y'$, by the uniqueness of dlog witnesses $g^{z'} \neq Y''$. By the witness extractability of $\Pi_\ADP$, $\Pr[g^{z'} \neq Y'' ~\wedge~ \Pi_\ADP.\vrfy(\vk_\ah^A,m_\ah, \sigma_\ah^A)=1]$ is negligible, so the abort only happens with negligible probability.
+\end{proof}
+
+\begin{claim}
+For all PPT distinguishers $\env$,
+\[
+    \exec_{\hybrid_3,\adv,\env} \approx \exec_{\hybrid_4,\adv,\env}
+\]
+\end{claim}
+\begin{proof}
+    {Any distinguishing advantage implies a case in which $\adv$ outputs some valid signature $\sigma_\ah^A$ for some message $m_\ah'$ for which it has potentially been given a presignature $\tilde\sigma_\ah^A$ and corresponding statement $Y$. This signature is a winning instance in the unforgeability experiment for $\Pi_\ADP$, but by assumption this only occurs with negligible probability, and so the distinguishing advantage must be negligible. Therefore the experiments are statistically close.}
+\end{proof}
+
+\begin{claim}
+For all PPT distinguishers $\env$,
+\[
+    \exec_{\hybrid_4,\adv,\env} \equiv \exec_{\flocks,\Sim,\env}
+\]
+\end{claim}
+\begin{proof}
+    $\hybrid_4$ is identical to the ideal world.
+\end{proof}
+
+\paragraph{A,B Corrupted} Again, we give a simulator $\Sim_{AB}$ that interacts with $\flocks$ and show by a series of hybrids that our protocol is indistinguishable from ideal experiment in which the corrupted parties interact with the simulator $\Sim_{AB}$.
+
+\smallskip
+\noindent\underline{Simulator $\Sim_{AB}$:} When a recipient Bob indicates he would like to initiate a transaction, $\Sim_{AB}$ proceeds as follows:
+\begin{enumerate}
+    \item Send $(\Promise, A)$ to $\flocks$.
+    \item Upon receiving $(\mathsf{promise}, (\pid,\pid'))$ from $\flocks$, sample a uniform value $s \sample \ZZ_q$ and compute $Y \gets g^s$. Generate keys $(\ek_H,\dk_H) \gets \Pi_\ENC.\kgen(\secparam)$ and $(\vk_\hb^H, \sk_\hb^H) \gets \Pi_\ADP.\kgen(\secparam)$; let $c \gets \Pi_\ENC.\enc(\ek_H, 0)$ and $\presig_\hb^H \gets \Pi_\ADP.\presign(\sk_\hb^H, m_\hb, Y)$. Simulate the NIZK $\pi_s \gets \NIZK.\mathsf{Sim}(\td,\allowbreak (\ek_H, Y,c))$. Finally, pre-compute $\sigma_\hb^H \gets \Pi_\ADP.\adapt(\presig_\hb^H, s)$ and save $((\pid,\pid'),(Y,c,s,\sigma_\hb^H),\perp)$ into a table $\PP$. Send $(Y,c,\pi_s,\presig_\hb^H)$ to the attacker (who is impersonating Bob).
+    \item At a later point in time, the attacker sends $(Y', \presig_\ah^A)$ on behalf of Alice. If $\Pi_\ADP.\prevrfy(\vk_\ah^A, m_\ah, Y', \presig_\ah^A) \neq 1$, abort.
+    \item When the attacker initiates the 2PC, run the 2PC simulator to recover its inputs $(c^*, r^*)$; compute the result ($\perp$) and return it to the attacker.
+    \item Depending on whether or not $c^* \in \PP$ do the following:
+    \begin{enumerate}
+        \item If $c^*\in\PP$, retrieve the corresponding $Y$, $s$, and $\pid'$. Check that $Y' = Y \cdot g^{r^*}$ (if not, abort); send $\Pi_\ADP.\adapt(\presig_\ah^A, s+r^*)$ to the attacker masquerading as Alice and $(\Pay, B, \pid')$ to $\flocks$. Update the last element of the entry in $\PP$ to $\top$.
+        \item If $c^* \notin \PP$, compute $z' \gets \Pi_\ENC.\dec(\dk_H, c^*) + r^*$. Check that $Y' = g^{z'}$ (if not, abort) and send $\Pi_\ADP.\adapt(\presig_\ah^A, z')$ to the attacker. Send nothing to $\flocks$. (Note that this corresponds to the case where some party Alice is paying Hub without Bob initiating the interaction, which is something that she can do at any time.)
+    \end{enumerate}
+    \item When the attacker outputs some valid signature $\sigma_\hb^H$, check that the following conditions hold: $\Pi_\ADP.\vrfy(\vk_\hb^H, m_\hb, \sigma_\hb^H)=1$ and $((\pid,\cdot),\allowbreak(\cdot, \cdot, \cdot, \sigma_\hb^H),\top) \in \PP$. If so, send $(\Open, \pid)$ to $\flocks$; otherwise, abort.
+\end{enumerate}
+
+\medskip
+
+%\todo{May be we describe the hybrids a bit more? A few sentences? I am afraid if a UC reviewer complains.}
+
+\smallskip
+\noindent\underline{Hybrid $\hybrid_0$:} This corresponds to the real protocol (\Cref{fig:our_protocol_hub_bob,fig:our_protocol_alice_hub}).
+
+\smallskip
+\noindent\underline{Hybrid $\hybrid_1$:} Replace the honestly-computed NIZK $\pi_s$ (\Cref{fig:our_protocol_hub_bob}, line 4) with a simulated proof.
+
+\smallskip
+\noindent\underline{Hybrid $\hybrid_2$:} Simulate the 2PC (\Cref{fig:our_protocol_alice_hub}, line 6).
+
+\smallskip
+\noindent\underline{Hybrid $\hybrid_3$:} Add the list $\PP$ and step 5 of the simulator (in particular, case 5a) to \Cref{fig:our_protocol_alice_hub}, line 7-10.
+
+\smallskip
+\noindent\underline{Hybrid $\hybrid_4$:} Replace $c$ (\Cref{fig:our_protocol_hub_bob}, line 2) with an encryption of zero.
+
+\smallskip
+\noindent\underline{Hybrid $\hybrid_5$:} When Bob outputs a valid signature, abort if $(\cdot,(\cdot,\cdot,\cdot,\sigma_\hb^H),b) \in \PP$ and $b \neq \top$.
+
+\begin{claim}
+For all PPT distinguishers $\env$,
+\[
+    \exec_{\hybrid_0,\adv,\env} \approx \exec_{\hybrid_1,\adv,\env}
+\]
+\end{claim}
+\begin{proof}
+This follows directly from the zero-knowledge property  of the NIZK.
+\end{proof}
+
+\begin{claim}
+For all PPT distinguishers $\env$,
+\[
+    \exec_{\hybrid_1,\adv,\env} \approx \exec_{\hybrid_2,\adv,\env}
+\]
+\end{claim}
+\begin{proof}
+This follows directly from the UC-security of the 2PC protocol.
+\end{proof}
+
+\begin{claim}
+For all PPT distinguishers $\env$,
+\[
+    \exec_{\hybrid_2,\adv,\env} \equiv \exec_{\hybrid_3,\adv,\env}
+\]
+\end{claim}
+\begin{proof}
+By definition, for $c^* \in \PP$, the corresponding $s$ and $Y$ in $\PP$ are $\Pi_\ENC.\dec(\dk_H,\allowbreak c^*)$ and $g^s$, respectively. Therefore $z' = s + r^*$ and the case of $c^* \in \PP$ is handled in the same way as all cases were in the previous hybrid experiment.
+\end{proof}
+
+\begin{claim}
+For all PPT distinguishers $\env$,
+\[
+    \exec_{\hybrid_3,\adv,\env} \approx \exec_{\hybrid_4,\adv,\env}
+\]
+\end{claim}
+\begin{proof}
+Suppose towards a contradiction that $\env$ can distinguish the two executions with nonnegligible probability. We give a reduction to the CCA-security game of $\Pi_\ENC$. The reduction sets $m_0 := s$ and $m_1 := 0$, sends them to the CCA game, and receives $c$. It then acts as hub in its interaction with $\env$, computing everything as in Hybrid 3, except for $c$, which it sets to the ciphertext it received from the game. When it needs to decrypt $c^*$ it uses the CCA decryption oracle. At the end of the execution, based on $\env$'s guess, it outputs a bit to the CCA game (0 if $\env$ guesses $\hybrid_3$, 1 otherwise), which will be correct with nonnegligible advantage. This violates the CCA-security of $\Pi_\ENC$, so the two executions must be indistinguishable. 
+\end{proof}
+
+\begin{claim}
+For all PPT distinguishers $\env$,
+\[
+    \exec_{\hybrid_4,\adv,\env} \approx \exec_{\hybrid_5,\adv,\env}
+\]
+\end{claim}
+\begin{proof}
+If $b \neq \top$, Alice did not receive the completed signature $\sigma_\ah^A$ for that session and thus cannot recover the secret $s$ to send to Bob. This means Bob's signature $\sigma_\hb^H$ was created without knowing the witness for the pre-signature $\presig_\hb^H$, which, by aEUF-CMA of $\Pi_\ADP$, can only happen with negligible probability. Thus the abort also only happens with negligible probability and the two experiments are indistinguishable.
+% \[
+%     \Pr[\text{abort in step 6} \wedge \Pi_\ADP.\vrfy(\pk_\hb^H,m_\hb,\sigma_\hb^H)] = 1
+% \]
+% is negligible.
+\end{proof}
+
+\begin{claim}
+For all PPT distinguishers $\env$,
+\[
+    \exec_{\hybrid_5,\adv,\env} \equiv \exec_{\flocks,\Sim,\env}
+\]
+\end{claim}
+\begin{proof}
+    $\hybrid_5$ is identical to the ideal world.
+\end{proof}
+
+\paragraph{A,H Corrupted} This case is trivial, as $B$ has no secret information and the simulator therefore simply follows the protocol.
+
+\paragraph{H,B Corrupted} The simulator in this case follows the protocol honestly. If hub publishes a valid signature $\sigma_\ah^A$ on a transaction $m$ that is not in the simulator's (acting as Alice) transcript, the simulator aborts. This means that the adversary was able to forge a signature $\sigma_\ah^A$ on some transaction $m$ for which it did not previously receive a pre-signature $\presig_\ah^A$. By EUF-CMA of the adaptor signature scheme, this case occurs with negligible probability and thus for all PPT distinguishers $\env$, the real world (an honest execution of the protocol) and the ideal world (an interaction with the simulator) are indistinguishable.
+\end{proof}

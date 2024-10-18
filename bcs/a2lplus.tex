@@ -1,0 +1,208 @@
+\section{The \aalplus Protocol}\label{sec:modified-a2l}
+
+In the following we describe our \aalplus construction. Our scheme is a provable variant of \aal (\Cref{sec:description_a2l}) and therefore we only describe the differences with respect to the original protocol. The concrete modifications are as follows:
+\begin{itemize}
+    \item Augment the public key of Hub $\ek_H$ with a NIZK proof that certifies that $\ek_H \in \mathsf{Supp}(\Pi_\ENC.\kgen(\secparam))$. All parties verify this proof during their first interaction with Hub.
+    \item In $\Pay$ (\Cref{fig:a2l_payment}), 
+    Hub additionally checks if $\vk_\ah^A$ is in the support of $\Pi_\ADP.\kgen(\secparam)$ before the decryption  (line 6). Furthermore, we replace the condition (line 8) with
+    $$\Pi_\ADP.\prevrfy(\vk_\ah^A, m_\ah, Y'', \presig_\ah^A) \neq 1 \lor \ g^{s''} \neq Y''.$$
+\end{itemize}
+
+\subsection{Security Analysis}\label{sec:a2l-analysis}
+
+Before proving our main theorem, we define a property which is going to be useful for our analysis.
+
+\begin{definition}[OM-CCA-A2L]
+    An encryption scheme $\Pi_\ENC$ is one-more CCA-A2L-secure (OM-CCA-A2L) if there exists a negligible function $\negl$ such that for all $\secpar \in \NN$, all polynomials $q = q(\secpar)$, and all PPT adversaries $\adv$, the following holds:
+    \[ 
+        \prob{\textrm{OM-CCA-A2L}_{\Pi_\ENC,q}^\adv(\secpar) = 1} \le \negl,
+    \]
+    where $\textrm{OM-CCA-A2L}$ is defined in \Cref{alg:om-cca-a2l}. 
+\end{definition}
+
+\input{bcs/games/om-cca-a2l}
+
+The following technical lemma shows that an LOE scheme satisfies this property, assuming the hardness of the OMDL problem.
+
+\begin{lemma}\label{lem:loe-omcca}
+    Let $\Pi_\ENC$ be an LOE scheme. Assuming the hardness of OMDL, $\Pi_\ENC$ is OM-CCA-A2L secure.
+\end{lemma}
+\begin{proof}
+    We give a proof by reduction. Let $\adv$ be a PPT adversary with non-negligible advantage in the OM-CCA-A2L game. We now construct an adversary $\rdv$ which uses $\adv$ to break the security of OMDL.
+    
+    $\rdv$ is given $(h_1, \ldots, h_{q+1}) = (g^{r_1}, \ldots, g^{r_{q+1}})$ by the OMDL game. It will run $\adv$ to attempt to obtain the $q+1$ discrete logarithms to win the game. Crucially, $\rdv$ must simulate $\adv$'s oracle access to $\oracle^{\AAL}_{\sk,\Pi_\ENC,\Pi_\ADP}$, which consists of at most $q$ successful queries (but unlimited $\bot$ queries), while making at most $q$ queries (of \emph{any} kind) to its oracle $\DL(\cdot)$.
+    
+    $\rdv$ proceeds as follows. First, it samples $q+1$ uniform $\lambda$-bit strings $(c_1^*, \ldots,\allowbreak c_{q+1}^*)$. Note that these are identically distributed to outputs of $\oracle^\enc$. It enters $(X_1, c_1^*), \ldots, (X_{q+1},c_{q+1}^*)$ into a table $M$, where the $X_i$ are random variables. Now it sends $(c_1^*,h_1), \ldots, (c_{q+1}^*,h_{q+1})$ to the adversary $\adv$.
+    
+    Any queries $\adv$ makes to the encryption scheme oracles ($\oracle^\kgen,\\ \oracle^\enc,\oracle^\dec, \oracle^\add$) and their corresponding responses are passed along unchanged by %$\rdv$ but recorded in its table $M$. Whenever $\adv$ makes some query $(\vk_i, m_i, k_i, c_i, \presig_i)$ to $\oracle^\AAL$, $\rdv$ first checks that $\vk_i$ is in the support of $\Pi_\ADP.\kgen(\secparam)$ (this is a publicly checkable predicate since the valid verification keys are defined to be all group elements). After this, it acts in one of four ways:
+    
+    \begin{enumerate}
+        \item If $c_i = c_j^*$ and $k_i = h_j$ for some $j$, it checks $\prevrfy(\vk_i,m_i,k_i,c_i) = 1$. If not, it returns $\bot$; otherwise, it queries $\DL(h_j)$ to get $x_j$ and returns $\Pi_\ADP.\adapt(\presig_i,x_j)$ to $\adv$.
+        \item If $c_i = c_j^*$ but $k_i \neq h_j$, $\rdv$ sends $\bot$ to $\adv$.
+        \item If $(\cdot, c_i) \notin M$, $\rdv$ sends $\bot$ to $\adv$. 
+        \item Otherwise, let $p_i$ be the plaintext entry corresponding to $c_i$ in $M$. Notice that, by the linear-only property of the encryption scheme, $p_i$ is a polynomial in $X_1, \ldots, X_{q+1}$ with $\deg(p_i) \leq 1$.
+        \begin{enumerate}
+            \item If $\deg(p_i) = 0$, $p_i$ is some constant value $x_j$. In this case, $\rdv$ uses $x_j$ to proceed as the normal $\oracle^\AAL$ oracle does (checks if the pre-signature verifies and adapts it if so) and sends its output to $\adv$.
+            \item If $\deg(p_i) = 1$, define $p_i := \alpha_0 + \alpha_1 X_1 + \ldots + \alpha_n X_{q+1}$. If $k_i = g^{\alpha_0}\prod_{k=1}^{q+1} h_k^{\alpha_k} = g^{p_i}$ and $\prevrfy(\vk_i,m_i,k_i,c_i)=1$, $\rdv$ uses a query $\DL(k_i)$ to get $x_j$ and outputs $\Pi_\ADP.\adapt(\presig_i,x_j)$. Otherwise, it sends $\bot$ to $\adv$.
+        \end{enumerate}
+    \end{enumerate}
+    
+    Observe that $\rdv$ returns $\bot$ \emph{without querying $\DL(\cdot)$} for all $\bot$ $\AAL$-queries $\adv$ makes. Thus it makes at most $q$ queries to $\DL(\cdot)$.
+    If $\adv$ outputs winning values $(r_1, \ldots, r_{q+1})$, $\rdv$ outputs the same values, thereby winning the OMDL game. By assumption, $\adv$ succeeds with non-negligible probability, and thus $\rdv$ also wins with non-negligible probability. This violates the OMDL assumption, implying that no such adversary $\adv$ can exist.
+    \end{proof}
+
+% \paragraph{Main Theorem}
+We are now ready to give the main theorem of this section.
+
+\begin{theorem}\label{thm:a2l}
+    Let $\Pi_\ENC$ be an LOE scheme, $\Pi_\ADP$ a secure adaptor signature scheme, and $\Pi_\NIZK$ a sound NIZK proof system. Assuming the hardness of OMDL, the \aalplus protocol is a secure blind conditional signature scheme.
+\end{theorem}
+\begin{proof}
+    We argue about each property separately.
+    \begin{lemma}[Blindness]\label{lem:blindness}
+    Assuming $\Pi_\NIZK$ is sound, the \aalplus scheme is blind in the LOE model.
+    \end{lemma}
+
+    \begin{proof}
+        This holds information-theoretically. Fix any two $\Promise$ executions. We now show, via a series of hybrid experiments, that the cases of $b=0$ and $b=1$ are statistically close.
+        
+        \smallskip
+        \noindent\underline{Hybrid $\hybrid_0$:} Run $\expUnlink$ with $b=0$.
+        
+        \smallskip
+        \noindent\underline{Hybrid $\hybrid_1$:} In both runs of $\Pay$, sample $r \sample \Z_q$ and set $Y'' := g^r$ and $c'' \gets \Pi_\ENC(\pk_H,r)$.
+        
+        \smallskip
+        \noindent\underline{Hybrid $\hybrid_2$:} Compute $c''$ and $Y''$ honestly using $\tau_1$ in the first run of $\Pay$ and $\tau_0$ in the second run of $\Pay$.
+        
+        \smallskip
+        \noindent\underline{Hybrid $\hybrid_3$:} Run $\expUnlink$ with $b=1$.
+        
+        \begin{claim}\label{claim:h0h1}
+        For all PPT adversaries $\adv$, $\hybrid_0 \approx \hybrid_1$.
+        \end{claim}
+        \begin{proof}
+        $Y''$ is $g$ raised to a uniform element and $c''$ is an encryption of the same uniform element in both experiments, conditioned on the ciphertext provided by the Hub being well-formed. Thus, any distinguishing advantage necessarily corresponds to a violation of the soundness property of $\Pi_\NIZK$. It follows that the executions are statistically indistinguishable.
+        \end{proof}
+        
+        \begin{claim}\label{claim:h1h2}
+        For all PPT adversaries $\adv$, $\hybrid_1 \approx \hybrid_2$.
+        \end{claim}
+        \begin{proof}
+        This holds by the same logic as Claim~\ref{claim:h0h1}.
+        \end{proof}
+        
+        \begin{claim}
+        For all PPT adversaries $\adv$, $\hybrid_2 \equiv \hybrid_3$.
+        \end{claim}
+        \begin{proof}
+        The change is only syntactical and the executions are identical.
+        \end{proof}
+        
+        Hence, the cases of $b=0$ and $b=1$ are statistically indistinguishable.
+        \end{proof}
+        
+        
+        \begin{lemma}[Unlockability]\label{lem:unlock}
+        Assuming that $\Pi_\ADP$ is witness extractable, pre-signature adaptable, and unforgeable the \aalplus scheme is unlockable.
+        \end{lemma}
+        
+        \begin{proof}
+        We consider two cases separately.
+        
+        \smallskip\noindent{${(b_2 \land b_3) = 1}$:}
+        First, let us consider the case in which $\adv$ outputs a valid signature $\sigma_\ah^A$ while at the same time $s'' \gets \Pi_\ADP.\ext(\vk_\ah^A,\presig_\ah^A,\sigma_\ah^A,Y'')$ is not a valid witness for $Y''$. Then we can give a reduction which breaks witness extractability with non-negligible probability. The reduction samples a uniform element $r \sample \ZZ_q$ and runs $\adv$. It sets $Y'' := g^r$ and uses the encryption key $\tilde{\ek}$ output by $\adv$ compute $c'' \gets \Pi_\ENC.\enc(\tilde{\ek},r)$. In the puzzle solver phase, it sends $Y'',c''$ and the witness extractability challenge $\presig$ to $\adv$ and outputs the signature $\sigma$ it receives in response (note that this is {perfectly} indistinguishable from an honest run of the protocol). Then $\Pi_\ADP.\ext(\vk_\ah^A, \presig,\sigma,Y'')$ is not a valid witness for $Y''$, but this violates the witness extractability of $\Pi_\ADP$, and therefore the probability of this case occurring is negligible.
+        % Show, via a reduction to witness extractability, that the probability that this case happens is negligible.
+        
+        The above argument establishes that $s''$ is a valid witness for $Y''$ with all but negligible probability. Since $Y'' = Y \cdot g^{r+r'} = g^y \cdot g^{r+r'}$, the only valid witness for $Y''$ is $y+(r+r')$, and therefore $s'' = y+(r+r')$. Hence $y=s''-(r+r')$ is a valid witness for the statement $Y$ and thus also for Bob's pre-signature $\presig_\hb^H$ (recall that in the protocol, Bob explicitly checks the pre-signature validity of $\presig_\hb$ with respect to $Y$). By pre-signature adaptability of $\Pi_\ADP$, we have that $\Pi_\ADP.\vrfy(\vk_\hb^H,m,\Pi_\ADP.\adapt(\presig_\hb^H,y))=1$ with probability 1. Therefore, the adversary succeeds in this case with negligible probability.
+        
+        \smallskip\noindent{${(b_0 = 1) \lor (b_1 = 1)}$:} In this case, the adversary is able to produce a valid signature on a message without seeing any pre-signature on it. This only happens with negligible probability by the unforgeability of the adaptor signature scheme.
+        \end{proof}
+        
+        \begin{lemma}[Unforgeability]\label{lem:unforge}
+        Assuming the hardness of OMDL and that $\Pi_\ADP$ is witness extractable and unforgeable, the \aalplus scheme is unforgeable in the LOE model.
+        \end{lemma}
+        
+        \begin{proof}
+        We give a series of hybrid experiments, show they are indistinguishable, and prove by reduction to OM-CCA-A2L that no adversary exists with non-negligible advantage against the final hybrid.
+        
+        \smallskip
+        \noindent\underline{Hybrid $\hybrid_0$:} This is the normal game $\expSec$ (\Cref{fig:exp_security_ab}).
+        
+        \smallskip
+        \noindent\underline{Hybrid $\hybrid_1$:} Simulate all NIZK proofs using $\Pi_\NIZK.\mathsf{Sim}$.
+        
+        
+        \smallskip
+        \noindent\underline{Hybrid $\hybrid_2$:} If $\exists~i \in [q]$ such that $\vrfy(\vk_i^H,m_i,\sigma_i)=1$ and $(\vk_i^H,\cdot) \in \LL$ but $(\vk_i^H,m_i) \notin \LL$, return 0.
+        
+        \smallskip
+        \noindent\underline{Hybrid $\hybrid_3$:} If $\exists~i \in [q]$ such that $\vrfy(\vk_i^H,m_i,\sigma_i)=1$ and $g^{\ext(\tilde\sigma_i,\sigma_i)} \neq Y_i$, return 0.
+        
+        \begin{claim}
+        For all PPT adversaries $\adv$, $\hybrid_0 \approx \hybrid_1$.
+        \end{claim}
+        \begin{proof}
+        This follows directly from zero-knowledge of $\Pi_\NIZK$.
+        \end{proof}
+        
+        \begin{claim}
+        For all PPT adversaries $\adv$, $\hybrid_1 \approx \hybrid_2$.
+        \end{claim}
+        \begin{proof}
+        The hybrids differ only in the case where the attacker returns a valid signature on a message that was not part of the transcript. By the unforgeability of the adaptor signature, this happens only with negligible probability.
+        \end{proof}
+        
+        \begin{claim}
+        For all PPT adversaries $\adv$, $\hybrid_2 \approx \hybrid_3$.
+        \end{claim}
+        \begin{proof}
+        Any distinguishing advantage corresponds to the case in which $\adv$ outputs some tuple $(\vk_i^H,m_i,\sigma_i)$ such that, for corresponding $(Y_i,\tilde\sigma_i)$, $g^{\Pi_{\ADP.\ext(\tilde\sigma_i,\sigma_i)}} \neq Y_i$. In this case, we can give a reduction to witness extractability of $\Pi_\ADP$. The reduction runs the setup as in $\hybrid_3$ and receives a verification key $\vk$ from the witness extractability  game. It now picks some guess $i^* \sample \{1, \dots q-1\}$ (where $q-1$ is the number of queries of the adversary) for the distinguishing index and starts $\adv$ on $\tilde\ek$, behaving the same way as $\hybrid_3$ for all oracle queries, except for the $i^*$-th interaction, in which it sets $\vk^H := \vk$. In the execution of $\Promise$, it sends $m_{i^*}$ to the witness extractability game and receives $\tilde\sigma$, which it gives to $\adv$ instead of computing $\tilde\sigma_\hb^H$ itself. Once $\adv$ terminates and outputs $\{\vk_i^H,m_i,\sigma_i)\}_{i=1}^{q}$, the reduction sends $\sigma_{i^*}$ to its game. If it guessed the distinguishing index $i^*$ correctly, this is a winning signature. Suppose the distinguishing advantage is non-negligible. Since the guess is correct with probability $1/(q-1)$, the reduction violates witness extractability also with non-negligible advantage, which is a contradiction. Hence the two experiments must be computationally close.
+        \end{proof}
+        
+        % \iffullversion
+        % \else
+        % \begin{figure}[tb]
+        % \centering
+        % \begin{idealFunctionality}{Ideal Functionality $\flocks$}
+        % \noindent\underline{Puzzle Promise:} On input $(\Promise, A)$ from $B$, $\flocks$ 
+        % proceeds as follows:
+        % \begin{itemize}[label=-]
+        %     \item Send $(\mathsf{promise}\mathsf{-req}, B)$ to $H$	 and $\sdv$. % NOTE: We model here that a malicious Tumbler can avoid token check and continue with the protocol.
+        %     \item Receive $(\mathsf{promise}\mathsf{-res}, b)$ from $H$.
+        %     \item If $b = \bot$ then abort.
+        %     \item Sample $\pid, \pid' \sample \bin^\secpar$.
+        %     \item Store the tuple $(\pid, \pid', \bot)$ into $\PP$.
+        %     \item Send $(\mathsf{promise}, (\pid,\pid'))$ to $B$, $(\mathsf{promise}, \pid)$ to $H$, $(\mathsf{promise}, \pid')$ to $A$, and inform $\sdv$. 
+        % \end{itemize}
+        
+        % \noindent\underline{Puzzle Solver:} On input $(\Pay, B, \pid')$ from $A$, $\flocks$ proceeds 
+        % as follows:
+        % \begin{itemize}[label=-]
+        %     \item If $(\cdot, \pid', \cdot) \notin \PP$ then abort.
+        %     \item Send $(\mathsf{solve}\mathsf{-req}, A, \pid')$ to $H$ and $\sdv$.
+        %     \item Receive $(\mathsf{solve}\mathsf{-res}, b)$ from $H$.
+        %     \item If $b = \bot$ then abort.
+        %     \item Update entry to $(\cdot, \pid', \top)$ in $\PP$.
+        %     \item Send $(\mathsf{solved}, \pid', \top)$ to $A, B$ and $\sdv$.
+        % \end{itemize}
+        
+        % \noindent\underline{Open:} On input $(\Open, \pid)$ from $B$, $\flocks$ proceeds as 
+        % follows:
+        % \begin{itemize}[label=-]
+        %     \item If $(\pid, \cdot, b) \notin \PP$ or $b = \bot$ then send $(\mathsf{open},\pid, \bot)$ to $B$ and abort. Else send $(\mathsf{open}, \pid, \top)$ to $B$.
+        % \end{itemize}
+        % \end{idealFunctionality}
+        % %}}
+        % \caption{Ideal functionality $\flocks$ (corresponds to $\FF_{\AAL}$ in~\cite{a2l}). Portions related to griefing protection (i.e., registration) have been removed.}
+        % \label{fig:ideal-a2l}
+        % \end{figure}
+        % \fi
+        
+        Now we give a reduction from hybrid $\hybrid_3$ to OM-CCA-A2L. Suppose there exists an adversary $\adv$ with non-negligible success probability in $\hybrid_3$. We give a reduction that uses $\adv$ to win the OM-CCA-A2L game. The reduction is given $(c_1,h_1),\ldots,(c_{q+1},h_{q+1})$. It generates $(\tilde\ek,\tilde\dk) \gets \Pi_\ENC.\kgen(\secparam)$ and $(\vk^H,\sk^H)$ as in $\hybrid_3$ and starts $\adv$ on input $\tilde\ek$. For $\oracle\Promise$ queries, the reduction follows the same steps as $\hybrid_3$ except it uses a different challenge $h_i$ each time it generates a pre-signature. When $\adv$ queries $\oracle\Pay$, the reduction computes the completed signature $\sigma_\ah^A$ as the output of $\oracle^\AAL$ run on $\adv$'s inputs $(\vk_\ah^A,m',Y'',c'',\sigma_\ah^A)$. Note that since $\adv$ makes at most $q$ non-$\bot$ queries to $\oracle\Pay$, the reduction also makes at most $q$ non-$\bot$ queries to $\oracle^\AAL$, as the oracles return $\bot$ in exactly the same cases.
+        
+        Once $\adv$ returns $q+1$ tuples $(\vk_j^H,m_j,\sigma_j)$, the reduction computes $r_i \gets \Pi_\ADP.\ext(\vk_j^H,\presig_i,\sigma_j,h_i) \forall i,j \in [q+1]$ until it has $q+1$ non-$\bot$ values $r_i$ (at most $(q+1)^2$ invocations of the algorithm) and outputs those values. Note that by the definition of $\hybrid_3$, when $\adv$ completes successfully, $g^{r_i} = h_i~\forall i \in [q+1]$. By assumption, the reduction wins the OM-CCA-A2L game with non-negligible probability. This violates OM-CCA-A2L-security of $\Pi_\ENC$ (implied by Lemma~\ref{lem:loe-omcca}), so no such adversary against $\hybrid_3$ exists. Thus, no adversary with non-negligible success in $\expSec$ can exist either.
+        \end{proof}
+        
+        The theorem follows directly from~\Cref{lem:blindness,lem:unlock,lem:unforge}.
+        \end{proof}

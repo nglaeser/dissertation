@@ -1,0 +1,82 @@
+\subsection{One-More Signature Attack}\label{sec:attack2}
+
+We present a different attack, where we impose different assumptions on the encryption scheme $\Pi_\ENC$. We discuss later in the section why these assumptions do not contradict the pre-requisites of the \aal scheme. Specifically, in addition to \aal's requirement that the scheme is perfectly re-randomizable and CPA-secure, we assume that it is:
+\begin{itemize}
+    \item Linearly homomorphic over $\ZZ_p$.
+    \item Supports homomorphic evaluation of the \emph{conditional bit flip} ($\mathsf{CFlip}$) function, defined as
+    $$
+    \begin{array}{l}
+    \Pi_\ENC.\mathsf{CFlip}(\ek, i, \enc(\ek, x)) := \enc(\ek, y)\\
+    ~~~~\text{where } \begin{cases} y = x &\text{ if } x_i = 0\\ y = x \oplus e_i &\text{ if } x_i = 1
+    \end{cases}
+    \end{array}
+    $$
+    and $e_i$ is the $i$-th unit vector.
+\end{itemize}
+ The objective of the attack is to steal coins from the hub in the coin mixing protocol. Specifically, at the \aal level, the attacker will solve $q+1$ puzzles by querying the puzzle solver interface successfully only $q$ times. Note that we do not count unsuccessful (i.e., the oracle returns $\bot$) queries, since those non-accepting queries do not correspond to any payment from Alice's side.
+
+
+
+
+
+
+% It does not suffice for $\Pi_\ENC$ to be CPA-secure to prevent $\A$ from winning the OM-CCA game. Below, we give an attack when $\Pi_\ENC$ is CPA-secure and fully homomorphic. We then adapt this attack for a scheme $\Pi_\ENC$ which is CPA-secure and only linearly homomorphic.
+
+\begin{algorithm}
+\caption{One-More Signature Attack}
+\label{alg:om-cca-atk}
+\begin{algorithmic}[1]
+\small 
+\REQUIRE Bob's ciphertexts $(c_1,\ldots,c_{q+1})$ and group elements $(h_1, \dots, h_{q+1})$, where $c_j = \Pi_\ENC.\enc(\ek,x_j)$ and $h_j := g^{x_j}$, and Hub's $\ek$
+\STATE Initialize guess $x_1' := 0^\secpar$ and a counter $i:=1$
+\FOR{$i = 1\dots \secpar$}
+    \STATE Sample a fresh signing key $(\vk, \sk) \gets \kgen(\secparam)$
+    \STATE Compute $c_1' \gets\Pi_\ENC.\mathsf{CFlip}(\ek, i, c_1)$
+    \STATE Sample $(r_1^{(i)}, \ldots, r_{q+1}^{(i)}) \sample \mathbb{Z}_p^{q+1}$
+    \STATE Compute $c' := (c_1')^{r_1^{(i)}} \circ (c_2)^{r_2^{(i)}} \dots \circ (c_{q+1})^{r_{q+1}^{(i)}}$
+    \STATE Compute $h' := \prod_{j=1}^{q+1} h_j^{r_j^{(i)}}$
+    \STATE Sign $\presig \gets \Pi_\ADP.\presign(\sk, m,h')$
+    \STATE Query $y_i \gets \oracle^{\AAL}_{\dk,\Pi_\ENC,\Pi_\ADP}(\vk,m,h',c',\presig)$
+    \STATE If $y_i = \bot$ set $x'_{1,i} :=1$
+\ENDFOR
+\STATE Continue querying (without updating $x_1'$) until $q$ non-$\perp$ queries have been made
+\STATE For all $i$ corresponding to a non-$\perp$ query, set $E_i$ to be the equation $y_i - r_1^{(i)} x_1' = r_2^{(i)} x'_2 + \ldots + r_{q+1}^{(i)} x'_{q+1}$
+\STATE Solve $(E_1, \dots, E_q)$ for $(x'_2, \dots, x'_{q+1})$
+\RETURN $(x_1', x_2', \ldots, x'_{q+1})$
+\end{algorithmic}
+\end{algorithm}
+
+The attack is shown in Algorithm~\ref{alg:om-cca-atk}. We assume (for convenience) that $q\geq \secpar$ and that $\mathbb{Z}_p \leq 2^\secpar$ and therefore $x_j \in \{0,1\}^\secpar$. Observe that the attack makes at most $q$ successful queries to the oracle, so all we need to show is that the success probability is high enough. First, we argue that the attack recovers the correct $x_1' = x_1$ with probability 1. If the $i$-th bit $x_{1,i} = 0$, then the $\mathsf{CFlip}$ operation does not alter the content of the ciphertext and therefore $$c' = \enc\left(\ek, \sum^{q+1}_{j=1} r_{j}^{(i)} \cdot x_j\right)\text{ and } h' = \prod_{j=1}^{q+1} h_j^{r_j^{(i)}} = g^{\sum^{q+1}_{j=1} r_{j}^{(i)} \cdot x_j}$$
+so the oracle always returns a non-$\bot$ response. On the other hand, if $x_{1,i} = 1$, then the above equality does not hold and therefore $\oracle^{\AAL}_{\sk,\Pi_\ENC,\Pi_\ADP}$ always returns $\bot$.
+
+This querying strategy is repeated for every bit of $x_1'$ and continued on $x_2$, etc., until $q$ non-$\perp$ queries have been made. Because $q \geq \secpar$, the attacker will have learned all $\secpar$ bits of $x_1'$ by this point. Thus, the set of equations $(E_1, \dots, E_q)$ has exactly $q$ unknowns. Since the coefficients are uniformly chosen, the equations are, with all but negligible probability, linearly independent. Since $\mathbb{Z}_p$ is a field, the solution is uniquely determined and can be found efficiently via Gaussian elimination.
+
+\paragraph{N-More Signatures} 
+The described attack is in fact even stronger than shown. Using this method, an attacker $\adv$ can use $q$ queries, where $\lfloor{q}\rfloor=N\secpar$, to recover $N+q$ plaintexts. $\adv$ does this by using $N\secpar$ queries to recover the first $N$ plaintexts $x_1, \ldots, x_N$ and $N\secpar$ equations as described previously (once it has flipped all $\secpar$ bits in $x_1$, it starts flipping bits in $x_2$, and so on). Using its remaining queries, it obtains $q-N\secpar$ more equations (either by continuing to flip bits in further ciphertexts, which are however wasted, or by simply choosing new values $r_i$ for the linear combinations) for a total of $q$ equations. Using Gaussian elimination, it can recover the remaining $q$ plaintexts $x_{N+1},\ldots,x_{N+q}$. Taken with the plaintexts $x_1,\ldots,x_N$ that were recovered bit-by-bit, the attacker has learned $N+q$ plaintexts.
+
+\paragraph{Instantiations} 
+We now justify our additional assumptions on the encryption scheme $\Pi_\ENC$ by describing suitable instantiations that satisfy all the requirements. Clearly, if the scheme is fully-homomorphic~\cite{STOC:Gentry09} then it supports both linear functions over $\mathbb{Z}_p$ and conditional bit flips. However, we show that even a linear homomorphic encryption (over $\mathbb{Z}_p$) can suffice to mount our attack. Specifically, given a CPA-secure linearly homomorphic encryption scheme $(\kgen^*,\enc^*,\dec^*)$,  we define a \emph{bitwise} encryption scheme $(\kgen,\enc,\dec)$ as follows:
+
+\begin{itemize}
+    \item $\kgen(1^\secpar)$: Return the output of $\kgen^*(1^\secpar)$.
+    \item $\enc(\ek,x)$: Parse $x$ as $(x^{(1)},\ldots,x^{(n)})$ and return $(\enc^*(\ek,x^{(1)}),\ldots,\allowbreak \enc^*(\ek,x^{(n)}))$.
+    \item $\dec(\dk,c)$: Parse $c$ as $(c^{(1)},\ldots,c^{(\secpar)})$ and return $\sum_{i=1}^{\secpar} 2^{i-1} \cdot \dec^*(\dk,c^{(i)})$.
+\end{itemize}
+%
+It is easy to show that the new scheme is CPA-secure via a standard hybrid argument. 
+
+Next, we argue that one can efficiently implement the conditional bit flip operation ($\mathsf{CFlip}$) over such ciphertexts. Given a ciphertext $c = (c^{(1)}, \dots, c^{(\secpar)})$, we can conditionally flip the $i$-th bit by computing
+$$
+(c^{(1)}, \dots, \underbrace{\enc^*(\ek, 0)}_{i\text{-th ciphertext}}, \dots, c^{(\secpar)}). 
+$$
+This is a correctly formed ciphertext, since the conditional bit flip always sets the $i$-th bit to $0$ and leaves the other positions untouched.
+
+Finally, we need to argue that the encryption scheme is still linearly homomorphic over $\mathbb{Z}_p$. Note that this does not follow immediately from the fact that $(\kgen^*,\enc^*,\dec^*)$ is linearly homomorphic, since the new encryption algorithm decomposes the inputs bitwise. Nevertheless, we show this indeed holds for the case of two ciphertexts $c = (c^{(1)},\ldots,c^{(\secpar)})$ and $d = (d^{(1)},\ldots,d^{(\secpar)})$ encrypting $x$ and $y$, respectively. The general case follows analogously. To homomorphically compute $\alpha x + \beta y$, where $(\alpha, \beta )\in \mathbb{Z}^2_p$, we compute
+
+\begin{align*}
+\Bigg( \left(\HProd_{i=1}^{\secpar} (c^{(i)})^{2^{i-1}}\right)^\alpha \circ 
+\left(\HProd_{i=1}^{\secpar} (d^{(i)})^{2^{i-1}}\right)^\beta&, \enc^*(\ek,0),\\ 
+& \dots, \enc^*(\ek,0) \Bigg).
+\end{align*}
+
+A routine calculation shows that this ciphertext correctly decrypts to the desired result $\alpha x + \beta y$.

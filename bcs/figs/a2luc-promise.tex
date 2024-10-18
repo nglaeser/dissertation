@@ -1,0 +1,22 @@
+\begin{figure}[tbh]
+\hspace{-10em}
+\begin{minipage}{\textwidth}
+\begin{pchstack}[boxed]
+    \procedure{Public parameters: group description $(\GG, g, q)$, message $m_\hb$}{
+ 	\text{ $\Promise \langle H( \dk_H, \sk_\hb^H), \cdot \rangle$} \< \< \text{$\Promise \langle \cdot, B(\ek_H, \vk_\hb^H) \rangle$} \\[][\hline]
+	\pcln s \sample \ZZ_p, Y := g^s \< \< \\ [-0.15\baselineskip][]
+	\pcln c \gets \Pi_\ENC.\enc(\ek_H, s) \< \< \\ [-0.15\baselineskip][]
+	\pcln \pi_s \gets \NIZK.\prove( (\ek_H, Y, c), s)  \< \< \\ [-0.15\baselineskip][]
+	\pcln \presig_{\hb}^H \gets \Pi_\ADP.\presig( \sk_\hb^H, m_\hb, Y ) \< \< \\ [-0.85\baselineskip][]
+	\pcln \< \sendmessageright*{Y, c, \pi_s, \presig_\hb^H}\< \\ [-0.55\baselineskip][]
+	\pcln \< \< {\mathbf{If}\ \NIZK.\vrfy((\ek_H,Y,c), \pi_s) \neq 1\ \mathbf{ then}\ \pcreturn \bot} \\ [-0.15\baselineskip][]
+	\pcln \< \< \mathbf{If}\ \Pi_\ADP.\prevrfy(\vk_\hb^H, m_\hb, Y, \presig_\hb^H) \neq 1\ \mathbf{then} \\ [-0.15\baselineskip][]
+	\pcln \< \< \quad \pcreturn \bot \\ [-0.15\baselineskip][]
+	\pcln \< \< \mathbf{set}\ \tau := (m_\hb, \presig_\hb^H, (Y, c)) \\ [-0.15\baselineskip][]
+	\pcln \pcreturn \bot \< \< \pcreturn \tau
+}
+\end{pchstack}
+\end{minipage}
+\caption{Puzzle promise protocol of \aaluc}
+\label{fig:our_protocol_hub_bob}
+\end{figure}

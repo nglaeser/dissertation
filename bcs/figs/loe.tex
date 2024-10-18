@@ -1,0 +1,48 @@
+\begin{figure}
+    \centering
+
+    \begin{pchstack}[boxed]
+    \begin{pcvstack}
+    \begin{pchstack}
+    \procedure[space=auto,codesize=\small]{$\oracle^\kgen(i)$}{
+    \ek_i \sample \{0,1\}^\secpar\\
+    \text{Enter $(i, \ek_i)$ into table $K$}\\
+    \pcreturn \ek_i
+    }
+    
+        \pchspace
+        
+    \procedure[space=auto,codesize=\small]{$\oracle^\enc(\ek_i, m)$}{
+    c_j \sample \{0,1\}^\secpar\\
+    \text{Enter $(m,c_j)$ into table $M_i$}\\
+    \pcreturn c_j
+    }
+    \end{pchstack}
+
+    \pcvspace
+    
+    \procedure[space=auto,codesize=\small]{$\oracle^\dec(\ek_i, c)$}{
+    \mathbf{if}\ (\cdot, c) \notin M_i\ \mathbf{then}\ \pcreturn \perp\\
+    %\quad \pcreturn \perp\\
+    \mathbf{else}\\
+    \quad \text{Look up $m$ corresponding to $c$ in $M_i$}\\
+    \quad \pcreturn m
+    }
+    
+    \pcvspace
+    
+    \procedure[space=auto,codesize=\small]{$\oracle^\add(\ek_i,c_0,c_1)$}{
+    \text{look up $m_0, m_1$ corresponding to $c_0, c_1$ in table $M_i$}\\
+    \tilde{c} \sample \{0,1\}^\secpar\\
+    \text{Enter $(m_0+m_1,\tilde{c})$ into table $M_i$}\\
+    \pcreturn \tilde{c}
+    }
+    
+    \end{pcvstack}
+    \end{pchstack}
+    \caption{Linear-only encryption oracles}
+    \label{o:kgen}
+    \label{o:enc}
+    \label{o:dec}
+    \label{o:add}
+\end{figure}

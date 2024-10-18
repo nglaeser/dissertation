@@ -1,0 +1,35 @@
+\begin{figure}[tb]
+    \centering
+    \begin{idealFunctionality}{Ideal Functionality $\flocks$}
+    \noindent\underline{Puzzle Promise:} On input $(\Promise, A)$ from $B$, $\flocks$ 
+    proceeds as follows:
+    \begin{itemize}
+        \item Send $(\mathsf{promise}\mathsf{-req}, B)$ to $H$	 and $\sdv$. % NOTE: We model here that a malicious Tumbler can avoid token check and continue with the protocol.
+        \item Receive $(\mathsf{promise}\mathsf{-res}, b)$ from $H$.
+        \item If $b = \bot$ then abort.
+        \item Sample $\pid, \pid' \sample \bin^\secpar$.
+        \item Store the tuple $(\pid, \pid', \bot)$ into $\Plist$.
+        \item Send $(\mathsf{promise}, (\pid,\pid'))$ to $B$, $(\mathsf{promise}, \pid)$ to $H$, $(\mathsf{promise}, \pid')$ to $A$, and inform $\sdv$. 
+    \end{itemize}
+    
+    \noindent\underline{Puzzle Solver:} On input $(\Pay, B, \pid')$ from $A$, $\flocks$ proceeds 
+    as follows:
+    \begin{itemize}
+        \item If $(\cdot, \pid', \cdot) \notin \Plist$ then abort.
+        \item Send $(\mathsf{solve}\mathsf{-req}, A, \pid')$ to $H$ and $\sdv$.
+        \item Receive $(\mathsf{solve}\mathsf{-res}, b)$ from $H$.
+        \item If $b = \bot$ then abort.
+        \item Update entry to $(\cdot, \pid', \top)$ in $\Plist$.
+        \item Send $(\mathsf{solved}, \pid', \top)$ to $A, B$ and $\sdv$.
+    \end{itemize}
+    
+    \noindent\underline{Open:} On input $(\Open, \pid)$ from $B$, $\flocks$ proceeds as 
+    follows:
+    \begin{itemize}
+        \item If $(\pid, \cdot, b) \notin \Plist$ or $b = \bot$ then send $(\mathsf{open},\pid, \bot)$ to $B$ and abort. Else send $(\mathsf{open}, \pid, \top)$ to $B$.
+    \end{itemize}
+    \end{idealFunctionality}
+    %}}
+    \caption{Ideal functionality $\flocks$ (corresponds to $\F_{\AAL}$ in~\cite{SP:TaiMorMaf21}). Portions related to griefing protection (i.e., registration) have been removed.}
+    \label{fig:ideal-a2l}
+    \end{figure}

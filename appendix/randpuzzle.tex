@@ -1,0 +1,56 @@
+\chapter{Randomizable Puzzles and Homomorphic Encryption}
+\label{sec:randpuzzle}
+
+Here we recall the definitions of randomizable puzzles~\cite{SP:TaiMorMaf21} and we show that they are trivially satisfied by a CPA-secure homomorphic encryption (over $\mathbb{Z}_p$), with statistical circuit privacy~\cite{C:OstPasPas14}. We recall the syntax as defined in~\cite{SP:TaiMorMaf21}.
+
+\begin{definition}[Randomizable Puzzle]
+A randomizable puzzle scheme $\RP = (\psetup, \pgen, \psolve, \prand)$ with a solution space $\solspace$ (and a function $\phi$ acting on $\solspace$) consists of four algorithms defined as:
+\begin{description}
+	\item[$(\pparam, \td) \gets \psetup(\secparam)$:] is a PPT algorithm that on input security parameter $\secparam$, outputs public parameters $\pparam$ and a trapdoor $\td$.
+	\item[$Z \gets \pgen(\pparam, \zeta)$:] is a PPT algorithm that on input public parameters $\pparam$ and a puzzle solution $\zeta$, outputs a puzzle $Z$.
+	\item[$\zeta := \psolve(\td, Z)$:] is a deterministic polynomial-time algorithm that on input a trapdoor $\td$ and puzzle $Z$, outputs a puzzle solution $\zeta$.
+	\item[$(Z', r) \gets \prand(\pparam, Z)$:] is a PPT algorithm that on input public parameters $\pparam$ and a puzzle $Z$ (which has a solution $\zeta$), outputs a randomization factor $r$ and a randomized puzzle $Z'$ (which has a solution $\phi(\zeta, r)$).
+	%\item[$\pverif(\pparam, Z, \zeta)$:] is a $\dpt$ algorithm that on input the public parameters $\pparam$, a puzzle $Z$ and a puzzle solution $\zeta$, outputs a bit $b$.
+\end{description}
+\end{definition}
+It is not hard to see that a linearly homomorphic encryption scheme $(\kgen,\allowbreak \enc, \dec)$ matches the syntax of a randomizable puzzle, setting $\pparam$ to the encryption key and $\td$ to be the decryption key. For the $\prand$ algorithm, we can sample a random $r \sample \mathbb{Z}_p$ and compute
+$$
+\enc(\ek, \zeta) \circ \enc(\ek, r) = c 
+$$
+which is an encryption of $\phi(\zeta, r) = \zeta + r$. Next we recall the definition of security for randomizable puzzles.
+\begin{definition}[Security]
+\label{def:rp-sec}
+A randomizable puzzle scheme $\RP$ is secure, if there exists a negligible function 
+$\negl[]$, such that
+\[
+	\Pr\left[
+	\zeta \gets \adv(\pparam, Z)
+	~\middle\vert
+	\begin{array}{l}
+	(\pparam, \td) \gets \psetup(\secparam) \\
+	\zeta \sample \solspace, Z \gets \pgen(\pparam, \zeta)
+	\end{array}
+	\right] \leq \negl[\secpar].
+\]
+\end{definition}
+This follows as an immediate application of CPA-security (in fact, even the weaker one-wayness suffices) of the encryption scheme. Finally we recall the notion of privacy.
+\begin{definition}[Privacy]
+\label{def:rp-privacy}
+A randomizable puzzle scheme $\RP$ is private if for every PPT adversary $\adv$ there exists a negligible function $\negl[]$ such that:
+$$\Pr[\RPUnlink_{\adv, \RP}(\secpar) = 1] \leq 1/2 + \negl[\secpar]$$ where the experiment 
+$\RPUnlink_{\adv, \RP}$ is defined as follows: 
+\begin{itemize}
+    \item $(\pparam,\td) \gets \psetup(\secparam)$
+	\item $((Z_0, \zeta_0), (Z_1, \zeta_1)) \gets \adv(\pparam, \td)$
+	\item $b \sample \bin$
+	\item $(Z_0', r_0) \gets \prand(\pparam, Z_0)$ 
+	\item $(Z_1', r_1) \gets \prand(\pparam, Z_1)$
+	\item $b' \gets \adv(\pparam, \td, Z_b')$
+	\item Return $\psolve(\td, Z_0) = \zeta_0 \land \psolve(\td, Z_1) = \zeta_1 \\ \land b = b'$
+\end{itemize}
+\end{definition}
+Recall that circuit privacy implies that the distribution induced by 
+$\enc(\ek,\allowbreak \zeta) \circ \enc(\ek, r)$ is statistically close to that induced by a a fresh encryption $\enc(\ek, \zeta + r)$. This implies that privacy is satisfied in a statistical sense. Thus we can state the following.
+\begin{lemma}
+Assuming that $(\kgen, \enc, \dec)$ is a linearly homomorphic encryption with statistical circuit privacy, the there exists a randomizable puzzle with statistical privacy.
+\end{lemma}

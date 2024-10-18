@@ -1,0 +1,10 @@
+\section{Related Work}
+We recall some relevant related work in the literature.
+
+\paragraph{Unlinkable Transactions} CoinJoin~\cite{coinjoin}, Coinshuffle~\cite{ESORICS:RufMorKat14,EPRINT:RufMorKat16,FCW:RufMor17}, and Möbius~\cite{PoPETS:MeiMer18} are coin mixing protocols that rely on interested users coming together and making an on-chain transactions to mix their coins. 
+These proposals suffer from the bootstrapping problem (users having to find other interested users for the mix) in addition to requiring custom scripting language support from the underlying currency and completing the mix with on-chain transactions. 
+Perun~\cite{SP:DEFM19} and mixEth~\cite{EPRINT:SNBB19} are mixing solutions that  rely on Ethereum smart contracts to resolve contentions among users. 
+An alternate design choice is to incorporate coin unlinkability natively in the currency.
+Monero~\cite{CCS:LRRSTW19} and Zcash~\cite{SP:BCGGMT14} are the two most popular examples of currencies that allow for unlinkable transactions without any special coin mixing protocol. This is enabled by complex on-chain cryptographic mechanisms that are not supported in other currencies.
+
+\paragraph{RCCA Security} A security notion related to one-more CCA is that of re-randomizable \emph{Replayable CCA (RCCA)} encryption scheme~\cite{C:PraRos07}. The notion guarantees security even if the adversary has access to a decryption oracle, but only for ciphertexts that do not decrypt to the challenge messages. This is slightly different from what we require in our setting, since in our application the adversary will always query the oracle on encryption of new (non-challenge) messages (because of the plaintext re-randomization). This makes it challenging to leverage the guarantees provided by this notion in our analysis.

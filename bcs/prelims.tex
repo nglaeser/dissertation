@@ -1,0 +1,110 @@
+\section{Additional Preliminaries}
+
+In this chapter, we require that any digital signature scheme $\Pi_\DS := (\kgen, \sign,\allowbreak \vrfy)$ satisfies the standard notion of strong existential unforgeability~\cite{GolMicRiv88}. We require any non-interactive proof system $\NIZK$ (see \Cref{sec:nizks}) to be (1) \emph{zero-knowledge}, i.e., there exists a simulator $\pi \gets \mathsf{Sim}(\td, x)$ that computes valid proofs without the knowledge of the witness, (2) \emph{sound}, i.e., it is infeasible for an adversary to output a valid proof for a statement $x \notin \Lang$ (see \Cref{def:soundness}), and (3) \emph{UC-secure}, i.e., one can efficiently extract from the proofs computed by the adversary a valid witness (with the knowledge of the setup trapdoor $\td$), even in the presence of simulated proofs. For formal security definitions, we refer the reader to~\cite{C:DeSMicPer87,AC:CamKreSho11}.
+
+% \paragraph{Hard Relations} 
+% We recall the notion of a hard
+% relation $\Rel$ with statement-witness pairs $(Y, y)$. We denote by $\Lang_\Rel$ the associated language defined as $\Lang_\Rel := \{ Y : \exists y,\ (Y, y) \in \Rel \}$. The relation is called a hard relation if the following holds: 
+In this chapter, we will deal with so-called \emph{hard relations} $\Rel$ of statement-witness pairs $(Y,y)$ which are decidable in polynomial time (see \Cref{sec:nizks}) but where, for all PPT adversaries $\adv$, the probability of $\adv$ on input $Y$ outputting a witness $y$ is negligible. We will also require a PPT sampling algorithm $\genr(\secparam)$ that outputs a statement-witness pair $(Y, y) \in \Rel$.
+In particular, we use the discrete log relation $\Rel_\DL$ defined with respect to a group $\GG$ with generator $g$ and order $p$. The corresponding language is defined as $\Lang_\DL := \{ Y : \exists y \in \ZZ_p,\ Y = g^y \}$.
+
+\subsection{Adaptor Signatures} 
+Adaptor signatures~\cite{AC:AEEFHMMR21} let users generate a pre-signature on a message $m$ which by itself is not a valid signature, but can later be adapted into a valid signature using knowledge of some secret value. More precisely, an adaptor signature scheme $\Pi_\ADP:= (\kgen, \presign, \prevrfy,\adapt,\allowbreak \vrfy,\ext)$ is defined with respect to a signature scheme $\Pi_\DS$ and a hard relation $\Rel$. The key generation algorithm is the same as in $\Pi_\DS$ and outputs a key pair $(\vk, \sk)$. The pre-signing algorithm $\presign(\sk, m, Y)$ returns a pre-signature $\presig$ (we sometimes also refer to this as a partial signature). The pre-signature verification algorithm $\prevrfy(\vk, m, Y, \presig)$ verifies if the pre-signature $\presig$ is correctly generated. 
+The adapt algorithm $\adapt(\presig, y)$ transforms a pre-signature $\presig$ into a valid signature $\sigma$ given the witness $y$ for the instance $Y$ of the language $\Lang_\Rel$.
+The verification algorithm $\vrfy$ is the same as in $\Pi_\DS$. Finally, we have the extract algorithm $\ext(\presig, \sigma, Y)$ which, given a pre-signature $\presig$, a signature $\sigma$, and an instance $Y$, outputs the witness $y$ for $Y$. This can be formalized as \emph{pre-signature correctness}.
+
+\begin{definition}[Pre-signature Correctness]
+\label{def:as-pre-correct}
+	An adaptor signature scheme $\Pi_\ADP$ satisfies pre-signature correctness 
+	if for every $\secpar \in \NN$, every message $m \in \bin^*$, and every statement/witness pair 
+	$(Y, y) \in \Rel$, the following holds:
+	$$
+	\prob{
+	\begin{array}{c}
+	\prevrfy(\vk, m, Y, \presig) = 1\\
+	\land \\
+	\vrfy(\vk, m, \sigma) = 1\\
+	\land \\
+	(Y, y') \in R
+	\end{array}
+	\middle\vert
+	\begin{array}{l}
+	(\sk, \vk) \gets \kgen(\secparam)\\
+	\presig \gets \presign(\sk, m, Y) \\
+	\sigma := \adapt(\presig,y)\\
+	y' := \ext(\sigma, \presig, Y)
+	\end{array}
+	 }=1.
+	$$
+\end{definition}
+
+In terms of security, we want standard unforgeability even when the adversary is given access to pre-signatures with respect to the signing key $\sk$.
+
+\begin{definition}[Unforgeability]
+\label{def:aeufcma}
+	An adaptor signature scheme $\Pi_\ADP$ is $\aeufcma$ secure if for every PPT adversary $\adv$ there exists a negligible function $\negl[]$ such that
+	$$\prob{\ASigForge_{\adv, \Pi_\ADP}(\secpar) = 1} \leq \negl[\secpar],$$
+	where the experiment $\ASigForge_{\adv,\Pi_\ADP}$ is defined as in~\Cref{fig:as-unforge}.
+    \input{bcs/figs/as-unforge}
+\end{definition}
+
+We also require that, given a pre-signature and a witness for the instance, one can always adapt the pre-signature into a valid signature (\emph{pre-signature adaptability}). 
+ 
+\begin{definition}[Pre-signature Adaptability]
+\label{def:as-adaptability}
+	An adaptor signature scheme $\Pi_\ADP$ satisfies pre-signature adaptability 
+	if for any $\secpar \in \NN$, any message $m \in \bin^*$, any statement/witness pair $(Y, 
+	y) \in R$, any key pair $(\sk,\vk) \gets \kgen(\secparam)$, and any pre-signature 
+	$\presig \gets \{0,1\}^*$ with $\prevrfy(\vk, m, Y, \presig) = 1$, we have: 
+	\[\prob{\vrfy(\vk,m, \adapt(\presig,y)) = 1} = 1. \]
+\end{definition}
+
+Finally, we require that, given a valid pre-signature and a signature with respect to the same instance, one can efficiently extract the corresponding witness (\emph{witness extractability}). 
+
+\begin{definition}[Witness Extractability]
+\label{def:as-extractability}
+	An adaptor signature scheme $\Pi_\ADP$ is witness extractable if 
+	for every PPT adversary $\adv$, there exists a negligible function $\negl[]$ such that 
+	\[\prob{\AExtractability_{\adv, \Pi_\ADP}(\secpar) = 1} 
+	\leq \negl[\secpar],\] where the experiment $\AExtractability_{\adv, 
+	\Pi_\ADP}$ is defined as in \Cref{fig:as-witness-ext}.
+    \input{bcs/figs/as-witness-ext}
+\end{definition}
+
+Combining the three properties described above, we can define a secure adaptor signature scheme 
+as follows.
+
+\begin{definition}[Secure Adaptor Signature Scheme]
+	An adaptor signature scheme $\Pi_\ADP$ is secure if it is $\aeufcma$ 
+	secure, pre-signature adaptable, and witness extractable.
+\end{definition}
+
+\subsection{Linear-Only Homomorphic Encryption} 
+
+A public-key encryption scheme $\Pi_\ENC:= (\kgen, \enc, \dec)$ allows one to generate a key pair $(\ek, \dk) \gets \kgen(\secparam)$ that allows anyone to encrypt messages as $c \gets \enc(\ek, m)$ and allows only the owner of the decryption key $\dk$ to decrypt ciphertexts as $m \gets \dec(\dk, c)$. We require that  $\Pi_\ENC$ satisfies perfect correctness and the standard notion of CPA-security~\cite{STOC:GolMic82}.
+We say that an encryption scheme is \emph{linearly homomorphic} if there exists some efficiently computable operation $\circ$ such that $\enc(\ek, m_0) \circ \enc(\ek, m_1) \in \enc(\ek, m_0 + m_1)$, where addition is defined over $\mathbb{Z}_p$. The $\alpha$-fold application of $\circ$ is denoted by $\enc(\ek, m)^\alpha$. 
+
+Linear-only encryption (LOE) is an idealized model introduced by Groth~\cite{TCC:Groth04} as ``generic homomorphic cryptosystem''. Here, homomorphic encryption is modeled by giving access to oracles instead of their corresponding algorithms. A formal description of the oracles is given  in~\Cref{o:kgen}. We note that although we do not model such an algorithm explicitly, this model allows for (perfect) ciphertext re-randomization by homomorphically adding $0$ to the desired ciphertext.
+\input{bcs/figs/loe}
+
+% \paragraph{One-More DL} 
+\subsection{One-More Discrete Logarithm Assumption} 
+We recall the one-more discrete logarithm (OMDL) assumption \cite{JC:BNPS03,EPRINT:BauFucPlo21}.
+
+\begin{definition}[One-More Discrete Logarithm (OMDL) Assumption]\label{def:omdl}
+Let $\GG$ be a uniformly sampled cyclic group of prime order $p$ and $g$ a random generator of $\GG$. The one-more discrete logarithm (OMDL) assumption states that for all $\secpar \in \NN$ there exists a negligible function $\negl$ such that for all PPT adversaries $\adv$ making at most $q = \poly$ queries to $\DL(\cdot)$, the following holds:
+\begin{align*}
+\Pr\left[ \begin{array}{c}
+   \forall i: x_i = r_i
+\end{array}
+\middle|
+\begin{array}{c}
+    r_1, \ldots, r_{q+1} \sample \ZZ_p\\
+    \forall i \in [q+1], h_i \gets g^{r_i}\\
+    \{x_i \}_{i \in [q+1]} \gets \adv^{\DL(\cdot)}(h_1, \ldots, h_{q+1})
+\end{array}
+\right]
+\le \negl,
+\end{align*}
+where the $\DL(\cdot)$ oracle takes as input an element $h \in \GG$ and returns $x$ such that $h = g^x$.
+\end{definition}

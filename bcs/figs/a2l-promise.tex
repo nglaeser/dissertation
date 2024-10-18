@@ -1,0 +1,30 @@
+\begin{figure*}[!t]
+    \hspace{-8em}
+    \begin{minipage}{\textwidth}
+    \begin{pchstack}[boxed]
+    \procedure{Public parameters: group description $(\GG, g, q)$, message $m_\hb$}{
+    % 	\text{$\Promise \langle H((\pp, \td)), \sk_{\hb}^H, \cdot \rangle$} \< \< \text{$\Promise \langle \cdot,B(\pp, \vk_\hb^H) \rangle$} \\[][\hline]
+        \text{$\Promise \langle H(\dk_H, \sk_{\hb}^H), \cdot \rangle$} \< \< \text{$\Promise \langle \cdot,B(\ek_H, \vk_\hb^H) \rangle$} \\[][\hline]
+        %\pcln \< \< \sigma_\hb^B \gets \Pi_\DS.\sign(\sk_\hb^B, m_\hb) \\ [-0.85\baselineskip][]
+        %\pcln \< \sendmessageleft*{\sigma_\hb^B} \< \\ [-0.55\baselineskip][]
+        \pcln s \sample \Z_p, Y := g^s \< \< \\ [-0.15\baselineskip][]
+        \pcln c \gets \Pi_\ENC.\enc(\ek_H, s) \< \< \\ [-0.15\baselineskip][]
+    % 	\pcln \pi_s \gets \NIZK.\prove(\{\exists s \mid \Pi_\ENC.\dec(\sk_H, c) = s \}, s) \< \< \\ [-0.15\baselineskip][]
+        \pcln \pi_s \gets \NIZK.\prove((\ek_H, Y, c), s) \< \< \\ [-0.15\baselineskip][]
+        \pcln \presig_\hb^H \gets \Pi_\ADP.\presig(\sk_\hb^H, m_\hb, Y) \\ [-0.85\baselineskip][]
+        \pcln \< \sendmessageright*{Y,c, \pi_s, \presig_\hb^H} \< \\ [-0.55\baselineskip][]
+        \pcln \< \< {\mathbf{If}\ \NIZK.\vrfy((\ek_H,Y,c),\pi_s) \neq 1\ \mathbf{ then}\ \pcreturn \bot} \\ [-0.15\baselineskip][]
+        \pcln \< \< \mathbf{If}\ \Pi_\ADP.\prevrfy(\vk_\hb^H, m_\hb, Y, \presig_\hb^H) \neq 1\ \mathbf{then} \\ [-0.15\baselineskip][]
+        \pcln \< \< \quad \pcreturn \bot \\ [-0.15\baselineskip][]
+        \pcln \< \< r \sample \Z_q, Y' := Y \cdot g^r \\ [-0.15\baselineskip][]
+        \pcln \< \< c' \gets \Pi_\ENC.\mathsf{Rand}(c,r) \\ [-0.15\baselineskip][]
+        %\pcln \< \< \mathbf{Send } Y', c' \mathbf{ to } A \\ [-0.15\baselineskip][]
+        \pcln \< \< \mathbf{Set}\ \tau := (r, m_\hb, \presig_\hb^H, (Y,c),(Y',c')) \\ [-0.15\baselineskip][]
+        \pcln \pcreturn \bot \< \< \pcreturn \tau
+    % 	\pcln \pcreturn (\adapt(\presig_\hb^H, s),\sigma_\hb^B) \< \< \pcreturn (\Pi, ((Y,c),(Y',c')))
+    }
+    \end{pchstack}
+\end{minipage}
+    \caption{Puzzle promise protocol of \aal}
+    \label{fig:a2l_promise}
+    \end{figure*}

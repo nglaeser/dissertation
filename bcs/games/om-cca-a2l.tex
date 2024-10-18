@@ -1,0 +1,29 @@
+\begin{figure}[tbh]
+    \centering
+\begin{pchstack}[boxed]
+        \begin{pcvstack}
+    \procedure[space=auto,codesize=\small]{$\textrm{OM-CCA-A2L}_{\Pi_\ENC,q}^\adv$}{
+    \hfill\\[-0.5\baselineskip]
+    Q := 0\\
+    (\ek, \dk) \gets \Pi_\ENC.\kgen(\secparam)\\
+    r_1, \ldots, r_{q+1} \sample \{0,1\}^\secpar\\
+    c_i \gets \Pi_\ENC.\enc(\ek, r_i)\\
+    (r_1', \ldots, r_{q+1}') \gets{\adv^{\oracle^{\AAL}_{\dk,\Pi_\ENC,\Pi_\ADP}}(\ek, (c_1, g^{r_1}), \ldots, (c_{q+1}, g^{r_{q+1}}))}\\
+    \mathbf{if}\ r_i' = r_i ~\forall i \in 1,\ldots,q+1 \wedge Q \leq q\ \textbf{then return } 1\\
+    \textbf{else return }0
+    }
+    \pcvspace
+    \procedure[space=auto]{$\oracle^{\AAL}_{\dk,\Pi_\ENC,\Pi_\ADP}(\vk, m, h, c, \tilde{\sigma})$}{
+    \hfill\\[-0.5\baselineskip]
+\textbf{check if } \vk \in \mathsf{Supp}(\Pi_\ADP.\kgen(\secparam))\\
+\tilde{x} \gets \Pi_\ENC.\dec(\dk, c)\\
+\textbf{if }\Pi_\ADP.\prevrfy(\vk,m,h,\presig)=1 \textbf{ and }g^{\tilde x} = h \\
+\quad Q := Q + 1\\
+\quad\textbf{return } \sigma' \gets \Pi_\ADP.\adapt(\presig,\tilde x)\\
+\textbf{else return } \bot
+}
+    \end{pcvstack}
+\end{pchstack}
+    \caption{\textrm{OM-CCA-A2L} game}
+    \label{alg:om-cca-a2l}
+\end{figure}

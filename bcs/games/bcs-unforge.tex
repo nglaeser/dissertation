@@ -1,0 +1,36 @@
+\begin{figure}[tbh]
+    \centering
+    \begin{pchstack}[boxed]
+    \begin{pcvstack}
+    \procedure[space=auto,codesize=\small]{$\expSec^{\adv}_{\Pi_{\mathsf{BCS}}}(\secpar)$}{
+    \hfill\\[-0.5\baselineskip]
+\LL := \emptyset, Q := 0 \\
+(\tilde{\ek}, \tilde{\dk}) \gets \Setup(\secparam)\\
+(\vk_1^H, m_1, \sigma_1), \ldots, (\vk_q^H, m_q, \sigma_q)  \gets \adv^{\oracle\mathsf{PP}(\cdot), \oracle\mathsf{PS}(\cdot)}(\tilde{\ek})\\
+b_0 := \exists i \in [q] \suchthat (\vk_i^H,\cdot) \in \LL \land (\vk_i^H,m_i) \notin \LL \\
+\qquad \qquad  \land \vrfy(\vk_i^H,m_i,\sigma_i) = 1\\
+b_1 := \forall i \in [q], (\vk_i^H,m_i) \in \LL \land \vrfy(\vk_i^H, m_i, \sigma_i) = 1\\
+b_2 := \bigwedge_{i,j \in [q], i \ne j}  (\vk_i^H, m_i, \sigma_i) \ne (\vk_j^H, m_j, \sigma_j) \\
+b_3 := (Q \le q-1) \\
+\mathbf{return}\ b_0 \lor (b_1 \land b_2 \land b_3)
+}
+\pcvspace
+
+\procedure[space=auto,codesize=\small]{$\oracle\mathsf{PP}(m)$}{
+\hfill\\[-0.5\baselineskip]
+(\vk^H, \sk^H) \gets \Pi_\ADP.\kgen(\secparam)\\
+\LL := \LL \cup \{ (\vk^H,m) \}\\
+\bot \gets \Promise\langle H(\tilde{\dk}, \sk^H, m), \adv(\vk^H) \rangle \\
+}
+
+
+\procedure[space=auto,codesize=\small]{$\oracle\mathsf{PS}(\vk^A, m')$}{
+\hfill\\[-0.5\baselineskip]
+\sigma^* \gets \Pay\langle \adv, H(\tilde{\dk}, \vk^A, m') \rangle \\
+\mathbf{if}\ \sigma^* \ne \bot\ \mathbf{then}~ Q:= Q+ 1
+}
+    \end{pcvstack}
+\end{pchstack}
+    \caption{Unforgeability experiment}
+    \label{fig:exp_security_ab}
+\end{figure}

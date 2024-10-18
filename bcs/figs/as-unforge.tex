@@ -1,0 +1,35 @@
+\begin{figure}
+        \centering
+        \begin{pchstack}[boxed]
+            \procedure[space=keep]{$\ASigForge_{\adv,\Pi_\ADP}(\secpar)$}
+            {
+                    \queryM := \emptyset\\
+                    (\sk,\vk) \gets \kgen(\secparam)\\
+                    m \gets \adv^{\oracle^\sign(\cdot), \oracle^\presign(\cdot,\cdot)}(\vk) \\
+                    (Y, y) \gets  \genr(\secparam)\\
+                    \presig \gets \presign(\sk, m,Y)\\
+                    \sigma \gets \adv^{\oracle^\sign(\cdot), \oracle^\presign(\cdot,\cdot)}(\presig, Y)\\
+                    \pcreturn \left(m \not \in \queryM \land \vrfy(\vk, m, \sigma) \right)}
+                
+            \pchspace
+            
+            \begin{pcvstack}
+                \begin{subprocedure}
+                    \procedure[space=keep]{$\oracle^\sign(m)$}{
+                            \sigma \gets \sign(\sk, m)\\
+                            \queryM := \queryM \cup \{m\}\\
+                            \pcreturn \sigma 	
+                    }
+                \end{subprocedure}
+                \pcvspace[1pt]
+                \begin{subprocedure}
+        \procedure[space=keep]{$\oracle^\presign(m, Y)$}{
+                            \presig \gets \presign(\sk, m, Y)\\
+                            \queryM := \queryM \cup \{m\}\\
+                            \pcreturn \presig 
+                    }
+                \end{subprocedure}
+            \end{pcvstack}
+    \end{pchstack}
+    \caption{Unforgeability experiment of adaptor signatures\label{fig:as-unforge}}
+\end{figure}

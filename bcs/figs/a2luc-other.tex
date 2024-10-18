@@ -1,0 +1,20 @@
+\begin{figure}
+    \centering
+    \begin{pchstack}[boxed]
+        \procedure[space=auto,codesize=\small]{$\Setup(\secparam)$}{
+    (\ek_H, \dk_H) \gets \Pi_\ENC.\kgen(\secparam)\\
+    \mathbf{set}\ \tilde \pk := \ek_H, \tilde \sk := \dk_H\\
+    \pcreturn (\tilde \pk, \tilde \sk)
+    }
+    
+    \pchspace
+    
+    \procedure[space=auto,codesize=\small]{$\open(\tau, s)$}{
+    \mathbf{parse}\ \tau := ( \cdot, \presig, \cdot)\\
+    \sigma \gets \Pi_\ADP.\adapt(\tilde \sigma, s)\\
+    \pcreturn \sigma
+    }
+    \end{pchstack}
+    \caption{Setup and Open algorithms of our conditional puzzle construction}
+    \label{fig:our_protocol_algorithms}
+\end{figure}

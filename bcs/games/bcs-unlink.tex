@@ -1,0 +1,24 @@
+\begin{figure}[tbh]
+    \centering
+    \begin{pchstack}[boxed]
+    \procedure[space=auto,codesize=\small]{$\expUnlink^{\adv}_{\Pi_{\mathsf{BCS}}}(\secpar)$}{
+    \hfill\\[-0.5\baselineskip]
+   (\tilde{\ek}, \vk^H_0, \vk^H_1, (m_{\hb,0}, m_{\ah,0}), (m_{\hb,1}, m_{\ah,1})) \gets \adv(\secparam)\\
+    (\vk_0^A, \sk_0^A) \gets \kgen(\secparam)\\
+    (\vk_1^A, \sk_1^A) \gets \kgen(\secparam)\\
+    \tau_0 \gets \Promise \left\langle  \adv(\vk_0^A, \vk_1^A), \bob(\tilde{\ek}, \vk^H_0, m_{\hb,0}) \right\rangle\\
+    \tau_1 \gets \Promise \left\langle  \adv(\vk_0^A, \vk_1^A), \bob(\tilde{\ek}, \vk^H_1, m_{\hb,1}) \right\rangle\\
+    b \gets \{0,1\}\\
+    (\sigma^*_0, s_0) \gets \Pay \left\langle  \alice \left(\sk_0^A, \tilde{\ek}, m_{\ah,0}, \tau_{0 \oplus b}\right), \adv \right\rangle \\
+    (\sigma^*_1, s_1) \gets \Pay \left\langle  \alice \left(\sk_1^A, \tilde{\ek}, m_{\ah,1}, \tau_{1 \oplus b}\right), \adv \right\rangle \\
+    \mathbf{if~}(\sigma^*_0 = \bot) \lor (\sigma^*_1 = \bot) \lor (\tau_0 = \bot) \lor (\tau_1 = \bot)\\
+    \quad \sigma_0 := \sigma_1 := \bot\\
+    \mathbf{else}\\
+    \quad \sigma_{0 \oplus b} \gets \open(\tau_{0 \oplus b}, s_0)\\
+    \quad \sigma_{1 \oplus b} \gets \open(\tau_{1 \oplus b}, s_1)\\
+    b' \gets \adv(\sigma_0, \sigma_1)\\
+    \mathbf{return}\ (b = b')
+    }
+\end{pchstack}
+\caption{Blindness experiment \label{fig:exp_unlinkability}}
+\end{figure}

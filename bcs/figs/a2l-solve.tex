@@ -1,0 +1,28 @@
+\begin{figure*}
+    \hspace{-5em}
+    \begin{minipage}{\textwidth}
+    \begin{pchstack}[boxed]
+    \procedure{Public parameters: group description $(\GG, g, q)$, message $m_\ah$}{
+        \text{$\Pay \langle A(\sk_\ah^A, \ek_H, \tau), \cdot \rangle$} \< \< \text{$\Pay \langle \cdot, H(\dk_H, \vk_\ah^A) \rangle$} \\[][\hline]
+        \pcln \mathbf{Parse}\ \tau := (\cdot, \cdot, \cdot, \cdot,(Y',c')) \\ [-0.15\baselineskip][]
+        \pcln r' \sample \Z_p, Y'' := Y' \cdot g^{r'} \< \< \\ [-0.15\baselineskip][]
+        \pcln c'' \gets \Pi_\ENC.\mathsf{Rand}(c',r') \< \< \\ [-0.15\baselineskip][]
+        \pcln \presig_\ah^A \gets \Pi_\ADP.\presig(\sk_\ah^A, m_\ah, Y'') \< \< \\ [-0.85\baselineskip][]
+        \pcln \< \sendmessageright*{Y'',c'', \presig_\ah^A} \< \\ [-0.55\baselineskip][]
+        \pcln \< \< s'' \gets \Pi_\ENC.\dec(\dk_H, c'') \\ [-0.15\baselineskip][]
+        \pcln \< \< \sigma_\ah^A \gets \Pi_\ADP.\adapt(\presig_\ah^A, s'') \\ [-0.15\baselineskip][]
+    %	\pcln \< \< \sigma_\ah^H \gets \Pi_\DS.\sign(\sk_\ah^H, m_\ah) \\ [-0.15\baselineskip][]
+        \pcln \< \< \mathbf{If}\ \Pi_\ADP.\vrfy(\vk_\ah^A, m_\ah, \sigma_\ah^A) \neq 1\ \mathbf{then} \\ [-0.15\baselineskip][]
+        \pcln \< \< \quad \pcreturn \bot \\ [-0.15\baselineskip][]
+        %\pcln \< \< \text{Else publish } (\sigma_\ah^A, \sigma_\ah^H) \\ [-0.85\baselineskip][]
+        \pcln \< \sendmessageleft*{\sigma_\ah^A} \< \\ [-0.55\baselineskip][]
+        \pcln s'' \gets \Pi_\ADP.\ext(\sigma_\ah^A, \presig_\ah^A, Y'')  \\ [-0.15\baselineskip][]
+        \pcln \mathbf{If}\ s'' = \bot\ \mathbf{then}\ \pcreturn \bot \\ [-0.15\baselineskip][]
+        \pcln s' := s'' - r'  \< \< \\ [-0.15\baselineskip][]
+        \pcln \pcreturn (\sigma_\ah^A, s') \< \< \pcreturn \sigma_\ah^A
+    }
+    \end{pchstack}
+    \end{minipage}
+    \caption{Puzzle solver protocol of \aal}
+    \label{fig:a2l_payment}
+    \end{figure*}

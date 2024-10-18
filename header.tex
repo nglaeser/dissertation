@@ -29,10 +29,11 @@
     % bookmarks,
     colorlinks,
     % final,
-    % linkcolor=blue,
-    filecolor=magenta,
-    urlcolor=blue,
-    citecolor=blue,
+    % allcolors=blue,
+    % linkcolor=cyan,
+    % filecolor=magenta,
+    % urlcolor=blue,
+    % citecolor=blue,
     pdfauthor = {Noemi Glaeser},
 	pdftitle ={Dissertation},
 }
@@ -40,6 +41,11 @@
 \usepackage{amsmath,amsfonts,amssymb}
 \usepackage{wasysym}
 \usepackage{cleveref}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+% edits to algorithmic
+\renewcommand{\algorithmiccomment}[1]{// \small{#1}}
+\renewcommand{\algorithmicrequire}{\textbf{Input:}}
 
 % \usepackage[nottoc,notindex]{tocbibind} % breaks minitoc
 % other options: notlot, notlof
@@ -70,6 +76,7 @@
     keys,
     lambda,
     operators,
+    probability,
     sets
 ]{cryptocode}
 \usepackage{hyphenat}

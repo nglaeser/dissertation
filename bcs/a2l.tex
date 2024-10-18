@@ -1,0 +1,28 @@
+\section{The \aal Protocol}\label{sec:description_a2l}
+
+We now recall the \aal system~\cite{SP:TaiMorMaf21}, which is defined over the following cryptographic schemes:
+\begin{itemize}
+    \item A digital signature scheme $\Pi_\DS$, a hard relation $\Rel_\DL$ for a group $(\GG, g, p)$ with generator $g$ and prime order $p$, and the corresponding adaptor signature scheme $\Pi_\ADP$.
+    \item A linearly homomorphic re-randomizable CPA-secure encryption scheme $\Pi_\ENC$.\footnote{Technically, \cite{SP:TaiMorMaf21} uses a different abstraction called ``re-randomizable puzzle''. However, it is not hard to see that a re-randomizable linearly homomorphic encryption scheme satisfies this notion. For completeness, we show this in~\Cref{sec:randpuzzle}.}
+    \item A NIZK proof system $\Pi_\NIZK := (\Setup, \prove, \vrfy) $ for the language $$\Lang := \{ (\ek, Y,c) : \exists s \suchthat c \gets \Pi_\ENC.\enc(\ek, s) \land Y = g^s \}.$$
+\end{itemize}
+The protocol has three parties: Alice, Bob, and Hub. At the beginning of the system, Hub runs the setup (as described in~\Cref{fig:our_protocol_algorithms}) to generate its keys, which are the keys for the (CPA-secure) encryption scheme $\Pi_\ENC$. The protocol then consists of a promise phase and a solving phase. To conclude, Alice runs the open algorithm given in~\cref{fig:a2l_openverif}.
+
+\input{bcs/figs/a2l-promise}
+
+\paragraph{Puzzle Promise} 
+In the promise phase (\Cref{fig:a2l_promise}), 
+Hub generates a pre-signature $\presig_\hb^H$ on a common message $ m_\hb$ with respect to a uniformly sampled instance $Y := g^s$. Hub also encrypts the witness $s$ in the ciphertext $c \gets \Pi_\ENC.\enc(\ek_H,s)$ under its own encryption key $\ek_H$. Hub gives Bob the tuple $(Y, c, \pi, \presig_\hb^H)$, where $\pi$ is a NIZK proof that certifies the ciphertext $c$ encrypts $s$.
+Bob verifies that the NIZK proof and the pre-signature are indeed valid. If so, he chooses a random $r \sample \ZZ_q$ and re-randomizes the instance $Y$ to $Y' := Y \cdot g^r$ and also re-randomizes the ciphertext $c$ as $c' \gets \Pi_\ENC.\mathsf{Rand}(c,r)$. The puzzle is set to $\tau := (r, m_\hb, \presig_\hb^H, (Y,c), (Y', c'))$. 
+
+\input{bcs/figs/a2l-solve}
+
+\paragraph{Puzzle Solve}
+Bob sends the puzzle $\tau$ privately to Alice, who now executes the puzzle solve protocol with Hub 
+(\Cref{fig:a2l_payment}).
+Alice samples a random $r'$ and further re-randomizes the instance $Y'$ as $Y'' := Y' \cdot g^{r'}$ and the ciphertext $c'$ as $c'' \gets \Pi_\ENC.\mathsf{Rand}(c', r')$. 
+She then generates a pre-signature $\presig_\ah^A$ on a common message $m_\ah$ with respect to the instance $Y''$. She sends the tuple $(Y'', c'', \presig_\ah^A)$ to Hub, who decrypts $c''$ using the decryption key $\dk_H$ to obtain $s''$. 
+Hub then adapts the pre-signature $\presig_\ah^A$ to $ \sigma_\ah^A$ using $s''$ and ensures its validity. It then sends the signature $\sigma_\ah^A$ to Alice, who extracts the witness for $Y''$ as $ s'' \gets \Pi_\ADP.\ext(\presig_\ah^A, \sigma_\ah^A, Y'')$. 
+Alice removes the re-randomization factor to obtain the solution $s' := s'' - r'$ for the instance $Y'$. Alice finally sends $s'$ privately to Bob, who opens the puzzle $\tau$ by computing the witness $s := s' - r$ and adapting the pre-signature $\presig_\hb^H$ (given by Hub in the promise phase) to the signature $\sigma_\hb^H$.
+
+\input{bcs/figs/a2l-open}

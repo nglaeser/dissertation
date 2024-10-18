@@ -1,0 +1,13 @@
+\section{Counterexamples of \aal}\label{sec:cryptanalysis}
+
+Next, we describe two cryptographic instantiations of \aal that satisfy the formal definitions, yet enable two attacks. For the purpose of these attacks, it suffices to keep in mind that Hub offers the sender party (Alice) access to the following oracle, which we refer to as $\oracle^{\AAL}_{\dk,\Pi_\ENC,\Pi_\ADP}$. On input a verification key $\vk$, a message $m$, a group element $h$, a ciphertext $c$, and a partial signature $\tilde{\sigma}$, the oracle behaves as follows:
+\begin{itemize}
+    \item Compute $\tilde{x} \gets \Pi_\ENC.\dec(\dk, c)$.
+    \item Compute $\sigma' \gets \Pi_\ADP.\adapt(\tilde{\sigma},\tilde{x})$.
+    \item If $\Pi_\ADP.\vrfy(\vk,m,\sigma')=1$, return $\sigma'$.
+    \item Else return $\bot$.
+\end{itemize}
+Note that returning $\sigma'$ implicitly reveals $\tilde{x}$, since $\Pi_\ADP.\ext(\tilde{\sigma},\sigma',h) = \tilde{x}$. It is also useful to observe that providing a valid pre-signature to the \aal oracle is trivial for an adversary: generating a pre-signature  that is valid when adapted with a value $x$ requires only knowledge of the party's own signing key and of a value $h = g^x$. The leakage offered by this oracle (and indeed the existence of this leakage) is not addressed in \aal's proof of security.
+
+\input{bcs/attack1}
+\input{bcs/attack2}

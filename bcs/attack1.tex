@@ -1,0 +1,34 @@
+\subsection{Key Recovery Attack}\label{sec:attack1}
+
+In our first attack, we completely recover the decryption key $\dk$ of the hub by simply querying the oracle $\oracle^{\AAL}_{\sk,\Pi_\ENC,\Pi_\ADP}$ $n$ times. For this attack, we assume that the encryption scheme $\Pi_\ENC$ is (in addition to being re-randomizable and CPA-secure as required by \aal):
+\begin{itemize}
+    \item Linearly homomorphic over $\ZZ_p$.
+    \item Circular secure for bit encryption, i.e., the scheme is CPA-secure even given the bitwise encryption of the decryption key $\enc(\ek, \dk_1), \dots,\allowbreak \enc(\ek,\allowbreak \dk_\secpar)$.
+    \item The above-mentioned ciphertexts $(c_1, \dots, c_\secpar) := (\enc(\ek, \dk_1), \dots,\allowbreak  \enc(\ek, \dk_\secpar))$ are included in the encryption key $\ek$.
+\end{itemize}
+Such schemes can be constructed from a variety of standard assumptions \cite{C:BHHO08}. It is easy to see that these additional requirements do not contradict the initial prerequisites of the scheme. 
+
+
+\begin{algorithm}
+\caption{Key Recovery Attack}
+\label{alg:key-rec}
+\begin{algorithmic}[1]
+\small
+\REQUIRE Hub's $\ek$ along with the cipheretexts $(c_1, \dots, c_\secpar)$
+\STATE Initialize key guess $\dk' := 0^\secpar$
+\FOR{$i \in 1\ldots\secpar$}
+    \STATE Sample $x \sample \mathbb{Z}_p$ and compute $h := g^x$
+    \STATE Sample a fresh signing key $(\vk, \sk) \gets \kgen(\secparam)$
+    \STATE Set $c'_i := \Pi_\ENC.\enc(\ek,x) \circ c_i = \Pi_\ENC.\enc(\ek,x + \dk_i)$
+    \STATE Compute  $\presig_i \gets \Pi_\ADP.\presign(\sk,m,h)$
+    \STATE Query $y \gets \oracle^{\AAL}_{\dk,\Pi_\ENC,\Pi_\ADP}(\vk,m,h,c_i',\presig_i)$
+    \STATE If $y =\bot$ set $\dk_i' := 1$
+\ENDFOR
+\RETURN $\dk'$
+\end{algorithmic}
+\end{algorithm}
+
+The attack is shown in~\Cref{alg:key-rec}. Note that, for a signing key pair in the $i$-th iteration, if the $\oracle^\AAL$ oracle returns $y \ne \bot$, this means that in the coin mixing layer, the Hub has obtained a valid $y$ and thus obtains Alice's (adversary's) signature on a transaction. Due to one-time use of keys in this (cryptocurrency) layer, the attacker therefore cannot reuse the same signing key pair in another iteration for a different message (transaction). Therefore, it is necessary that the attacker (Alice) sample $n$ signing keys to account for every iteration being a non-$\bot$ query to $\oracle^\AAL$.
+This is realized in the real world by the attacker having $n$ different sessions (of coin mixing), one for each $\vk_i$, with Hub. 
+
+Observe that the response of the oracle is $\bot$ if and only if $\dk_i = 1$, since $h = g^x \neq g^{x + 1}$. On the other hand, if $\dk_i = 0$, then the oracle always returns a valid adapted signature $\sigma'$. Thus, the attack succeeds with probability $1$.
