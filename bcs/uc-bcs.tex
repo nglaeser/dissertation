@@ -170,15 +170,15 @@ For all PPT distinguishers $\env$,
 \noindent\underline{Simulator $\Sim_{AB}$:} When a recipient Bob indicates he would like to initiate a transaction, $\Sim_{AB}$ proceeds as follows:
 \begin{enumerate}
     \item Send $(\Promise, A)$ to $\flocks$.
-    \item Upon receiving $(\mathsf{promise}, (\pid,\pid'))$ from $\flocks$, sample a uniform value $s \sample \ZZ_q$ and compute $Y \gets g^s$. Generate keys $(\ek_H,\dk_H) \gets \Pi_\ENC.\kgen(\secparam)$ and $(\vk_\hb^H, \sk_\hb^H) \gets \Pi_\ADP.\kgen(\secparam)$; let $c \gets \Pi_\ENC.\enc(\ek_H, 0)$ and $\presig_\hb^H \gets \Pi_\ADP.\presign(\sk_\hb^H, m_\hb, Y)$. Simulate the NIZK $\pi_s \gets \NIZK.\mathsf{Sim}(\td,\allowbreak (\ek_H, Y,c))$. Finally, pre-compute $\sigma_\hb^H \gets \Pi_\ADP.\adapt(\presig_\hb^H, s)$ and save $((\pid,\pid'),(Y,c,s,\sigma_\hb^H),\perp)$ into a table $\PP$. Send $(Y,c,\pi_s,\presig_\hb^H)$ to the attacker (who is impersonating Bob).
+    \item Upon receiving $(\mathsf{promise}, (\pid,\pid'))$ from $\flocks$, sample a uniform value $s \sample \ZZ_q$ and compute $Y \gets g^s$. Generate keys $(\ek_H,\dk_H) \gets \Pi_\ENC.\kgen(\secparam)$ and $(\vk_\hb^H, \sk_\hb^H) \gets \Pi_\ADP.\kgen(\secparam)$; let $c \gets \Pi_\ENC.\enc(\ek_H, 0)$ and $\presig_\hb^H \gets \Pi_\ADP.\presign(\sk_\hb^H, m_\hb, Y)$. Simulate the NIZK $\pi_s \gets \NIZK.\mathsf{Sim}(\td,\allowbreak (\ek_H, Y,c))$. Finally, pre-compute $\sigma_\hb^H \gets \Pi_\ADP.\adapt(\presig_\hb^H, s)$ and save $((\pid,\pid'),(Y,c,s,\sigma_\hb^H),\perp)$ into a table $\Plist$. Send $(Y,c,\pi_s,\presig_\hb^H)$ to the attacker (who is impersonating Bob).
     \item At a later point in time, the attacker sends $(Y', \presig_\ah^A)$ on behalf of Alice. If $\Pi_\ADP.\prevrfy(\vk_\ah^A, m_\ah, Y', \presig_\ah^A) \neq 1$, abort.
     \item When the attacker initiates the 2PC, run the 2PC simulator to recover its inputs $(c^*, r^*)$; compute the result ($\perp$) and return it to the attacker.
-    \item Depending on whether or not $c^* \in \PP$ do the following:
+    \item Depending on whether or not $c^* \in \Plist$ do the following:
     \begin{enumerate}
-        \item If $c^*\in\PP$, retrieve the corresponding $Y$, $s$, and $\pid'$. Check that $Y' = Y \cdot g^{r^*}$ (if not, abort); send $\Pi_\ADP.\adapt(\presig_\ah^A, s+r^*)$ to the attacker masquerading as Alice and $(\Pay, B, \pid')$ to $\flocks$. Update the last element of the entry in $\PP$ to $\top$.
-        \item If $c^* \notin \PP$, compute $z' \gets \Pi_\ENC.\dec(\dk_H, c^*) + r^*$. Check that $Y' = g^{z'}$ (if not, abort) and send $\Pi_\ADP.\adapt(\presig_\ah^A, z')$ to the attacker. Send nothing to $\flocks$. (Note that this corresponds to the case where some party Alice is paying Hub without Bob initiating the interaction, which is something that she can do at any time.)
+        \item If $c^*\in\Plist$, retrieve the corresponding $Y$, $s$, and $\pid'$. Check that $Y' = Y \cdot g^{r^*}$ (if not, abort); send $\Pi_\ADP.\adapt(\presig_\ah^A, s+r^*)$ to the attacker masquerading as Alice and $(\Pay, B, \pid')$ to $\flocks$. Update the last element of the entry in $\Plist$ to $\top$.
+        \item If $c^* \notin \Plist$, compute $z' \gets \Pi_\ENC.\dec(\dk_H, c^*) + r^*$. Check that $Y' = g^{z'}$ (if not, abort) and send $\Pi_\ADP.\adapt(\presig_\ah^A, z')$ to the attacker. Send nothing to $\flocks$. (Note that this corresponds to the case where some party Alice is paying Hub without Bob initiating the interaction, which is something that she can do at any time.)
     \end{enumerate}
-    \item When the attacker outputs some valid signature $\sigma_\hb^H$, check that the following conditions hold: $\Pi_\ADP.\vrfy(\vk_\hb^H, m_\hb, \sigma_\hb^H)=1$ and $((\pid,\cdot),\allowbreak(\cdot, \cdot, \cdot, \sigma_\hb^H),\top) \in \PP$. If so, send $(\Open, \pid)$ to $\flocks$; otherwise, abort.
+    \item When the attacker outputs some valid signature $\sigma_\hb^H$, check that the following conditions hold: $\Pi_\ADP.\vrfy(\vk_\hb^H, m_\hb, \sigma_\hb^H)=1$ and $((\pid,\cdot),\allowbreak(\cdot, \cdot, \cdot, \sigma_\hb^H),\top) \in \Plist$. If so, send $(\Open, \pid)$ to $\flocks$; otherwise, abort.
 \end{enumerate}
 
 \medskip
@@ -195,13 +195,13 @@ For all PPT distinguishers $\env$,
 \noindent\underline{Hybrid $\hybrid_2$:} Simulate the 2PC (\Cref{fig:our_protocol_alice_hub}, line 6).
 
 \smallskip
-\noindent\underline{Hybrid $\hybrid_3$:} Add the list $\PP$ and step 5 of the simulator (in particular, case 5a) to \Cref{fig:our_protocol_alice_hub}, line 7-10.
+\noindent\underline{Hybrid $\hybrid_3$:} Add the list $\Plist$ and step 5 of the simulator (in particular, case 5a) to \Cref{fig:our_protocol_alice_hub}, line 7-10.
 
 \smallskip
 \noindent\underline{Hybrid $\hybrid_4$:} Replace $c$ (\Cref{fig:our_protocol_hub_bob}, line 2) with an encryption of zero.
 
 \smallskip
-\noindent\underline{Hybrid $\hybrid_5$:} When Bob outputs a valid signature, abort if $(\cdot,(\cdot,\cdot,\cdot,\sigma_\hb^H),b) \in \PP$ and $b \neq \top$.
+\noindent\underline{Hybrid $\hybrid_5$:} When Bob outputs a valid signature, abort if $(\cdot,(\cdot,\cdot,\cdot,\sigma_\hb^H),b) \in \Plist$ and $b \neq \top$.
 
 \begin{claim}
 For all PPT distinguishers $\env$,
@@ -230,7 +230,7 @@ For all PPT distinguishers $\env$,
 \]
 \end{claim}
 \begin{proof}
-By definition, for $c^* \in \PP$, the corresponding $s$ and $Y$ in $\PP$ are $\Pi_\ENC.\dec(\dk_H,\allowbreak c^*)$ and $g^s$, respectively. Therefore $z' = s + r^*$ and the case of $c^* \in \PP$ is handled in the same way as all cases were in the previous hybrid experiment.
+By definition, for $c^* \in \Plist$, the corresponding $s, Y$ in $\Plist$ are $\Pi_\ENC.\dec(\dk_H,\allowbreak c^*)$ and $g^s$, respectively. Therefore $z' = s + r^*$ and the case of $c^* \in \Plist$ is handled in the same way as all cases were in the previous hybrid experiment.
 \end{proof}
 
 \begin{claim}

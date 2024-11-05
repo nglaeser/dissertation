@@ -3,7 +3,7 @@
 We now recall the \aal system~\cite{SP:TaiMorMaf21}, which is defined over the following cryptographic schemes:
 \begin{itemize}
     \item A digital signature scheme $\Pi_\DS$, a hard relation $\Rel_\DL$ for a group $(\GG, g, p)$ with generator $g$ and prime order $p$, and the corresponding adaptor signature scheme $\Pi_\ADP$.
-    \item A linearly homomorphic re-randomizable CPA-secure encryption scheme $\Pi_\ENC$.\footnote{Technically, \cite{SP:TaiMorMaf21} uses a different abstraction called ``re-randomizable puzzle''. However, it is not hard to see that a re-randomizable linearly homomorphic encryption scheme satisfies this notion. For completeness, we show this in~\Cref{sec:randpuzzle}.}
+    \item A linearly homomorphic re-randomizable CPA-secure encryption scheme $\Pi_\ENC$.\footnote{Technically, \cite{SP:TaiMorMaf21} uses a different abstraction called ``randomizable puzzle''. However, it is not hard to see that a re-randomizable linearly homomorphic encryption scheme satisfies this notion. For completeness, we show this in~\Cref{sec:randpuzzle}.}
     \item A NIZK proof system $\Pi_\NIZK := (\Setup, \prove, \vrfy) $ for the language $$\Lang := \{ (\ek, Y,c) : \exists s \suchthat c \gets \Pi_\ENC.\enc(\ek, s) \land Y = g^s \}.$$
 \end{itemize}
 The protocol has three parties: Alice, Bob, and Hub. At the beginning of the system, Hub runs the setup (as described in~\Cref{fig:our_protocol_algorithms}) to generate its keys, which are the keys for the (CPA-secure) encryption scheme $\Pi_\ENC$. The protocol then consists of a promise phase and a solving phase. To conclude, Alice runs the open algorithm given in~\cref{fig:a2l_openverif}.
@@ -26,3 +26,5 @@ Hub then adapts the pre-signature $\presig_\ah^A$ to $ \sigma_\ah^A$ using $s''$
 Alice removes the re-randomization factor to obtain the solution $s' := s'' - r'$ for the instance $Y'$. Alice finally sends $s'$ privately to Bob, who opens the puzzle $\tau$ by computing the witness $s := s' - r$ and adapting the pre-signature $\presig_\hb^H$ (given by Hub in the promise phase) to the signature $\sigma_\hb^H$.
 
 \input{bcs/figs/a2l-open}
+
+\input{bcs/randpuzzle}

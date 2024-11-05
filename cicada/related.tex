@@ -14,7 +14,7 @@ Auctions are a natural fit for blockchains and were suggested as early as 2018~\
 Our approach is more practical as one only needs to solve a single (or handful of) TLPs, even in the worst case.
 Chvojka et al. suggest a TLP-based protocol for both e-voting and auctions~\cite{ESORICS:CJSS21}, but their protocol has a per-election/auction trusted setup. We observe that HTLPs can help reduce (but not fully eliminate) the trust assumption by enabling a distributed per-protocol setup. We describe this idea, which may be of independent interest, in \Cref{sec:seq_mpc_tlp}.
 
-\subsection{Time-based cryptography} 
+\subsection{Time-based Cryptography} 
 Time-based cryptography, which uses inherently sequential functions to delay the revelation of information, also has a lengthy history dating to the introduction of time-lock encryption in 1996~\cite{RivShaWag96}.
 Numerous variants have emerged since then, including timed commitments~\cite{C:BonNao00}, proofs-of-sequential-work~\cite{ITCS:MahMorVad13}, VDFs~\cite{C:BBBF18}, and HTLPs~\cite{C:MalThy19}, which we employ here.
 For a recent survey, we refer the reader to Medley et al.~\cite{CSF:MedLoeQua23}. The only practical work we know of taking advantage of HTLPs is Bicorn~\cite{FC:CATB23}, which builds a distributed randomness beacon with a single aggregate HTLP for an arbitrary number of entropy contributors.

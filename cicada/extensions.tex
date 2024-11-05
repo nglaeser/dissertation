@@ -1,7 +1,7 @@
 \section{Extensions}\label{sec:cicada_extensions}
 We introduce extensions to the Cicada framework that may be useful in future applications.
 
-\subsection{Everlasting ballot privacy for HTLP-based protocols}\label{sec:everlasting_ballot_privacy}
+\subsection{Everlasting Ballot Privacy for HTLP-based Protocols}\label{sec:everlasting_ballot_privacy}
 
 \input{cicada/protocols/batching}
 
@@ -136,7 +136,7 @@ This idea opens up a new design space for the MPC protocol used for batching, su
 %     \end{enumerate}
 % \end{enumerate}
 
-\subsection{A trusted setup protocol for the CJSS scheme}\label{sec:seq_mpc_tlp}
+\subsection{A Trusted Setup Protocol for the CJSS Scheme}\label{sec:seq_mpc_tlp}
 
 Chvojka, Jager, Slamanig, and Striecks~\cite{ESORICS:CJSS21} describe how to combine a public-key encryption scheme with a TLP to obtain a private voting or auction protocols which, unlike the HTLP-based approach suggested by~\cite{C:MalThy19}, is ``solve one, get many for free''. The high-level idea of the protocol is to encrypt each user's bid with a common public key whose corresponding secret key is inserted into a TLP (see~\Cref{fig:solve_one_protocol}). Therefore, none of the bids can be decrypted until the corresponding encryption secret key is obtained by solving the TLP. One drawback of this scheme, however, is that it requires an additional trusted setup procedure to create a TLP containing the secret key corresponding to the encryption public key used. Furthermore, unlike the HTLP approach, the setup cannot be reused and must be re-run for every protocol invocation.
 
