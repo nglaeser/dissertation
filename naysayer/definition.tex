@@ -3,7 +3,7 @@
 Next, we introduce a formal definition and syntax for naysayer proofs. A naysayer proof system $\Pi_{\nay}$ can be seen as a ``wrapper'' around an underlying proof system $\Pi$. For example, $\Pi_{\sf nay}$ defines a proving algorithm $\Pi_{\nay}.\prove$ which uses the original prover $\Pi.\prove$ as a subroutine.
 
 \begin{definition}[Naysayer proof]\label{def:naysayer_proof}
-Given a non-interactive proof system $\Pi = (\Setup, \prove, \vrfy)$ for a NP language $\Lang$, the naysayer proof system corresponding to $\Pi$ is a tuple of PPT algorithms $\Pi_{\nay} = (\Setup, \prove,\allowbreak \naysay,\allowbreak \vrfynay)$ defined as follows:
+Given a non-interactive proof system $\Pi = (\Setup, \prove, \vrfy)$ for an NP language $\Lang$, the naysayer proof system corresponding to $\Pi$ is a tuple of PPT algorithms $\Pi_{\nay} = (\Setup, \prove,\allowbreak \naysay,\allowbreak \vrfynay)$ defined as follows:
     \begin{description}
         \item[$\Setup(\secparam, \naysecparam) \randout (\crs,\crs_{\nay})$:] Given (potentially different) security parameters $\secparam$ and $\naysecparam$, output two common reference strings $\crs$ and $\crs_{\nay}$. This algorithm may use private randomness.
         \item[$\prove(\crs, x, \witness) \to \pi'$:] Given a statement $x$ and witness $\witness$ such that $(x,\allowbreak \witness) \in \Rel_\Lang$, 

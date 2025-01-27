@@ -26,16 +26,25 @@
 \renewcommand*{\backrefalt}[4]{}
 \hypersetup{
     breaklinks,
-    % bookmarks,
+    % hidelinks,
+    bookmarks,
+    final,
+    %%% links as colored text
     colorlinks,
-    % final,
     % allcolors=blue,
     % linkcolor=cyan,
     % filecolor=magenta,
     % urlcolor=blue,
     % citecolor=blue,
+    %%% links with colored boxes
+    colorlinks=false,
+    linkbordercolor=red,
+    urlbordercolor=blue,
+    citebordercolor=green,
+    %%% PDF settings
     pdfauthor = {Noemi Glaeser},
 	pdftitle ={Dissertation},
+    pdfpagemode=UseOutlines,
 }
 \usepackage{amsthm}
 \usepackage{amsmath,amsfonts,amssymb}

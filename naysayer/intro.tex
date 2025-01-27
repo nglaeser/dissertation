@@ -10,7 +10,7 @@ This computation can even depend on secret inputs not known to the verifier by r
     \label{fig:vc}
  \end{figure}
 
-VC leads to a paradigm in which smart contracts, while capable of arbitrary computation, primarily act as verifiers and outsource all significant computation off-chain (see \Cref{fig:vc}). A motivating application is so-called ``zk''-\emph{rollups}\footnotemark~\cite{starknet,zksync,aztec,dydx,scroll}, which combine transactions from many users into a single smart contract which verifies a proof that all have been executed correctly.
+VC leads to a paradigm in which smart contracts, while capable of arbitrary computation, primarily act as verifiers and outsource all significant computation off-chain (see \Cref{fig:vc}). A motivating application are so-called ``zk''-\emph{rollups}\footnotemark~\cite{starknet,zksync,aztec,dydx,scroll}, which combine transactions from many users into a single smart contract which verifies a proof that all have been executed correctly.
 \footnotetext{The ``zk'' part of the name is often a misnomer, since these services do not necessarily offer the zero-knowledge property (and in fact most do not). Instead, the term is used by practitioners to emphasize succinctness, which is the more relevant property in practice.} 
 However, verifying these proofs can still be costly. For example, the StarkEx rollup 
 %contract verifying the state transitions of the off-chain StarkEx marketplace 
